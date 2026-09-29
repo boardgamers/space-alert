@@ -1,0 +1,20 @@
+{
+  "name": "@boardgamers/space-alert",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Space Alert and The New Frontier: BGS integration research and mission timing prototype",
+  "license": "AGPL-3.0-only",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "dev": "node preview/server.js",
+    "check": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/boardgamers/space-alert.git"
+  }
+}

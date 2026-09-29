@@ -1,0 +1,4664 @@
+{
+  "source": {
+    "repository": "https://github.com/nibuen/SpaceAlertMissionGenerator",
+    "revision": "8dd0734c4f4a5c8ad9f1376a7459a87f32471f0e",
+    "file": "app/src/main/java/com/boarbeard/generator/beimax/ConstructedMissions.java",
+    "sha256": "d0f215e8d598bea51e687f1a41a23dbeee6dbbecffd369c370695d4ac9a32fbf",
+    "notice": "Derived mission schedules; see THIRD_PARTY.md. Not the random generator or a rules engine."
+  },
+  "missions": [
+    {
+      "id": "firstTestRun",
+      "title": "Test run 1",
+      "group": "test-run",
+      "doubleActions": false,
+      "phaseEndsMs": [
+        255000,
+        425000
+      ],
+      "events": [
+        {
+          "atMs": 15000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 1
+        },
+        {
+          "atMs": 60000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 2
+        },
+        {
+          "atMs": 90000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 135000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 3
+        },
+        {
+          "atMs": 200000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 280000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 310000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        }
+      ]
+    },
+    {
+      "id": "secondTestRun",
+      "title": "Test run 2",
+      "group": "test-run",
+      "doubleActions": false,
+      "phaseEndsMs": [
+        225000,
+        425000
+      ],
+      "events": [
+        {
+          "atMs": 10000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 1
+        },
+        {
+          "atMs": 50000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 80000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 2
+        },
+        {
+          "atMs": 135000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 225000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 4
+        },
+        {
+          "atMs": 290000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 330000,
+          "type": "incoming-data"
+        }
+      ]
+    },
+    {
+      "id": "simulation1",
+      "title": "Simulation 1",
+      "group": "simulation",
+      "doubleActions": false,
+      "phaseEndsMs": [
+        225000,
+        455000,
+        600000
+      ],
+      "events": [
+        {
+          "atMs": 10000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 2
+        },
+        {
+          "atMs": 70000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 90000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "serious",
+          "position": "external",
+          "turn": 3
+        },
+        {
+          "atMs": 120000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 170000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 230000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 5
+        },
+        {
+          "atMs": 290000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "serious",
+          "position": "external",
+          "turn": 6
+        },
+        {
+          "atMs": 340000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 360000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 375000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 405000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 470000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 480000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 505000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        }
+      ]
+    },
+    {
+      "id": "simulation2",
+      "title": "Simulation 2",
+      "group": "simulation",
+      "doubleActions": false,
+      "phaseEndsMs": [
+        225000,
+        455000,
+        605000
+      ],
+      "events": [
+        {
+          "atMs": 10000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 20000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "serious",
+          "position": "external",
+          "turn": 2
+        },
+        {
+          "atMs": 70000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 100000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 4
+        },
+        {
+          "atMs": 180000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 230000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 240000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 250000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "serious",
+          "position": "external",
+          "turn": 6
+        },
+        {
+          "atMs": 285000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 300000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 310000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 330000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 7
+        },
+        {
+          "atMs": 360000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 480000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 520000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 530000,
+          "type": "communications-restored"
+        }
+      ]
+    },
+    {
+      "id": "simulation3",
+      "title": "Simulation 3",
+      "group": "simulation",
+      "doubleActions": false,
+      "phaseEndsMs": [
+        245000,
+        455000,
+        605000
+      ],
+      "events": [
+        {
+          "atMs": 10000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 1
+        },
+        {
+          "atMs": 65000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 3
+        },
+        {
+          "atMs": 100000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 120000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 130000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 150000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 185000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 4
+        },
+        {
+          "atMs": 250000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "serious",
+          "position": "external",
+          "turn": 5
+        },
+        {
+          "atMs": 280000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 300000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 320000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 7
+        },
+        {
+          "atMs": 355000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 400000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 410000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 470000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 485000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 490000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 505000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 510000,
+          "type": "communications-restored"
+        }
+      ]
+    },
+    {
+      "id": "advancedsimulation1",
+      "title": "Advanced simulation 1",
+      "group": "advanced-simulation",
+      "doubleActions": false,
+      "phaseEndsMs": [
+        245000,
+        455000,
+        605000
+      ],
+      "events": [
+        {
+          "atMs": 10000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 2
+        },
+        {
+          "atMs": 60000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 3
+        },
+        {
+          "atMs": 110000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 140000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 4
+        },
+        {
+          "atMs": 190000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 250000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 5
+        },
+        {
+          "atMs": 290000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 320000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "serious",
+          "position": "external",
+          "turn": 7
+        },
+        {
+          "atMs": 340000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 360000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 370000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 400000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 470000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 490000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 500000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 550000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 560000,
+          "type": "communications-restored"
+        }
+      ]
+    },
+    {
+      "id": "advancedsimulation2",
+      "title": "Advanced simulation 2",
+      "group": "advanced-simulation",
+      "doubleActions": false,
+      "phaseEndsMs": [
+        255000,
+        455000,
+        605000
+      ],
+      "events": [
+        {
+          "atMs": 10000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 20000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "serious",
+          "position": "external",
+          "turn": 2
+        },
+        {
+          "atMs": 75000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 3
+        },
+        {
+          "atMs": 135000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 150000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 155000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "serious",
+          "position": "internal",
+          "turn": 4
+        },
+        {
+          "atMs": 200000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 260000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 270000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 285000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 7
+        },
+        {
+          "atMs": 320000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 350000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 455000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 480000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 510000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 520000,
+          "type": "communications-restored"
+        }
+      ]
+    },
+    {
+      "id": "advancedsimulation3",
+      "title": "Advanced simulation 3",
+      "group": "advanced-simulation",
+      "doubleActions": false,
+      "phaseEndsMs": [
+        255000,
+        465000,
+        605000
+      ],
+      "events": [
+        {
+          "atMs": 10000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 1
+        },
+        {
+          "atMs": 70000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 100000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "serious",
+          "position": "internal",
+          "turn": 3
+        },
+        {
+          "atMs": 150000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 200000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 4
+        },
+        {
+          "atMs": 260000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 5
+        },
+        {
+          "atMs": 300000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 320000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 6
+        },
+        {
+          "atMs": 345000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 355000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 365000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 405000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 420000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 470000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 480000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 485000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 495000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 545000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        }
+      ]
+    },
+    {
+      "id": "realmission1",
+      "title": "Mission 1",
+      "group": "mission",
+      "doubleActions": false,
+      "phaseEndsMs": [
+        230000,
+        455000,
+        605000
+      ],
+      "events": [
+        {
+          "atMs": 10000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "serious",
+          "position": "external",
+          "turn": 2
+        },
+        {
+          "atMs": 55000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 3
+        },
+        {
+          "atMs": 110000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 4
+        },
+        {
+          "atMs": 140000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 170000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 180000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 185000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 230000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 240000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 5
+        },
+        {
+          "atMs": 265000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 290000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 6
+        },
+        {
+          "atMs": 320000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 335000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 350000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "serious",
+          "position": "external",
+          "turn": 7
+        },
+        {
+          "atMs": 395000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 470000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 490000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 500000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 555000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 565000,
+          "type": "communications-restored"
+        }
+      ]
+    },
+    {
+      "id": "realmission2",
+      "title": "Mission 2",
+      "group": "mission",
+      "doubleActions": false,
+      "phaseEndsMs": [
+        245000,
+        470000,
+        625000
+      ],
+      "events": [
+        {
+          "atMs": 10000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 1
+        },
+        {
+          "atMs": 35000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 2
+        },
+        {
+          "atMs": 90000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 3
+        },
+        {
+          "atMs": 120000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 155000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 4
+        },
+        {
+          "atMs": 190000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 245000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 255000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 5
+        },
+        {
+          "atMs": 290000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "serious",
+          "position": "internal",
+          "turn": 6
+        },
+        {
+          "atMs": 320000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 340000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 345000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 375000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 8
+        },
+        {
+          "atMs": 425000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 480000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 500000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 530000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 565000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        }
+      ]
+    },
+    {
+      "id": "realmission3",
+      "title": "Mission 3",
+      "group": "mission",
+      "doubleActions": false,
+      "phaseEndsMs": [
+        235000,
+        455000,
+        605000
+      ],
+      "events": [
+        {
+          "atMs": 10000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 2
+        },
+        {
+          "atMs": 50000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 75000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 3
+        },
+        {
+          "atMs": 110000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 120000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 135000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 4
+        },
+        {
+          "atMs": 185000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 240000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "serious",
+          "position": "external",
+          "turn": 6
+        },
+        {
+          "atMs": 270000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 290000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 295000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "serious",
+          "position": "external",
+          "turn": 7
+        },
+        {
+          "atMs": 320000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 340000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 355000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 8
+        },
+        {
+          "atMs": 410000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 460000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 480000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 485000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 495000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 505000,
+          "type": "communications-restored"
+        }
+      ]
+    },
+    {
+      "id": "realmission4",
+      "title": "Mission 4",
+      "group": "mission",
+      "doubleActions": false,
+      "phaseEndsMs": [
+        230000,
+        445000,
+        585000
+      ],
+      "events": [
+        {
+          "atMs": 10000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 1
+        },
+        {
+          "atMs": 60000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 3
+        },
+        {
+          "atMs": 90000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 115000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "serious",
+          "position": "external",
+          "turn": 4
+        },
+        {
+          "atMs": 145000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 235000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 250000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "serious",
+          "position": "internal",
+          "turn": 5
+        },
+        {
+          "atMs": 275000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 300000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "serious",
+          "position": "external",
+          "turn": 6
+        },
+        {
+          "atMs": 345000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 355000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 385000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 395000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 405000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 455000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 480000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 500000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 535000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 550000,
+          "type": "communications-restored"
+        }
+      ]
+    },
+    {
+      "id": "realmission5",
+      "title": "Mission 5",
+      "group": "mission",
+      "doubleActions": false,
+      "phaseEndsMs": [
+        235000,
+        455000,
+        605000
+      ],
+      "events": [
+        {
+          "atMs": 10000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 15000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 20000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "serious",
+          "position": "external",
+          "turn": 2
+        },
+        {
+          "atMs": 65000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 90000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "serious",
+          "position": "internal",
+          "turn": 3
+        },
+        {
+          "atMs": 140000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 175000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 4
+        },
+        {
+          "atMs": 240000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 265000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 270000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 6
+        },
+        {
+          "atMs": 305000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 7
+        },
+        {
+          "atMs": 360000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 8
+        },
+        {
+          "atMs": 395000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 410000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 465000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 480000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 500000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 510000,
+          "type": "communications-restored"
+        }
+      ]
+    },
+    {
+      "id": "realmission6",
+      "title": "Mission 6",
+      "group": "mission",
+      "doubleActions": false,
+      "phaseEndsMs": [
+        235000,
+        470000,
+        625000
+      ],
+      "events": [
+        {
+          "atMs": 10000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 20000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 1
+        },
+        {
+          "atMs": 45000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 2
+        },
+        {
+          "atMs": 70000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "serious",
+          "position": "external",
+          "turn": 3
+        },
+        {
+          "atMs": 90000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 100000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 130000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 180000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 235000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 5
+        },
+        {
+          "atMs": 265000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 285000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 6
+        },
+        {
+          "atMs": 320000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 7
+        },
+        {
+          "atMs": 365000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 410000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 8
+        },
+        {
+          "atMs": 480000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 510000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 520000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 525000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 580000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        }
+      ]
+    },
+    {
+      "id": "realmission7",
+      "title": "Mission 7",
+      "group": "mission",
+      "doubleActions": false,
+      "phaseEndsMs": [
+        225000,
+        455000,
+        605000
+      ],
+      "events": [
+        {
+          "atMs": 10000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 1
+        },
+        {
+          "atMs": 35000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "serious",
+          "position": "external",
+          "turn": 3
+        },
+        {
+          "atMs": 70000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 105000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "serious",
+          "position": "internal",
+          "turn": 4
+        },
+        {
+          "atMs": 135000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 175000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 185000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 225000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 5
+        },
+        {
+          "atMs": 245000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 265000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 7
+        },
+        {
+          "atMs": 290000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 320000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 8
+        },
+        {
+          "atMs": 360000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 455000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 475000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 480000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 485000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 495000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 500000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 525000,
+          "type": "communications-restored"
+        }
+      ]
+    },
+    {
+      "id": "realmission8",
+      "title": "Mission 8",
+      "group": "mission",
+      "doubleActions": false,
+      "phaseEndsMs": [
+        210000,
+        440000,
+        585000
+      ],
+      "events": [
+        {
+          "atMs": 10000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 3
+        },
+        {
+          "atMs": 40000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 50000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 70000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "serious",
+          "position": "external",
+          "turn": 4
+        },
+        {
+          "atMs": 90000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 105000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 150000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 160000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 210000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "serious",
+          "position": "external",
+          "turn": 5
+        },
+        {
+          "atMs": 240000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 250000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 275000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 295000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "serious",
+          "position": "external",
+          "turn": 7
+        },
+        {
+          "atMs": 320000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 380000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 8
+        },
+        {
+          "atMs": 450000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 460000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 490000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 520000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 540000,
+          "type": "communications-restored"
+        }
+      ]
+    },
+    {
+      "id": "doubleActionEasierMission1",
+      "title": "Double-action easy mission 1",
+      "group": "double-action-easy",
+      "doubleActions": true,
+      "phaseEndsMs": [
+        295000,
+        545000,
+        755000
+      ],
+      "events": [
+        {
+          "atMs": 10000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "serious",
+          "position": "external",
+          "turn": 2
+        },
+        {
+          "atMs": 45000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 3
+        },
+        {
+          "atMs": 90000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "serious",
+          "position": "internal",
+          "turn": 3
+        },
+        {
+          "atMs": 115000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 140000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 170000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 180000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 200000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 4
+        },
+        {
+          "atMs": 235000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 245000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 320000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 340000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 355000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 6
+        },
+        {
+          "atMs": 375000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 385000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 405000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 7
+        },
+        {
+          "atMs": 435000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "serious",
+          "position": "external",
+          "turn": 8
+        },
+        {
+          "atMs": 455000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 455000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 470000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 480000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 500000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 555000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 575000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 590000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 630000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        }
+      ]
+    },
+    {
+      "id": "doubleActionEasierMission2",
+      "title": "Double-action easy mission 2",
+      "group": "double-action-easy",
+      "doubleActions": true,
+      "phaseEndsMs": [
+        295000,
+        545000,
+        785000
+      ],
+      "events": [
+        {
+          "atMs": 10000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 1
+        },
+        {
+          "atMs": 60000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 2
+        },
+        {
+          "atMs": 95000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 120000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 150000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 3
+        },
+        {
+          "atMs": 210000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 235000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 4
+        },
+        {
+          "atMs": 300000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 5
+        },
+        {
+          "atMs": 320000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 340000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 345000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 365000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": "red",
+          "severity": "serious",
+          "position": "external",
+          "turn": 7
+        },
+        {
+          "atMs": 400000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 7
+        },
+        {
+          "atMs": 425000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 445000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 8
+        },
+        {
+          "atMs": 490000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 550000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 560000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 595000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 635000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 665000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 730000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        }
+      ]
+    },
+    {
+      "id": "doubleActionEasierMission3",
+      "title": "Double-action easy mission 3",
+      "group": "double-action-easy",
+      "doubleActions": true,
+      "phaseEndsMs": [
+        285000,
+        535000,
+        755000
+      ],
+      "events": [
+        {
+          "atMs": 10000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 1
+        },
+        {
+          "atMs": 45000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 3
+        },
+        {
+          "atMs": 75000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 100000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "serious",
+          "position": "internal",
+          "turn": 3
+        },
+        {
+          "atMs": 130000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 150000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 165000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 200000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 4
+        },
+        {
+          "atMs": 235000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 295000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 310000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": "white",
+          "severity": "serious",
+          "position": "external",
+          "turn": 5
+        },
+        {
+          "atMs": 335000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 360000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 375000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 380000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 6
+        },
+        {
+          "atMs": 415000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 435000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "serious",
+          "position": "external",
+          "turn": 7
+        },
+        {
+          "atMs": 480000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 495000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 565000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 585000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 595000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 635000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 660000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 695000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        }
+      ]
+    },
+    {
+      "id": "doubleActionEasierMission4",
+      "title": "Double-action easy mission 4",
+      "group": "double-action-easy",
+      "doubleActions": true,
+      "phaseEndsMs": [
+        295000,
+        555000,
+        785000
+      ],
+      "events": [
+        {
+          "atMs": 15000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 1
+        },
+        {
+          "atMs": 50000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 70000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 2
+        },
+        {
+          "atMs": 115000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "serious",
+          "position": "external",
+          "turn": 3
+        },
+        {
+          "atMs": 140000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 180000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 4
+        },
+        {
+          "atMs": 235000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 310000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 5
+        },
+        {
+          "atMs": 330000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 350000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 365000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 370000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "serious",
+          "position": "external",
+          "turn": 6
+        },
+        {
+          "atMs": 405000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 430000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 7
+        },
+        {
+          "atMs": 465000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 495000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 8
+        },
+        {
+          "atMs": 565000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 585000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 590000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 605000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 625000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 655000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        }
+      ]
+    },
+    {
+      "id": "doubleActionEasierMission5",
+      "title": "Double-action easy mission 5",
+      "group": "double-action-easy",
+      "doubleActions": true,
+      "phaseEndsMs": [
+        305000,
+        575000,
+        815000
+      ],
+      "events": [
+        {
+          "atMs": 10000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 1
+        },
+        {
+          "atMs": 40000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 2
+        },
+        {
+          "atMs": 70000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 90000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 2
+        },
+        {
+          "atMs": 130000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 145000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 165000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 3
+        },
+        {
+          "atMs": 190000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 205000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 250000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 305000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 5
+        },
+        {
+          "atMs": 330000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 350000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "serious",
+          "position": "internal",
+          "turn": 5
+        },
+        {
+          "atMs": 400000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 6
+        },
+        {
+          "atMs": 430000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 7
+        },
+        {
+          "atMs": 455000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 480000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 485000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 515000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 8
+        },
+        {
+          "atMs": 600000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 630000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 655000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 680000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 760000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 770000,
+          "type": "communications-restored"
+        }
+      ]
+    },
+    {
+      "id": "doubleActionEasierMission6",
+      "title": "Double-action easy mission 6",
+      "group": "double-action-easy",
+      "doubleActions": true,
+      "phaseEndsMs": [
+        295000,
+        555000,
+        785000
+      ],
+      "events": [
+        {
+          "atMs": 15000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 25000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 40000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "serious",
+          "position": "external",
+          "turn": 3
+        },
+        {
+          "atMs": 65000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "serious",
+          "position": "internal",
+          "turn": 3
+        },
+        {
+          "atMs": 85000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 110000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 135000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 180000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 245000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 4
+        },
+        {
+          "atMs": 295000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 310000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 320000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 6
+        },
+        {
+          "atMs": 345000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 360000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 380000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 7
+        },
+        {
+          "atMs": 415000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": "white",
+          "severity": "serious",
+          "position": "external",
+          "turn": 7
+        },
+        {
+          "atMs": 455000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 8
+        },
+        {
+          "atMs": 495000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 510000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 520000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 595000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 625000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 635000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 640000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 650000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 655000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 665000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 725000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        }
+      ]
+    },
+    {
+      "id": "doubleActionMission1",
+      "title": "Double-action mission 1",
+      "group": "double-action",
+      "doubleActions": true,
+      "phaseEndsMs": [
+        295000,
+        545000,
+        815000
+      ],
+      "events": [
+        {
+          "atMs": 15000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "serious",
+          "position": "external",
+          "turn": 2
+        },
+        {
+          "atMs": 60000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 2
+        },
+        {
+          "atMs": 90000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 115000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 3
+        },
+        {
+          "atMs": 150000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 160000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 185000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 4
+        },
+        {
+          "atMs": 240000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 300000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 5
+        },
+        {
+          "atMs": 320000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": "white",
+          "severity": "serious",
+          "position": "external",
+          "turn": 6
+        },
+        {
+          "atMs": 360000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 370000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 390000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "serious",
+          "position": "external",
+          "turn": 7
+        },
+        {
+          "atMs": 415000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 435000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 450000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "serious",
+          "position": "external",
+          "turn": 8
+        },
+        {
+          "atMs": 490000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 555000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 570000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 600000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 660000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 670000,
+          "type": "communications-restored"
+        }
+      ]
+    },
+    {
+      "id": "doubleActionMission2",
+      "title": "Double-action mission 2",
+      "group": "double-action",
+      "doubleActions": true,
+      "phaseEndsMs": [
+        295000,
+        585000,
+        815000
+      ],
+      "events": [
+        {
+          "atMs": 15000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 1
+        },
+        {
+          "atMs": 40000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 65000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "serious",
+          "position": "external",
+          "turn": 2
+        },
+        {
+          "atMs": 120000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 3
+        },
+        {
+          "atMs": 155000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 180000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 190000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 205000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 235000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "serious",
+          "position": "internal",
+          "turn": 4
+        },
+        {
+          "atMs": 305000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 5
+        },
+        {
+          "atMs": 330000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 345000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "serious",
+          "position": "external",
+          "turn": 6
+        },
+        {
+          "atMs": 370000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 385000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 400000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 410000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 7
+        },
+        {
+          "atMs": 440000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 7
+        },
+        {
+          "atMs": 465000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 485000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 8
+        },
+        {
+          "atMs": 535000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 550000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 605000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 635000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 650000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 755000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        }
+      ]
+    },
+    {
+      "id": "doubleActionMission3",
+      "title": "Double-action mission 3",
+      "group": "double-action",
+      "doubleActions": true,
+      "phaseEndsMs": [
+        300000,
+        565000,
+        785000
+      ],
+      "events": [
+        {
+          "atMs": 15000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 2
+        },
+        {
+          "atMs": 40000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "serious",
+          "position": "external",
+          "turn": 2
+        },
+        {
+          "atMs": 65000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 90000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 110000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 135000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 155000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "serious",
+          "position": "external",
+          "turn": 3
+        },
+        {
+          "atMs": 205000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 240000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 4
+        },
+        {
+          "atMs": 305000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": null,
+          "severity": "serious",
+          "position": "internal",
+          "turn": 5
+        },
+        {
+          "atMs": 335000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 360000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "serious",
+          "position": "external",
+          "turn": 6
+        },
+        {
+          "atMs": 395000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 410000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 430000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 440000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 450000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 7
+        },
+        {
+          "atMs": 505000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 8
+        },
+        {
+          "atMs": 570000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 630000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 655000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 660000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 725000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 740000,
+          "type": "communications-restored"
+        }
+      ]
+    },
+    {
+      "id": "doubleActionMission4",
+      "title": "Double-action mission 4",
+      "group": "double-action",
+      "doubleActions": true,
+      "phaseEndsMs": [
+        315000,
+        605000,
+        845000
+      ],
+      "events": [
+        {
+          "atMs": 10000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 1
+        },
+        {
+          "atMs": 40000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 2
+        },
+        {
+          "atMs": 90000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "serious",
+          "position": "external",
+          "turn": 3
+        },
+        {
+          "atMs": 115000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 130000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 150000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 4
+        },
+        {
+          "atMs": 180000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 205000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 4
+        },
+        {
+          "atMs": 225000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 230000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 260000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 325000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 5
+        },
+        {
+          "atMs": 350000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "serious",
+          "position": "external",
+          "turn": 6
+        },
+        {
+          "atMs": 380000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 410000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 7
+        },
+        {
+          "atMs": 430000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 7
+        },
+        {
+          "atMs": 465000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 480000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 495000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 8
+        },
+        {
+          "atMs": 520000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 545000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 555000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 610000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 620000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 630000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 640000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 650000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 670000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 700000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 740000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        }
+      ]
+    },
+    {
+      "id": "doubleActionMission5",
+      "title": "Double-action mission 5",
+      "group": "double-action",
+      "doubleActions": true,
+      "phaseEndsMs": [
+        295000,
+        555000,
+        785000
+      ],
+      "events": [
+        {
+          "atMs": 10000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 1
+        },
+        {
+          "atMs": 45000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 60000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 75000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "serious",
+          "position": "external",
+          "turn": 2
+        },
+        {
+          "atMs": 110000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 135000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 155000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "serious",
+          "position": "internal",
+          "turn": 4
+        },
+        {
+          "atMs": 200000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 245000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 4
+        },
+        {
+          "atMs": 300000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 310000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "serious",
+          "position": "external",
+          "turn": 5
+        },
+        {
+          "atMs": 345000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 370000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 6
+        },
+        {
+          "atMs": 395000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 420000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 425000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": null,
+          "severity": "serious",
+          "position": "internal",
+          "turn": 7
+        },
+        {
+          "atMs": 455000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 495000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 8
+        },
+        {
+          "atMs": 565000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 580000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 600000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 675000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 690000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 740000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        }
+      ]
+    },
+    {
+      "id": "doubleActionMission6",
+      "title": "Double-action mission 6",
+      "group": "double-action",
+      "doubleActions": true,
+      "phaseEndsMs": [
+        305000,
+        575000,
+        815000
+      ],
+      "events": [
+        {
+          "atMs": 10000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 1
+        },
+        {
+          "atMs": 40000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 2
+        },
+        {
+          "atMs": 75000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 90000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 100000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 120000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 145000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "serious",
+          "position": "internal",
+          "turn": 3
+        },
+        {
+          "atMs": 170000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 3
+        },
+        {
+          "atMs": 215000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 245000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "serious",
+          "position": "external",
+          "turn": 4
+        },
+        {
+          "atMs": 310000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 320000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 325000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 5
+        },
+        {
+          "atMs": 385000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 6
+        },
+        {
+          "atMs": 415000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 425000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 440000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "serious",
+          "position": "external",
+          "turn": 6
+        },
+        {
+          "atMs": 480000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 7
+        },
+        {
+          "atMs": 520000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 580000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 600000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 630000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 635000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 650000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 715000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        }
+      ]
+    },
+    {
+      "id": "doubleActionMission7",
+      "title": "Double-action mission 7",
+      "group": "double-action",
+      "doubleActions": true,
+      "phaseEndsMs": [
+        315000,
+        595000,
+        845000
+      ],
+      "events": [
+        {
+          "atMs": 10000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 1
+        },
+        {
+          "atMs": 40000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 50000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 70000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 2
+        },
+        {
+          "atMs": 115000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 2
+        },
+        {
+          "atMs": 145000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 160000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 180000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 210000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "serious",
+          "position": "external",
+          "turn": 3
+        },
+        {
+          "atMs": 260000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 4
+        },
+        {
+          "atMs": 315000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 330000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "serious",
+          "position": "internal",
+          "turn": 5
+        },
+        {
+          "atMs": 360000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 385000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 6
+        },
+        {
+          "atMs": 410000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 420000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 425000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 440000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 450000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 7
+        },
+        {
+          "atMs": 480000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 8
+        },
+        {
+          "atMs": 510000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 535000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 8
+        },
+        {
+          "atMs": 605000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 660000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 670000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 675000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 690000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 695000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 715000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 795000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        }
+      ]
+    },
+    {
+      "id": "doubleActionMission8",
+      "title": "Double-action mission 8",
+      "group": "double-action",
+      "doubleActions": true,
+      "phaseEndsMs": [
+        305000,
+        575000,
+        815000
+      ],
+      "events": [
+        {
+          "atMs": 10000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 2
+        },
+        {
+          "atMs": 35000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 2
+        },
+        {
+          "atMs": 60000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 80000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 95000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 105000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 140000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 3
+        },
+        {
+          "atMs": 170000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 180000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 200000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "serious",
+          "position": "external",
+          "turn": 4
+        },
+        {
+          "atMs": 250000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 4
+        },
+        {
+          "atMs": 315000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 5
+        },
+        {
+          "atMs": 350000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 375000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": "white",
+          "severity": "serious",
+          "position": "external",
+          "turn": 6
+        },
+        {
+          "atMs": 410000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 445000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 7
+        },
+        {
+          "atMs": 485000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "serious",
+          "position": "external",
+          "turn": 8
+        },
+        {
+          "atMs": 515000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 605000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 610000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 620000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 650000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 665000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 760000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 780000,
+          "type": "communications-restored"
+        }
+      ]
+    },
+    {
+      "id": "doubleActionMission9",
+      "title": "Double-action mission 9",
+      "group": "double-action",
+      "doubleActions": true,
+      "phaseEndsMs": [
+        295000,
+        555000,
+        785000
+      ],
+      "events": [
+        {
+          "atMs": 10000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 20000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 25000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 1
+        },
+        {
+          "atMs": 50000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 65000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "serious",
+          "position": "external",
+          "turn": 2
+        },
+        {
+          "atMs": 90000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 115000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 2
+        },
+        {
+          "atMs": 155000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 200000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": "blue",
+          "severity": "serious",
+          "position": "external",
+          "turn": 3
+        },
+        {
+          "atMs": 245000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 295000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 315000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 320000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 5
+        },
+        {
+          "atMs": 340000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 355000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "serious",
+          "position": "external",
+          "turn": 6
+        },
+        {
+          "atMs": 385000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 410000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 7
+        },
+        {
+          "atMs": 465000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "serious",
+          "position": "external",
+          "turn": 8
+        },
+        {
+          "atMs": 500000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 575000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 590000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 615000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 625000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 635000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 665000,
+          "type": "communications-restored"
+        }
+      ]
+    },
+    {
+      "id": "doubleActionMission10",
+      "title": "Double-action mission 10",
+      "group": "double-action",
+      "doubleActions": true,
+      "phaseEndsMs": [
+        305000,
+        575000,
+        815000
+      ],
+      "events": [
+        {
+          "atMs": 10000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 25000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 2
+        },
+        {
+          "atMs": 50000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 65000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 75000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "serious",
+          "position": "internal",
+          "turn": 3
+        },
+        {
+          "atMs": 115000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 155000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 3
+        },
+        {
+          "atMs": 180000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 205000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 4
+        },
+        {
+          "atMs": 245000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 265000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 305000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "serious",
+          "position": "external",
+          "turn": 5
+        },
+        {
+          "atMs": 335000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": "red",
+          "severity": "serious",
+          "position": "external",
+          "turn": 6
+        },
+        {
+          "atMs": 375000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 7
+        },
+        {
+          "atMs": 400000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 420000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 445000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 455000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 480000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 8
+        },
+        {
+          "atMs": 520000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 8
+        },
+        {
+          "atMs": 580000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 630000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 665000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 675000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 760000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        }
+      ]
+    },
+    {
+      "id": "doubleActionMission11",
+      "title": "Double-action mission 11",
+      "group": "double-action",
+      "doubleActions": true,
+      "phaseEndsMs": [
+        315000,
+        595000,
+        845000
+      ],
+      "events": [
+        {
+          "atMs": 10000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 20000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 1
+        },
+        {
+          "atMs": 65000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 2
+        },
+        {
+          "atMs": 130000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 3
+        },
+        {
+          "atMs": 150000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 170000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "serious",
+          "position": "external",
+          "turn": 3
+        },
+        {
+          "atMs": 190000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 230000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 240000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 265000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 4
+        },
+        {
+          "atMs": 320000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "serious",
+          "position": "external",
+          "turn": 5
+        },
+        {
+          "atMs": 365000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 6
+        },
+        {
+          "atMs": 400000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 415000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 440000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 7
+        },
+        {
+          "atMs": 465000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 7
+        },
+        {
+          "atMs": 495000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 510000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 535000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 8
+        },
+        {
+          "atMs": 555000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 650000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 740000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 770000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 785000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 795000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 800000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        }
+      ]
+    },
+    {
+      "id": "doubleActionMission12",
+      "title": "Double-action mission 12",
+      "group": "double-action",
+      "doubleActions": true,
+      "phaseEndsMs": [
+        305000,
+        575000,
+        815000
+      ],
+      "events": [
+        {
+          "atMs": 10000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 2
+        },
+        {
+          "atMs": 40000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": null,
+          "severity": "normal",
+          "position": "internal",
+          "turn": 2
+        },
+        {
+          "atMs": 100000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 3
+        },
+        {
+          "atMs": 130000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 140000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 150000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 170000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 195000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 215000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "serious",
+          "position": "internal",
+          "turn": 4
+        },
+        {
+          "atMs": 305000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 320000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "red",
+          "severity": "normal",
+          "position": "external",
+          "turn": 5
+        },
+        {
+          "atMs": 350000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "white",
+          "severity": "serious",
+          "position": "external",
+          "turn": 6
+        },
+        {
+          "atMs": 375000,
+          "type": "incoming-data"
+        },
+        {
+          "atMs": 385000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 415000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 430000,
+          "type": "threat",
+          "confirmed": false,
+          "zone": "white",
+          "severity": "normal",
+          "position": "external",
+          "turn": 7
+        },
+        {
+          "atMs": 460000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": null,
+          "severity": "serious",
+          "position": "internal",
+          "turn": 7
+        },
+        {
+          "atMs": 485000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 525000,
+          "type": "threat",
+          "confirmed": true,
+          "zone": "blue",
+          "severity": "normal",
+          "position": "external",
+          "turn": 8
+        },
+        {
+          "atMs": 580000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 650000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        },
+        {
+          "atMs": 680000,
+          "type": "communications-down"
+        },
+        {
+          "atMs": 700000,
+          "type": "communications-restored"
+        },
+        {
+          "atMs": 725000,
+          "type": "data-transfer",
+          "durationMs": 15000
+        }
+      ]
+    }
+  ]
+}

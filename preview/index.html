@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Space Alert · Mission timing prototype</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <span class="eyebrow">BOARDGAMERS / FLIGHT SYSTEMS</span>
+        <h1>Space Alert<span>Mission console</span></h1>
+        <p class="scope">Timing prototype · Base game + The New Frontier</p>
+      </header>
+      <section class="clock-panel" aria-labelledby="status">
+        <div class="clock-top">
+          <span id="status">Connecting…</span
+          ><span id="connection">LOCAL HOST</span>
+        </div>
+        <div id="clock">02:00</div>
+        <p id="clock-caption">Checking crew presence</p>
+        <div class="phase-track" aria-label="Mission phases">
+          <span data-phase="1">01 <small>Turns 1–3</small></span
+          ><span data-phase="2">02 <small>Turns 4–7</small></span
+          ><span data-phase="3">03 <small>Turns 8–12</small></span>
+        </div>
+      </section>
+      <div class="columns">
+        <section class="panel">
+          <div class="section-heading">
+            <h2>Crew</h2>
+            <label class="seat-label"
+              >Viewing
+              <select id="seat" aria-label="Player seat"></select
+            ></label>
+          </div>
+          <div id="crew"></div>
+          <div id="controls"></div>
+          <p id="player-help" class="muted"></p>
+          <p id="error" role="alert"></p>
+        </section>
+        <section class="panel">
+          <div class="section-heading">
+            <h2>Computer</h2>
+            <span id="comms" class="tag">ONLINE</span>
+          </div>
+          <p id="latest" aria-live="polite">Awaiting crew confirmation.</p>
+          <ol id="announcements"></ol>
+        </section>
+      </div>
+      <details class="setup" open>
+        <summary>Local test controls</summary>
+        <div class="setup-fields">
+          <label>Mission<select id="mission"></select></label
+          ><label
+            >Humans<select id="players">
+              <option>1</option>
+              <option>2</option>
+              <option>3</option>
+              <option selected>4</option>
+              <option>5</option>
+            </select></label
+          ><button id="new">New session</button
+          ><button id="ready-all" class="secondary">Ready all · demo</button>
+        </div>
+        <p class="muted">
+          Open another tab to inspect another seat. These controls operate one
+          shared, local session.
+        </p>
+      </details>
+      <footer>
+        This prototype validates presence, timing and phase locks. Cards, ship
+        combat, specialization effects and experience are not implemented yet.
+        No BGS game is created.
+      </footer>
+    </main>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
