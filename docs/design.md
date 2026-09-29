@@ -1,6 +1,6 @@
 # Game design and implementation scope
 
-Research baseline: 2026-09-29. The requested scope is the base game **and The New Frontier**. This document distinguishes decisions, tested timing behavior and work still to implement.
+Updated: 2026-09-30. The requested scope is the base game **and The New Frontier**. This document records the architecture, implemented local rules and online release gates.
 
 ## Architecture
 
@@ -13,7 +13,7 @@ Use four separate components:
 3. **Viewer:** programs cards, displays public and private information, plays localized announcements and animates resolution. It may predict a clock display, but cannot extend a deadline or reveal a future threat.
 4. **Host adapter:** binds the game to BGS authentication, durable ordering, deadlines, persistence, reconnect, cancellation and cooperative outcomes. The local host demonstrates this boundary without editing BGS.
 
-The current code implements the **timing/session part** of this design. Mission announcements are recorded; their future gameplay effects (drawing a card, activating a threat, exchanging a card) are not yet implemented.
+The local implementation now contains all four layers, with the host adapter restricted to a localhost development server. Announcements deal cards, reveal threats and open transfers; programming resolves to a scored result. The BGS binding is deliberately deferred.
 
 ## Base game
 
@@ -34,7 +34,7 @@ Sources: [base rules](https://filemanager.czechgames.com/storage/files/space-ale
 
 ## The New Frontier — all four modules in scope
 
-Modules should be selectable independently where the rules permit, with validated dependencies. They are **planned**, not implemented by merely importing the expansion mission schedules.
+Modules should be selectable independently where the rules permit, with validated dependencies. All four modules now have local engine and viewer support. Detailed component evidence and limitations are in [the component audit](components.md).
 
 | Module            | Engine and UI work                                                                                                                                                                                                                                                                                                                                                                                                  |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -63,14 +63,14 @@ The supplied Android application is useful for **mission schedules, generator lo
 
 The root is MIT-licensed, but multiple generator files have GPL-3.0-or-later headers. Preserve per-file notices when porting; see [THIRD_PARTY.md](../THIRD_PARTY.md). Audio is separate from the timeline. Do not infer publisher-artwork or voice-pack distribution rights from a repository code license. The prototype uses text, with no copied game art or recordings.
 
-Before claiming a complete adaptation, audit the exact action-card multiset, all threat values/effects, seven trajectories, damage tiles, heroic cards, specialization cards and experience tables against verified components. The rulebooks do not enumerate every component face. Missing data must remain explicit; do not fill gaps with plausible-looking values.
+For the current audit of the complete standard inventory, see [components](components.md). Continue cross-checking the exact action-card multiset, all threat values/effects, seven trajectories, damage tiles, heroic cards, specialization cards and experience tables against verified components. The rulebooks do not enumerate every component face. Missing data must remain explicit; do not fill gaps with plausible-looking values.
 
-## Implementation order and release gates
+## Implementation status and release gates
 
-1. **Timing boundary — implemented prototype:** presence cancellation, common start, autonomous announcements, per-player phase advancement, deadlines and reconnect. Connect this to the eventual host contract later.
-2. **Playable training mission:** correct action deck, private programming, six-station ship and deterministic resolution for a documented fixed scenario. Exercise it with multiple independently viewed seats.
-3. **Complete base game:** all threats/trajectories, remaining systems, android/solo variants, score, campaigns, replay, localization and tutorials.
-4. **New Frontier:** all four modules above, with coverage per rule interaction and a character-persistence adapter. Double-action schedules alone do not satisfy this milestone.
-5. **BGS integration and release:** implement the agreed platform/protocol support only when authorized, verify real multi-client timing and reconnect, inspect mobile behavior, confirm content provenance and publish after rules review.
+1. **Timing:** readiness, shared start, autonomous deadlines, reconnect and per-player phase locks implemented and tested. Untimed tutorials use explicit host clock advances without changing normal mission timing.
+2. **Local play:** private physical cards, Android/solo rules, ship resolution, all threat cards, all specialization abilities, scoring, campaigns and local explorer persistence implemented.
+3. **Teaching/viewer:** seven untimed guided exercises use the actual engine. FR/EN controls and effect descriptions, threat details, replay, native scrolling and journal available. Official names remain English; original visual symbols are placeholders for any later licensed artwork.
+4. **Rules validation:** deterministic fixtures cover critical interactions, and every threat terminates and replays from serialized state. This is not exhaustive proof of all combinations; human playtests remain necessary before claiming release readiness.
+5. **BGS release:** deferred as requested. Add authenticated identity, trusted wakeups, durable session/career commits, cooperative results, live transport and external/integrated voice decisions to the platform only when authorized.
 
-Required regression cases include two simultaneous edits to one android slot; a transfer racing its closing beep; a move received at a phase cutoff; several missed deadlines during restart; a player independently entering phase 3 during global phase 1; delayed double actions; Medic ordering; simultaneous external/internal T+ threats; campaign repairs; and duplicate career-completion writes.
+The fixed mission catalogue is playable. Porting the random mission generator and supplying official recordings/art are separate tasks, not silently emulated by invented components. Achievement criteria requiring group judgment remain explicit manual claims; the optional group-defined Hometown Hero entry is not automated.

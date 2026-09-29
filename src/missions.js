@@ -17,8 +17,8 @@ export function getMission(id) {
 
 export function compileTimeline(mission, crewSize) {
   const ends = mission.phaseEndsMs;
-  if (![4, 5].includes(crewSize))
-    throw new Error("Crew size must be four or five");
+  if (![3, 4, 5].includes(crewSize))
+    throw new Error("Crew size must be three, four or five");
   if (
     !Array.isArray(ends) ||
     ![2, 3].includes(ends.length) ||

@@ -1,79 +1,192 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Space Alert · Mission timing prototype</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Space Alert · Sitting Duck</title>
     <link rel="stylesheet" href="/style.css" />
   </head>
   <body>
+    <header>
+      <a class="brand" href="/"
+        >✦
+        <span>SPACE ALERT<small>SITTING DUCK · FLIGHT CONSOLE</small></span></a
+      >
+      <div class="header-tools">
+        <select id="locale" aria-label="Langue">
+          <option value="fr">FR</option>
+          <option value="en">EN</option></select
+        ><select id="seat" aria-label="Joueur"></select
+        ><button
+          id="sound"
+          class="quiet"
+          aria-pressed="false"
+          title="Annonces vocales"
+        >
+          ♫
+        </button>
+      </div>
+    </header>
     <main>
-      <header>
-        <span class="eyebrow">BOARDGAMERS / FLIGHT SYSTEMS</span>
-        <h1>Space Alert<span>Mission console</span></h1>
-        <p class="scope">Timing prototype · Base game + The New Frontier</p>
-      </header>
-      <section class="clock-panel" aria-labelledby="status">
-        <div class="clock-top">
-          <span id="status">Connecting…</span
-          ><span id="connection">LOCAL HOST</span>
+      <div class="mission-line">
+        <div>
+          <span id="connection">LOCAL</span>
+          <h1 id="status">Space Alert</h1>
         </div>
-        <div id="clock">02:00</div>
-        <p id="clock-caption">Checking crew presence</p>
-        <div class="phase-track" aria-label="Mission phases">
-          <span data-phase="1">01 <small>Turns 1–3</small></span
-          ><span data-phase="2">02 <small>Turns 4–7</small></span
-          ><span data-phase="3">03 <small>Turns 8–12</small></span>
+        <div class="timer">
+          <strong id="clock">02:00</strong><small id="clock-caption"></small>
         </div>
-      </section>
-      <div class="columns">
-        <section class="panel">
+      </div>
+      <div id="crew" class="crew"></div>
+      <div id="error" role="alert"></div>
+      <div id="notice" class="notice"></div>
+      <section id="lesson-guide" hidden></section>
+      <div class="flight-layout">
+        <section class="tactical">
           <div class="section-heading">
-            <h2>Crew</h2>
-            <label class="seat-label"
-              >Viewing
-              <select id="seat" aria-label="Player seat"></select
-            ></label>
+            <h2 id="ship-title"></h2>
+            <span id="comms"></span>
           </div>
-          <div id="crew"></div>
-          <div id="controls"></div>
-          <p id="player-help" class="muted"></p>
-          <p id="error" role="alert"></p>
+          <div id="ship" class="ship"></div>
+          <div id="resources" class="resources"></div>
+          <div class="section-heading">
+            <h2 id="threat-title"></h2>
+            <span id="phase"></span>
+          </div>
+          <div id="threats"></div>
+          <div id="latest" class="latest" aria-live="polite"></div>
         </section>
-        <section class="panel">
+        <section id="planning">
           <div class="section-heading">
-            <h2>Computer</h2>
-            <span id="comms" class="tag">ONLINE</span>
+            <h2 id="program-title"></h2>
+            <select
+              id="program-crew"
+              aria-label="Équipier à programmer"
+            ></select>
           </div>
-          <p id="latest" aria-live="polite">Awaiting crew confirmation.</p>
-          <ol id="announcements"></ol>
+          <div id="program" class="program"></div>
+          <p id="player-help"></p>
+          <div id="controls" class="controls"></div>
+          <div id="selection-tools"></div>
+          <p id="card-help" aria-live="polite"></p>
+          <div id="hand-filter"></div>
+          <div id="hand" class="hand"></div>
+          <div id="teleport"></div>
+          <div id="transfer"></div>
+          <div id="replay"></div>
+          <div id="campaign"></div>
         </section>
       </div>
-      <details class="setup" open>
-        <summary>Local test controls</summary>
-        <div class="setup-fields">
-          <label>Mission<select id="mission"></select></label
-          ><label
-            >Humans<select id="players">
-              <option>1</option>
-              <option>2</option>
-              <option>3</option>
-              <option selected>4</option>
-              <option>5</option>
-            </select></label
-          ><button id="new">New session</button
-          ><button id="ready-all" class="secondary">Ready all · demo</button>
-        </div>
-        <p class="muted">
-          Open another tab to inspect another seat. These controls operate one
-          shared, local session.
-        </p>
+      <details id="journal">
+        <summary id="journal-title"></summary>
+        <ol id="announcements"></ol>
       </details>
-      <footer>
-        This prototype validates presence, timing and phase locks. Cards, ship
-        combat, specialization effects and experience are not implemented yet.
-        No BGS game is created.
-      </footer>
+      <details id="lessons">
+        <summary id="lessons-title">École de vol · exercices libres</summary>
+        <div id="lesson-list"></div>
+      </details>
+      <details id="setup">
+        <summary id="setup-title"></summary>
+        <form id="new-session">
+          <label id="players-label"
+            >Joueurs
+            <select id="players">
+              <option value="1">Solo · 4 androïdes</option>
+              <option value="2">2 + 2 androïdes</option>
+              <option value="3">3 + 1 androïde</option>
+              <option value="4" selected>4</option>
+              <option value="5">5</option>
+            </select></label
+          ><label
+            >Équipage<select id="crew-size">
+              <option value="0">Standard</option>
+              <option value="5">5 équipiers (androïde supplémentaire)</option>
+              <option value="3">3 joueurs sans androïde</option>
+            </select></label
+          ><label
+            >Mission
+            <select id="mission"></select></label
+          ><label id="special-label"
+            >Spécialisations
+            <select id="specialization">
+              <option value="">Aucune</option>
+              <option value="1">Niveau 1</option>
+              <option value="2">Niveau 2</option>
+              <option value="3">Niveau 3</option>
+            </select></label
+          ><label
+            >Menaces<select id="threat-expansion">
+              <option value="0">Jeu de base</option>
+              <option value="1">+ The New Frontier</option>
+            </select></label
+          >
+          <label
+            >Menaces communes<select id="difficulty">
+              <option value="1">Blanches</option>
+              <option value="1,2">Blanches + jaunes</option>
+              <option value="2">Jaunes</option>
+              <option value="1,2,3">Toutes</option>
+              <option value="2,3">Jaunes + rouges</option>
+              <option value="3">Rouges</option>
+            </select></label
+          >
+          <label
+            >Menaces sérieuses<select id="serious-difficulty">
+              <option value="1">Blanches</option>
+              <option value="1,2">Blanches + jaunes</option>
+              <option value="2">Jaunes</option>
+              <option value="1,2,3">Toutes</option>
+              <option value="2,3">Jaunes + rouges</option>
+              <option value="3">Rouges</option>
+            </select></label
+          >
+          <label
+            >Format<select id="campaign-limit">
+              <option value="0">Mission unique</option>
+              <option value="3">Campagne · 3 missions</option>
+              <option value="5">Campagne · 5 missions</option>
+            </select></label
+          >
+          <label
+            >Expérience<select id="careers-enabled">
+              <option value="0">Partie libre</option>
+              <option value="1">Carrières enregistrées</option>
+            </select></label
+          >
+          <div id="career-seats" class="token-controls"></div>
+          <div id="specialists" class="token-controls"></div>
+          <button type="submit" id="new-button">Nouvelle session locale</button>
+        </form>
+        <p id="scope"></p>
+        <button id="ready-all" class="quiet">
+          Confirmer tous les joueurs · test local</button
+        ><button id="next-event" class="quiet">
+          Prochaine annonce · test local
+        </button>
+      </details>
+      <details id="career-manager">
+        <summary id="career-title">Explorateurs · carrières locales</summary>
+        <form id="create-explorer">
+          <label
+            >Nom<input
+              id="explorer-name"
+              required
+              maxlength="80"
+              autocomplete="off" /></label
+          ><label
+            >Clonage<select id="explorer-cloning">
+              <option value="1">Autorisé</option>
+              <option value="0">Hardcore · mort définitive</option>
+            </select></label
+          ><button id="create-explorer-button">Créer un explorateur</button>
+        </form>
+        <div id="explorers"></div>
+      </details>
+      <details>
+        <summary id="help-title"></summary>
+        <div id="help"></div>
+      </details>
+      <footer id="footer"></footer>
     </main>
     <script type="module" src="/app.js"></script>
   </body>

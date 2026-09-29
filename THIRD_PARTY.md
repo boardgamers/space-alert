@@ -30,3 +30,13 @@ No publisher artwork, scans, rulebook PDFs or voice recordings are bundled. Code
 ## BGS references
 
 The integration study used the current public [engine contract](https://docs.boardgamers.space/guide/engine-api), [viewer contract](https://docs.boardgamers.space/guide/viewer-api) and [timing documentation](https://docs.boardgamers.space/guide/timing), checked 2026-09-29. Neither the BGS platform nor the protocol package was modified.
+
+## Component data verification (2026-09-30)
+
+- Base action counts: public [SpaceAlertWeb inventory](https://github.com/Theophile-Varnier/SpaceAlertWeb), cross-checked with community component counts and the official rules. Factual counts were used; no source implementation was ported.
+- Double-action counts: [mandark, List of double-action cards](https://boardgamegeek.com/filepage/89436/list-of-double-action-cards), 2013-04-01. Exact workbook hash and standard-library import procedure are in [components.md](docs/components.md). The copyrighted XLSX is not bundled; `double-deck.json` contains symbol pairs and counts.
+- Threat component inspection: [Russian external threat faces](https://boardgamegeek.com/filepage/108685/russian-external-threats-cards), `external_rus_1.03_web.pdf`, and [Russian internal threat faces](https://boardgamegeek.com/filepage/108686/russian-internal-threats-cards), `internal_rus_1.05_web.pdf`, community translation/layout credited to Jay, uploaded by Igiigi. No scans or translated prose are redistributed. The rules DSL and viewer descriptions were written independently from factual card effects and official rules.
+- Independent factual catalogue/trajectory cross-check: [ecm85/space-alert-resolver](https://github.com/ecm85/space-alert-resolver). No license was found; no source code or artwork from this repository is included.
+- Career values and criteria: CGE's [official achievements sheet](https://filemanager.czechgames.com/storage/files/space-alert-the-new-frontier/other-downloads/achievements/space-alert-2-achievements-en.pdf) and [explorer log](https://filemanager.czechgames.com/storage/files/space-alert-the-new-frontier/other-downloads/explorers-log-sheets/space-alert-2-explorers-log-en.pdf). The viewer links to the official English/French criteria; it does not redistribute those PDFs.
+
+These references identify the evidence used, not a claim of publisher endorsement. Local research PDFs/XLSX files and login information are outside the repository.

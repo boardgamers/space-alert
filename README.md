@@ -1,10 +1,10 @@
 # Space Alert — Boardgamers
 
-Preparation for a BGS adaptation of **Space Alert**, including **The New Frontier**. Canonical repository: [boardgamers/space-alert on GitHub](https://github.com/boardgamers/space-alert).
+A playable local adaptation of **Space Alert** and **The New Frontier**, with a deterministic engine and a French/English browser viewer. Repository: [boardgamers/space-alert](https://github.com/boardgamers/space-alert).
 
-**Current status: an integration study and executable mission-timing prototype. This is not yet a playable adaptation.** No BGS platform or protocol package changes have been made, and nothing is published to the BGS game catalogue.
+**Status: local playtest, under rules review.** The game runs through programming, ship resolution and scoring. Nothing is connected or published to BGS; platform and protocol work remains deferred.
 
-## Run the prototype
+## Play locally
 
 Node 24+, no dependencies:
 
@@ -13,33 +13,35 @@ npm test
 npm run dev
 ```
 
-Open http://127.0.0.1:5250. The local mission console can check readiness across tabs, start a shared mission clock, announce events, move a player to a later planning phase, and finish programming. It stops at resolution; it does not yet deal action cards, draw threats or simulate the ship. Seat selection and the “Ready all” control are development tools, not authentication.
+Open <http://127.0.0.1:5250>. Start with **Flight school / École de vol**: seven untimed exercises use the real engine, with editable programs and a teammate already maintaining the computer. The examples cover firing, energy, malfunctions, battlebots/interceptors, double actions, phasing and specializations.
+
+For a full mission, expand **Local session / Session locale**. Select 1–5 humans, the crew, mission, threat pools and optional modules. In solo, you control four androids and have access to the full action deck. In multiplayer testing, open another tab with `?seat=1`, etc. Confirm presence within two minutes; the shared mission starts three seconds after everyone is ready. Select a card half, then a turn. Advance individual phases to lock previous turns, or let the shared clock do so. After programming, the captain can resolve one step at a time or finish the mission; everyone can inspect the replay and log.
+
+The local seat selector, “Ready all” and “Next announcement” buttons are development tools. This host has **no authentication** and deliberately listens only on `127.0.0.1`. It is not an online multiplayer deployment. Use external voice for cooperation; browser speech synthesis is optional and communications-blackout silence relies on the players.
 
 ## Implemented
 
-- A fixed two-minute presence check. Missing confirmations cancel the session; they are not a team defeat. Everyone ready starts a shared three-second launch countdown.
-- Server-driven mission events and phase deadlines, independent of browser timers and further player input.
-- Individually advancing planning phases, including the irreversible lock on earlier turns.
-- Idempotent commands, exact deadline handling, reconnect/catch-up from serialized state, and views without the unannounced event list.
-- 34 fixed mission schedules imported from a pinned version of [SpaceAlertMissionGenerator](https://github.com/nibuen/SpaceAlertMissionGenerator): 2 test runs, 3 simulations, 3 advanced simulations, 8 missions, 6 easier double-action missions and 12 double-action missions.
-- Local development host and tests. These test timing and integration assumptions; they are not a rules-completeness claim.
+- Trusted host clock, autonomous deadlines, presence cancellation, reconnection, atomic game commands and idempotent command sequences.
+- 34 imported fixed mission schedules, including 18 double-action missions. The randomized mission generator has not been ported.
+- Private hands and permitted card backs; phase packets, incoming data, transfers, android donations, solo programming and shared-slot conflict checks.
+- Exact 90-card base and 90-card double-action decks, 6 heroic cards and all 10 specializations at levels 1–3.
+- Six-station ship, energy, lifts, weapons, battlebots, interceptors, internal repairs, damage, delayed programs and deterministic resolution/replay.
+- 103 threats: 55 base cards and 48 expansion cards, with seven trajectories. Includes called reinforcements, phasing, carriers, polarization, inaccessibility and the special intruder effects.
+- Campaigns of three or five missions: collective continuation, ordered repairs, carried damage, robot placement and final campaign score.
+- Local explorer careers: experience, specialization points, cloning/hardcore death and achievement recording. Verifiable mission constraints are checked; achievements requiring human judgment use an explicit attestation and a link to the official criteria. The group-defined **Hometown Hero** house achievement is not automated.
+- Responsive FR/EN UI, readable threat effects, grouped cards and hand filters; native page scrolling and a scrollable journal with normal boundary chaining.
 
-## Design and remaining work
+## Persistence and tests
 
-- [Implementation scope and rules findings](docs/design.md): base game, all four New Frontier modules, mobile interface, content and release criteria.
-- [Future BGS host contract](docs/realtime-host.md): the assumptions needed for real-time play, and how the prototype maps to them. These are proposed integration points, not existing protocol exports.
-- [Sources and third-party notices](THIRD_PARTY.md): upstream revisions, licenses and content provenance.
+The local host atomically saves the session, development clock offset and careers to `.local/session.json` (gitignored). Restarting resumes the same mission; experience completion is applied once by run ID. A saved prototype state from the older schema is backed up as `.legacy-backup` before a fresh session is created.
 
-The next game implementation layers are private card programming and the deterministic resolution engine, followed by the complete threat catalogue, all specialization effects and campaign/experience persistence. The upstream project generates announcements; it does not provide those rules.
+`npm test` covers timing and secrecy, physical card ownership, action/resolution rules, every threat's termination and serializable replay, expansion interactions, campaign repairs, career progression, host restart, and the tutorial examples. Passing tests do not replace a complete human rules audit, especially for combinations of expansion effects.
 
-## Mission data
+## References and integration
 
-`mission-data/catalog.json` contains structured schedules, not audio files. The import script accepts only the audited source file and verifies its SHA-256 before parsing a small, explicit subset of Java syntax; it never executes Java source:
+- [Components and source verification](docs/components.md)
+- [Architecture and implementation status](docs/design.md)
+- [Deferred BGS real-time host contract](docs/realtime-host.md)
+- [Third-party provenance and licenses](THIRD_PARTY.md)
 
-```sh
-python3 scripts/import-missions.py /path/to/ConstructedMissions.java
-```
-
-`src/missions.js` normalizes those schedules into semantic deadlines and announcements. Warning timestamps are semantic countdown points, not sample-accurate cue points for official recordings. Audio synchronization must be validated separately before release. The random generator has not been ported.
-
-Code is AGPL-3.0-only, with third-party material retaining its notices. Space Alert is designed by Vlaada Chvátil and published by Czech Games Edition. No publisher artwork or voice recordings are included in this repository.
+No publisher artwork, scanned cards, rulebook files or official voice recordings are bundled. The viewer uses original HTML/CSS symbols and its own explanatory text. Threat/achievement names remain in English. Code is AGPL-3.0-only; third-party materials retain their notices.

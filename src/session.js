@@ -1,3 +1,12 @@
+import {
+  createGame,
+  dealPhase,
+  onAnnouncement,
+  finishGamePlanning,
+  GAME_COMMAND_FIELDS,
+  gameCommand,
+  gameView,
+} from "./game/planning.js";
 import { compileTimeline } from "./missions.js";
 
 export const PRESENCE_WINDOW_MS = 120_000;
@@ -12,15 +21,16 @@ function append(state, at, type, details = {}) {
   state.revision++;
 }
 export function createSession(
-  { players, crewSize = Math.max(4, players), mission },
+  { players, crewSize = Math.max(4, players), mission, gameOptions },
   now,
 ) {
   timestamp(now);
   if (!Number.isInteger(players) || players < 1 || players > 5)
     throw new Error("Invalid player count");
-  if (crewSize < players) throw new Error("Crew cannot omit a player");
+  if (crewSize < players || (crewSize === 3 && players !== 3))
+    throw new Error("Invalid crew configuration");
   const timeline = compileTimeline(mission, crewSize);
-  return {
+  const state = {
     version: 1,
     stage: "presence",
     revision: 0,
@@ -50,12 +60,15 @@ export function createSession(
     log: [],
     cancellation: null,
   };
+  if (gameOptions) state.game = createGame(state, gameOptions);
+  return state;
 }
 function finish(state, at, early = false) {
   state.stage = "resolution";
   state.transferClosesAt = null;
   state.communicationsAvailable = true;
   state.players.forEach((p) => (p.finishedPlanning = true));
+  finishGamePlanning(state);
   append(state, at, "programming-complete", { early });
 }
 
@@ -98,6 +111,7 @@ export function advanceClock(input, now) {
     else if (event.type === "data-transfer")
       state.transferClosesAt = at + event.durationMs;
     else if (event.type === "data-transfer-end") state.transferClosesAt = null;
+    onAnnouncement(state, event);
     const { atMs, ...announcement } = event;
     append(state, at, "announcement", { event: announcement });
   }
@@ -125,9 +139,23 @@ export function submit(input, seat, command, receivedAt) {
     command.sequence < 1
   )
     return reject("Invalid command sequence");
-  if (!["ready", "advance-phase", "finish-planning"].includes(command.type))
+  if (
+    ![
+      "ready",
+      "advance-phase",
+      "finish-planning",
+      ...Object.keys(GAME_COMMAND_FIELDS),
+    ].includes(command.type)
+  )
     return reject("Unsupported command");
-  if (Object.keys(command).some((key) => key !== "type" && key !== "sequence"))
+  if (
+    Object.keys(command).some(
+      (key) =>
+        key !== "type" &&
+        key !== "sequence" &&
+        !(GAME_COMMAND_FIELDS[command.type] ?? []).includes(key),
+    )
+  )
     return reject("Unexpected command field");
   const player = state.players[seat];
   if (command.sequence <= player.lastSequence)
@@ -135,6 +163,17 @@ export function submit(input, seat, command, receivedAt) {
   if (command.sequence !== player.lastSequence + 1)
     return reject("Refresh before sending the next command");
   const now = state.observedAt;
+  if (GAME_COMMAND_FIELDS[command.type]) {
+    const draft = structuredClone(state);
+    try {
+      gameCommand(draft, seat, command);
+    } catch (error) {
+      return reject(error.message);
+    }
+    draft.players[seat].lastSequence = command.sequence;
+    draft.revision++;
+    return { state: draft, accepted: true, duplicate: false };
+  }
   if (command.type === "ready") {
     if (state.stage !== "presence") return reject("Presence check is closed");
     if (!player.ready) {
@@ -152,9 +191,12 @@ export function submit(input, seat, command, receivedAt) {
     if (state.stage !== "programming") return reject("Programming is closed");
     if (player.finishedPlanning) return reject("Your plan is locked");
     if (command.type === "advance-phase") {
+      if (state.game?.solo)
+        return reject("Solo phases follow the shared clock");
       if (player.planningPhase >= state.mission.phaseEndsMs.length)
         return reject("Already in the last phase");
       player.planningPhase++;
+      dealPhase(state, seat, player.planningPhase);
       append(state, now, "player-phase", { seat, phase: player.planningPhase });
     } else {
       if (state.phase < state.mission.phaseEndsMs.length)
@@ -190,6 +232,7 @@ export function canEditTurn(state, seat, turn) {
 export function snapshot(state, seat) {
   // An allowlist keeps the unannounced schedule out of every player/spectator view.
   return structuredClone({
+    game: gameView(state, seat),
     version: state.version,
     revision: state.revision,
     stage: state.stage,

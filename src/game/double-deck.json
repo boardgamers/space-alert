@@ -1,0 +1,314 @@
+[
+  {
+    "sides": [["A", "B"], ["lift"]],
+    "count": 1
+  },
+  {
+    "sides": [["A", "B"], ["red"]],
+    "count": 1
+  },
+  {
+    "sides": [["A", "B"], ["blue"]],
+    "count": 1
+  },
+  {
+    "sides": [["A", "C"], ["lift"]],
+    "count": 1
+  },
+  {
+    "sides": [["A", "C"], ["red"]],
+    "count": 1
+  },
+  {
+    "sides": [["A", "C"], ["blue"]],
+    "count": 1
+  },
+  {
+    "sides": [["A", "lift"], ["red"]],
+    "count": 1
+  },
+  {
+    "sides": [["A", "lift"], ["blue"]],
+    "count": 1
+  },
+  {
+    "sides": [["A", "red"], ["lift"]],
+    "count": 2
+  },
+  {
+    "sides": [["A", "red"], ["blue"]],
+    "count": 1
+  },
+  {
+    "sides": [["A", "blue"], ["lift"]],
+    "count": 2
+  },
+  {
+    "sides": [["A", "blue"], ["red"]],
+    "count": 1
+  },
+  {
+    "sides": [["B", "A"], ["lift"]],
+    "count": 1
+  },
+  {
+    "sides": [["B", "A"], ["red"]],
+    "count": 1
+  },
+  {
+    "sides": [["B", "A"], ["blue"]],
+    "count": 1
+  },
+  {
+    "sides": [["B", "C"], ["lift"]],
+    "count": 1
+  },
+  {
+    "sides": [["B", "C"], ["red"]],
+    "count": 1
+  },
+  {
+    "sides": [["B", "C"], ["blue"]],
+    "count": 1
+  },
+  {
+    "sides": [["B", "lift"], ["red"]],
+    "count": 2
+  },
+  {
+    "sides": [["B", "lift"], ["blue"]],
+    "count": 1
+  },
+  {
+    "sides": [["B", "red"], ["lift"]],
+    "count": 1
+  },
+  {
+    "sides": [["B", "red"], ["blue"]],
+    "count": 2
+  },
+  {
+    "sides": [["B", "blue"], ["lift"]],
+    "count": 2
+  },
+  {
+    "sides": [["B", "blue"], ["red"]],
+    "count": 1
+  },
+  {
+    "sides": [["bots", "A"], ["lift"]],
+    "count": 1
+  },
+  {
+    "sides": [["bots", "A"], ["red"]],
+    "count": 1
+  },
+  {
+    "sides": [["bots", "A"], ["blue"]],
+    "count": 1
+  },
+  {
+    "sides": [["bots", "B"], ["lift"]],
+    "count": 1
+  },
+  {
+    "sides": [["bots", "B"], ["blue"]],
+    "count": 1
+  },
+  {
+    "sides": [["bots", "C"], ["lift"]],
+    "count": 1
+  },
+  {
+    "sides": [["bots", "C"], ["red"]],
+    "count": 1
+  },
+  {
+    "sides": [["bots", "lift"], ["blue"]],
+    "count": 1
+  },
+  {
+    "sides": [["bots", "red"], ["lift"]],
+    "count": 1
+  },
+  {
+    "sides": [["bots", "blue"], ["red"]],
+    "count": 1
+  },
+  {
+    "sides": [["C", "A"], ["lift"]],
+    "count": 1
+  },
+  {
+    "sides": [["C", "A"], ["red"]],
+    "count": 1
+  },
+  {
+    "sides": [["C", "A"], ["blue"]],
+    "count": 1
+  },
+  {
+    "sides": [["C", "lift"], ["red"]],
+    "count": 1
+  },
+  {
+    "sides": [["C", "red"], ["blue"]],
+    "count": 1
+  },
+  {
+    "sides": [["C", "blue"], ["lift"]],
+    "count": 1
+  },
+  {
+    "sides": [["lift", "A"], ["B"]],
+    "count": 1
+  },
+  {
+    "sides": [["lift", "A"], ["bots"]],
+    "count": 1
+  },
+  {
+    "sides": [["lift", "A"], ["C"]],
+    "count": 1
+  },
+  {
+    "sides": [["lift", "B"], ["A"]],
+    "count": 1
+  },
+  {
+    "sides": [["lift", "B"], ["C"]],
+    "count": 1
+  },
+  {
+    "sides": [["lift", "bots"], ["A"]],
+    "count": 1
+  },
+  {
+    "sides": [["lift", "C"], ["B"]],
+    "count": 1
+  },
+  {
+    "sides": [["red", "A"], ["B"]],
+    "count": 1
+  },
+  {
+    "sides": [["red", "A"], ["bots"]],
+    "count": 1
+  },
+  {
+    "sides": [["red", "A"], ["C"]],
+    "count": 1
+  },
+  {
+    "sides": [["red", "B"], ["A"]],
+    "count": 2
+  },
+  {
+    "sides": [["red", "B"], ["C"]],
+    "count": 1
+  },
+  {
+    "sides": [["red", "bots"], ["A"]],
+    "count": 1
+  },
+  {
+    "sides": [["red", "C"], ["A"]],
+    "count": 1
+  },
+  {
+    "sides": [["red", "C"], ["B"]],
+    "count": 1
+  },
+  {
+    "sides": [["red", "lift"], ["A"]],
+    "count": 2
+  },
+  {
+    "sides": [["red", "lift"], ["B"]],
+    "count": 1
+  },
+  {
+    "sides": [["red", "lift"], ["bots"]],
+    "count": 2
+  },
+  {
+    "sides": [["red", "lift"], ["C"]],
+    "count": 2
+  },
+  {
+    "sides": [["red", "red"], ["A"]],
+    "count": 1
+  },
+  {
+    "sides": [["red", "red"], ["B"]],
+    "count": 1
+  },
+  {
+    "sides": [["red", "red"], ["bots"]],
+    "count": 1
+  },
+  {
+    "sides": [["red", "red"], ["C"]],
+    "count": 1
+  },
+  {
+    "sides": [["blue", "A"], ["B"]],
+    "count": 1
+  },
+  {
+    "sides": [["blue", "A"], ["bots"]],
+    "count": 1
+  },
+  {
+    "sides": [["blue", "A"], ["C"]],
+    "count": 1
+  },
+  {
+    "sides": [["blue", "B"], ["C"]],
+    "count": 1
+  },
+  {
+    "sides": [["blue", "bots"], ["A"]],
+    "count": 1
+  },
+  {
+    "sides": [["blue", "C"], ["A"]],
+    "count": 1
+  },
+  {
+    "sides": [["blue", "C"], ["B"]],
+    "count": 1
+  },
+  {
+    "sides": [["blue", "lift"], ["A"]],
+    "count": 1
+  },
+  {
+    "sides": [["blue", "lift"], ["B"]],
+    "count": 2
+  },
+  {
+    "sides": [["blue", "lift"], ["bots"]],
+    "count": 2
+  },
+  {
+    "sides": [["blue", "lift"], ["C"]],
+    "count": 2
+  },
+  {
+    "sides": [["blue", "blue"], ["A"]],
+    "count": 1
+  },
+  {
+    "sides": [["blue", "blue"], ["B"]],
+    "count": 1
+  },
+  {
+    "sides": [["blue", "blue"], ["bots"]],
+    "count": 1
+  },
+  {
+    "sides": [["blue", "blue"], ["C"]],
+    "count": 1
+  }
+]
