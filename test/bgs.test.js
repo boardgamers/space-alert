@@ -181,6 +181,11 @@ test("platform presence gates readiness; user moves cannot spoof it", () => {
     /Unsupported/,
   );
   const present = e.presenceChanged(absent, [0], ctx(1002));
+  assert.ok(present.revision > absent.revision);
+  assert.equal(
+    e.presenceChanged(present, [0], ctx(1003)).revision,
+    present.revision,
+  );
   assert.equal(
     e.move(present, { type: "ready", sequence: 1 }, 0, ctx(1003)).players[0]
       .ready,

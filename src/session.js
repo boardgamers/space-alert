@@ -139,6 +139,12 @@ export function advanceClock(input, now) {
 
 export function setPresence(input, seats) {
   const state = structuredClone(input);
+  if (
+    state.players.some(
+      (player) => player.present !== seats.includes(player.seat),
+    )
+  )
+    state.revision++;
   for (const player of state.players)
     player.present = seats.includes(player.seat);
   return state;
