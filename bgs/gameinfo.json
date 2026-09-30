@@ -25,16 +25,7 @@
         "label": "Spoken announcements",
         "default": false
       }
-    ]
-  },
-  "metadata": {
-    "_id": "space-alert",
-    "slug": "space-alert",
-    "label": "Space Alert",
-    "emoji": "\ud83d\ude80",
-    "players": [1, 2, 3, 4, 5],
-    "releaseYear": 2008,
-    "tags": ["cooperative"],
+    ],
     "options": [
       {
         "name": "mission",
@@ -245,5 +236,13 @@
         "label": "The New Frontier"
       }
     ]
+  },
+  "metadata": {
+    "_id": "space-alert",
+    "slug": "space-alert",
+    "label": "Space Alert",
+    "players": [1, 2, 3, 4, 5],
+    "releaseYear": 2008,
+    "tags": ["cooperative"]
   }
 }
