@@ -10,7 +10,6 @@ import { compileTimeline } from "./missions.js";
 
 export const PRESENCE_WINDOW_MS = 120_000;
 export const LAUNCH_COUNTDOWN_MS = 3_000;
-export const CONNECTION_GRACE_MS = 8_000;
 const active = new Set(["presence", "countdown", "programming"]);
 function timestamp(now) {
   if (!Number.isSafeInteger(now) || now < 0)
@@ -55,7 +54,7 @@ export function createSession(
       seat,
       ready: false,
       readyUntil: null,
-      connectedUntil: null,
+      present: !connectionChecks,
       planningPhase: 0,
       finishedPlanning: false,
       lastSequence: 0,
@@ -92,9 +91,12 @@ export function advanceClock(input, now) {
     const at =
       state.stage === "countdown" ? Math.min(now, state.missionStartAt) : now;
     for (const player of state.players) {
-      if (player.ready && readinessDeadline(state, player) <= at) {
+      if (
+        player.ready &&
+        (player.readyUntil <= at || (state.connectionChecks && !player.present))
+      ) {
         player.ready = false;
-        player.readyUntil = player.connectedUntil = null;
+        player.readyUntil = null;
         append(state, at, "ready-expired", { seat: player.seat });
       }
     }
@@ -135,21 +137,10 @@ export function advanceClock(input, now) {
   return state;
 }
 
-function readinessDeadline(state, player) {
-  return Math.min(
-    player.readyUntil ?? 0,
-    state.connectionChecks ? (player.connectedUntil ?? 0) : Infinity,
-  );
-}
-
-export function keepPresent(input, seat, now) {
-  const state = advanceClock(input, now);
-  if (
-    ["presence", "countdown"].includes(state.stage) &&
-    state.players[seat]?.ready
-  ) {
-    state.players[seat].connectedUntil = state.observedAt + CONNECTION_GRACE_MS;
-  }
+export function setPresence(input, seats) {
+  const state = structuredClone(input);
+  for (const player of state.players)
+    player.present = seats.includes(player.seat);
   return state;
 }
 
@@ -157,7 +148,7 @@ export function nextWakeup(state) {
   if (["presence", "countdown"].includes(state.stage)) {
     const deadlines = state.players
       .filter((p) => p.ready)
-      .map((p) => readinessDeadline(state, p));
+      .map((p) => p.readyUntil);
     if (state.stage === "countdown") deadlines.push(state.missionStartAt);
     return deadlines.length ? Math.min(...deadlines) : null;
   }
@@ -219,16 +210,17 @@ export function submit(input, seat, command, receivedAt) {
     if (!["presence", "countdown"].includes(state.stage))
       return reject("The mission has started");
     player.ready = false;
-    player.readyUntil = player.connectedUntil = null;
+    player.readyUntil = null;
     state.stage = "presence";
     state.missionStartAt = null;
     append(state, now, "unready", { seat });
   } else if (command.type === "ready") {
     if (state.stage !== "presence") return reject("Presence check is closed");
+    if (state.connectionChecks && !player.present)
+      return reject("Reconnect to the table before getting ready");
     if (!player.ready) {
       player.ready = true;
       player.readyUntil = now + PRESENCE_WINDOW_MS;
-      player.connectedUntil = now + CONNECTION_GRACE_MS;
       append(state, now, "ready", { seat });
     }
     if (state.players.every((p) => p.ready)) {

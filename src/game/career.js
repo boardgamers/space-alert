@@ -34,6 +34,25 @@ export function createExplorer(id, name, cloning = true) {
     activeRun: null,
   };
 }
+export function compactExplorer(input) {
+  const e = structuredClone(input);
+  check(!e.activeRun, "Finish the expedition before saving career progress");
+  const archive = e.archive ?? {
+    completed: 0,
+    campaigns: 0,
+    firstCompletedAt: null,
+  };
+  for (const r of e.runs.slice(0, -1)) {
+    if (!r.survived || r.training) continue;
+    archive.completed++;
+    if (r.count >= 3 && r.count === r.limit) archive.campaigns++;
+    archive.firstCompletedAt ??= r.at;
+  }
+  e.archive = archive;
+  e.runs = e.runs.slice(-1);
+  return e;
+}
+
 export function experienceFor(score, count = 1, limit = 3) {
   check(
     Number.isFinite(score) &&
@@ -446,17 +465,24 @@ export function eligibleAchievements(explorer, runId) {
     if (a.category !== "addiction") return true;
     const completed = explorer.runs.filter((x) => x.survived && !x.training),
       earned = ACHIEVEMENTS.filter((x) => explorer.achievements.includes(x.id));
-    if (a.runs && completed.length < a.runs) return false;
+    if (
+      a.runs &&
+      completed.length + (explorer.archive?.completed ?? 0) < a.runs
+    )
+      return false;
     if (
       a.campaigns &&
-      completed.filter((x) => x.count >= 3 && x.count === x.limit).length <
+      completed.filter((x) => x.count >= 3 && x.count === x.limit).length +
+        (explorer.archive?.campaigns ?? 0) <
         a.campaigns
     )
       return false;
     if (a.clones && explorer.clones < a.clones) return false;
     if (
       a.days &&
-      (!completed.length || r.at - completed[0].at < a.days * 86400000)
+      ((explorer.archive?.firstCompletedAt ?? completed[0]?.at) == null ||
+        r.at - (explorer.archive?.firstCompletedAt ?? completed[0].at) <
+          a.days * 86400000)
     )
       return false;
     for (const tier of ["basic", "advanced"])

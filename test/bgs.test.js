@@ -6,6 +6,7 @@ const ctx = (now, extra = {}) => ({
   now,
   gameId: "bgs-test",
   playerIds: ["alice", "bob"],
+  present: [0, 1],
   ...extra,
 });
 const initial = (options = {}) =>
@@ -14,8 +15,6 @@ const launch = (s = initial()) => {
   s = e.move(s, { type: "ready", sequence: 1 }, 0, ctx(1001));
   s = e.move(s, { type: "ready", sequence: 1 }, 1, ctx(1002));
   const start = s.missionStartAt;
-  for (const seat of [0, 1])
-    s = e.move(s, { type: "presence" }, seat, ctx(start - 5000));
   return e.advanceTime(s, ctx(start));
 };
 test("requires a trusted server timestamp and ignores client clock claims", () => {
@@ -92,7 +91,11 @@ test("careers carry by account across reordered seats, and only their owner can 
     1,
     ctx(2000, {
       playerIds: ["bob", "alice"],
-      previous: { state: old, gameId: "old", playerIds: ["alice", "bob"] },
+      table: {
+        id: "table",
+        round: 2,
+        progress: e.tableProgress(e.dropPlayer(old)),
+      },
     }),
   );
   const teammateReady = e.move(
@@ -136,17 +139,17 @@ test("a dropped player ends the cooperative session and unlocks explorer records
   );
 });
 
-test("disconnect during launch returns to waiting; heartbeat never renews consent", () => {
+test("disconnect during launch returns to waiting; platform presence never renews consent", () => {
   let s = e.move(initial(), { type: "ready", sequence: 1 }, 0, ctx(1001));
   s = e.move(s, { type: "ready", sequence: 1 }, 1, ctx(1002));
   assert.equal(s.stage, "countdown");
-  s = e.advanceTime(s, ctx(12000));
+  s = e.presenceChanged(s, [], ctx(9000));
+  s = e.advanceTime(s, ctx(9000));
   assert.equal(s.stage, "presence");
   assert.equal(e.ended(s), false);
   assert.equal(s.missionStartAt, null);
+  s = e.presenceChanged(s, [0], ctx(13000));
   s = e.move(s, { type: "ready", sequence: 2 }, 0, ctx(13000));
-  for (let at = 15000; at < 133000; at += 2000)
-    s = e.move(s, { type: "presence" }, 0, ctx(at));
   s = e.advanceTime(s, ctx(133000));
   assert.equal(s.players[0].ready, false);
   assert.equal(e.nextWakeup(s), null);
@@ -159,10 +162,63 @@ test("expired readiness leaves careers editable and does not start a run", () =>
     ctx(1001),
   );
   assert.equal(s.bgs.explorers.alice.activeRun, null);
-  s = e.advanceTime(s, ctx(100000));
+  s = e.advanceTime(s, ctx(121002));
   assert.equal(
-    e.stripSecret(s, 0, ctx(100000)).explorers.find((x) => x.id === "alice")
+    e.stripSecret(s, 0, ctx(121002)).explorers.find((x) => x.id === "alice")
       .editable,
     true,
   );
+});
+
+test("platform presence gates readiness; user moves cannot spoof it", () => {
+  const absent = e.init(2, [], {}, "seed", 0, ctx(1000, { present: [] }));
+  assert.throws(
+    () => e.move(absent, { type: "ready", sequence: 1 }, 0, ctx(1001)),
+    /Reconnect/,
+  );
+  assert.throws(
+    () => e.move(absent, { type: "presence", sequence: 1 }, 0, ctx(1001)),
+    /Unsupported/,
+  );
+  const present = e.presenceChanged(absent, [0], ctx(1002));
+  assert.equal(
+    e.move(present, { type: "ready", sequence: 1 }, 0, ctx(1003)).players[0]
+      .ready,
+    true,
+  );
+  assert.deepEqual(e.phase(present), { name: "waiting", canLeave: true });
+  assert.deepEqual(e.phase(launch()), { name: "playing", canLeave: false });
+});
+test("career progress is bounded, contains no mission secrets, and rejects unknown schemas", () => {
+  const s = e.dropPlayer(initial({ careers: true }));
+  s.bgs.explorers.alice.runs = Array.from({ length: 1000 }, (_, i) => ({
+    id: `old-${i}`,
+    survived: true,
+    at: i,
+    count: 3,
+    limit: 3,
+    training: false,
+  }));
+  const progress = e.tableProgress(s);
+  assert.equal(progress.data.explorers.alice.runs.length, 1);
+  assert.equal(progress.data.explorers.alice.archive.completed, 999);
+  assert.equal(progress.data.explorers.alice.archive.campaigns, 999);
+  assert.ok(JSON.stringify(progress).length < 4000);
+  assert.ok(!JSON.stringify(progress).includes("private-seed"));
+  assert.deepEqual(e.migrateTableProgress(progress), progress);
+  assert.throws(
+    () => e.migrateTableProgress({ version: 2, data: {} }),
+    /Unsupported/,
+  );
+  const next = e.init(
+    2,
+    [],
+    { careers: true },
+    "different-seed",
+    0,
+    ctx(2000, { table: { id: "table", round: 2, progress } }),
+  );
+  assert.equal(next.bgs.explorers.alice.archive.completed, 999);
+  assert.equal(next.players[0].ready, false);
+  assert.equal(next.players[0].lastSequence, 0);
 });

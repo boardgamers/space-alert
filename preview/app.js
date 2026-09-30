@@ -445,8 +445,10 @@ export function mountConsole(root, host = null) {
           own.ready ? "unready" : "ready",
           own.ready
             ? t("Pas encore prêt", "Not ready yet")
-            : t("Je suis prêt", "I’m ready"),
-          !view.players[seat],
+            : !own.present
+              ? t("Connexion…", "Connecting…")
+              : t("Je suis prêt", "I’m ready"),
+          !view.players[seat] || !own.present,
           'class="primary"',
         )
       : planning

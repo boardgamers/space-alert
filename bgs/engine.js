@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import {
   createSession,
-  keepPresent,
+  setPresence,
   advanceClock,
   nextWakeup as wakeup,
   submit,
@@ -18,6 +18,7 @@ import {
   consentToCloning,
   claimAchievement,
   eligibleAchievements,
+  compactExplorer,
 } from "../src/game/career.js";
 
 const reject = (message) => {
@@ -33,7 +34,7 @@ const result = (state) =>
   (!state.game?.campaign ? state.game?.resolution?.outcome : null);
 function settle(state) {
   const g = state.game,
-    runId = g.campaign?.id ?? g.seed;
+    runId = `${state.bgs.gameId}:${g.campaign ? "campaign" : state.bgs.missionNumber}`;
   for (const [seat, id] of (state.bgs?.playerIds ?? []).entries()) {
     const e = state.bgs.explorers?.[id];
     if (
@@ -113,7 +114,10 @@ export function init(players, expansions, options, seed, creator, context) {
         : Math.max(4, players);
   const playerIds =
     context.playerIds ?? Array.from({ length: players }, (_, i) => String(i));
-  const previous = context.previous?.state?.bgs?.explorers ?? {};
+  const progress = context.table?.progress;
+  if (progress && progress.version !== 1)
+    throw Error("Unsupported Space Alert career version");
+  const previous = progress?.data?.explorers ?? {};
   const explorers = Object.fromEntries(
     playerIds
       .filter((id) => options.careers || previous[id])
@@ -160,7 +164,39 @@ export function init(players, expansions, options, seed, creator, context) {
     missionNumber: 1,
     settings: options,
   };
-  return state;
+  return setPresence(state, context.present ?? []);
+}
+export function presenceChanged(state, present) {
+  return setPresence(state, present);
+}
+export function phase(state) {
+  const waiting = ["presence", "countdown"].includes(state.stage);
+  const between =
+    state.stage === "resolution" &&
+    !!state.game.resolution?.outcome &&
+    !ended(state);
+  return {
+    name: waiting ? "waiting" : between ? "between-rounds" : "playing",
+    canLeave: waiting || between,
+  };
+}
+export function tableProgress(state) {
+  return {
+    version: 1,
+    data: {
+      explorers: Object.fromEntries(
+        Object.entries(state.bgs.explorers).map(([id, explorer]) => [
+          id,
+          compactExplorer({ ...explorer, activeRun: null }),
+        ]),
+      ),
+    },
+  };
+}
+export function migrateTableProgress(progress) {
+  if (progress.version !== 1)
+    throw Error("Unsupported Space Alert career version");
+  return structuredClone(progress);
 }
 export function advanceTime(state, context) {
   return settle(advanceClock(state, trusted(context)));
@@ -173,11 +209,6 @@ export function move(input, command, seat, context) {
   if (!Number.isInteger(seat) || !input.players[seat]) reject("Unknown player");
   if (!command || typeof command !== "object" || Array.isArray(command))
     reject("Invalid command");
-  if (command.type === "presence") {
-    if (Object.keys(command).some((key) => key !== "type"))
-      reject("Unsupported presence field");
-    return settle(keepPresent(input, seat, now));
-  }
   let state = advanceTime(input, context);
   if (!Number.isSafeInteger(command.sequence) || command.sequence < 1)
     reject("Invalid sequence");
@@ -237,7 +268,7 @@ export function move(input, command, seat, context) {
         p.name = state.players[i].name;
       });
       next.revision = state.revision + 1;
-      state = next;
+      state = setPresence(next, context.present ?? []);
     } else if (command.type === "career") {
       if (
         Object.keys(command).some(

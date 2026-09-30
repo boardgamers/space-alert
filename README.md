@@ -48,7 +48,7 @@ No publisher artwork, scanned cards, rulebook files or official voice recordings
 
 ## Build for BGS
 
-The viewer requires `@boardgamers/protocol` **0.7.0**, whose npm publication is separate from this repository. After it is published:
+The BGS integration requires `@boardgamers/protocol` **0.8.0**, whose npm publication is separate from this repository. After it is published:
 
 ```sh
 npm install
