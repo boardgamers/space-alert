@@ -76,39 +76,52 @@ test("all 34 imported timelines compile, including the 18 double-action missions
     }
 });
 
-test("presence expires autonomously; the engine records cancellation, not a defeat", () => {
-  const state = create();
-  assert.equal(nextWakeup(state), epoch + 120_000);
-  const result = advanceClock(state, epoch + 120_000);
-  assert.equal(result.stage, "cancelled");
-  assert.deepEqual(result.cancellation, {
-    reason: "presence-timeout",
-    missingSeats: [0, 1, 2, 3],
-  });
-  assert.equal(nextWakeup(result), null);
-  assert.equal(result.log.length, 1);
-  assert.equal(state.log.length, 0, "Input state is not mutated");
-  assert.equal(advanceClock(result, epoch + 900_000).log.length, 1);
+test("waiting has no deadline; readiness expires individually without cancelling", () => {
+  let state = create();
+  assert.equal(nextWakeup(state), null);
+  state = advanceClock(state, epoch + 86400000);
+  assert.equal(state.stage, "presence");
+  state = submit(
+    state,
+    0,
+    { type: "ready", sequence: 1 },
+    epoch + 86400000,
+  ).state;
+  assert.equal(nextWakeup(state), epoch + 86520000);
+  const later = advanceClock(state, epoch + 86520000);
+  assert.equal(later.stage, "presence");
+  assert.equal(later.players[0].ready, false);
+  assert.equal(nextWakeup(later), null);
+  assert.equal(state.players[0].ready, true);
 });
 
-test("the last ready request at the exact deadline is too late", () => {
-  let state = create();
-  for (const seat of [0, 1, 2])
-    state = submit(
-      state,
-      seat,
-      { type: "ready", sequence: 1 },
-      epoch + 119_999,
-    ).state;
-  const result = submit(
+test("readiness must overlap, and withdrawing during countdown postpones launch", () => {
+  let state = create(2);
+  state = submit(state, 0, { type: "ready", sequence: 1 }, epoch).state;
+  state = submit(
     state,
-    3,
+    1,
     { type: "ready", sequence: 1 },
-    epoch + 120_000,
-  );
-  assert.equal(result.accepted, false);
-  assert.equal(result.state.stage, "cancelled");
-  assert.deepEqual(result.state.cancellation.missingSeats, [3]);
+    epoch + 120000,
+  ).state;
+  assert.equal(state.stage, "presence");
+  assert.equal(state.players[0].ready, false);
+  state = submit(
+    state,
+    0,
+    { type: "ready", sequence: 2 },
+    epoch + 120001,
+  ).state;
+  assert.equal(state.stage, "countdown");
+  state = submit(
+    state,
+    1,
+    { type: "unready", sequence: 2 },
+    epoch + 120002,
+  ).state;
+  assert.equal(state.stage, "presence");
+  assert.equal(state.missionStartAt, null);
+  assert.equal(state.players[0].ready, true);
 });
 
 test("the shared countdown starts once, after the last player is ready", () => {

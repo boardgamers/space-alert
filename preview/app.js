@@ -222,7 +222,7 @@ export function mountConsole(root, host = null) {
   function render(next, force = false) {
     view = next;
     received = performance.now();
-    const newKey = `${view.presenceDeadline}/${view.revision}/${seat}/${locale}`;
+    const newKey = `${view.revision}/${seat}/${locale}`;
     renderCareers(next);
     if (!force && key === newKey) return;
     key = newKey;
@@ -431,8 +431,8 @@ export function mountConsole(root, host = null) {
           )
       : view.stage === "presence"
         ? t(
-            "Deux minutes pour confirmer ; le départ est commun.",
-            "Two minutes to confirm; launch is shared.",
+            "Prêt pendant deux minutes. Nous attendons que tout le monde soit prêt.",
+            "Ready lasts two minutes. We wait until everyone is ready together.",
           )
         : view.stage === "resolution"
           ? t(
@@ -440,25 +440,34 @@ export function mountConsole(root, host = null) {
               "Programs are locked. Advance resolution or review its steps.",
             )
           : "";
-    $("#controls").innerHTML =
-      view.stage === "presence"
-        ? button(
-            "ready",
-            own.ready
-              ? t("Présence confirmée", "Presence confirmed")
-              : t("Je suis prêt", "I’m ready"),
-            own.ready,
-            'class="primary"',
-          )
-        : planning
-          ? `${g?.solo ? "" : button("advance-phase", t("Phase suivante →", "Next phase →"), own.finishedPlanning || own.planningPhase >= view.mission.phaseEndsMs.length)}${button("finish-planning", t("Verrouiller mon programme", "Lock my program"), own.finishedPlanning || view.phase < view.mission.phaseEndsMs.length)}${g.dataCredits ? button("draw", `${t("Piocher", "Draw")} +${g.dataCredits}`) : ""}${g.androidDataCredits ? button("draw-android", t("Carte androïde", "Android card") + ` +${g.androidDataCredits}`, !g.canDrawAndroid) : ""}`
-          : view.stage === "resolution"
-            ? `${button("resolve", t("Étape suivante →", "Next step →"), seat !== 0 || !!resolution?.outcome, 'class="primary"')}${button("resolve-all", t("Résoudre la mission", "Resolve mission"), seat !== 0 || !!resolution?.outcome)}`
-            : view.stage === "cancelled"
-              ? '<button id="open-setup">' +
-                t("Nouvelle session", "New session") +
-                "</button>"
-              : "";
+    $("#controls").innerHTML = ["presence", "countdown"].includes(view.stage)
+      ? button(
+          own.ready ? "unready" : "ready",
+          own.ready
+            ? t("Pas encore prêt", "Not ready yet")
+            : t("Je suis prêt", "I’m ready"),
+          !view.players[seat],
+          'class="primary"',
+        )
+      : planning
+        ? `${g?.solo ? "" : button("advance-phase", t("Phase suivante →", "Next phase →"), own.finishedPlanning || own.planningPhase >= view.mission.phaseEndsMs.length)}${button("finish-planning", t("Verrouiller mon programme", "Lock my program"), own.finishedPlanning || view.phase < view.mission.phaseEndsMs.length)}${g.dataCredits ? button("draw", `${t("Piocher", "Draw")} +${g.dataCredits}`) : ""}${g.androidDataCredits ? button("draw-android", t("Carte androïde", "Android card") + ` +${g.androidDataCredits}`, !g.canDrawAndroid) : ""}`
+        : view.stage === "resolution"
+          ? `${button("resolve", t("Étape suivante →", "Next step →"), seat !== 0 || !!resolution?.outcome, 'class="primary"')}${button("resolve-all", t("Résoudre la mission", "Resolve mission"), seat !== 0 || !!resolution?.outcome)}`
+          : view.stage === "cancelled"
+            ? '<button id="open-setup">' +
+              t("Nouvelle session", "New session") +
+              "</button>"
+            : "";
+    const preparing = ["presence", "countdown"].includes(view.stage);
+    root.classList.toggle("preparing", preparing);
+    $("#preparation").hidden = !preparing;
+    $("#ready-help").textContent = preparing
+      ? $("#player-help").textContent
+      : "";
+    $("#ready-controls").replaceChildren(
+      ...(preparing ? [...$("#controls").childNodes] : []),
+    );
+    if (preparing && host) $("#notice").textContent = view.mission.title;
     const hand = [
       ...(g?.hand ?? []),
       ...(g?.androidCards ?? []).filter((c) => c.owner === crew),
@@ -1166,7 +1175,7 @@ export function mountConsole(root, host = null) {
       const now = view.serverNow + performance.now() - received;
       const end =
         view.stage === "presence"
-          ? view.presenceDeadline
+          ? view.players[seat]?.readyUntil
           : view.stage === "countdown"
             ? view.missionStartAt
             : view.stage === "programming"
@@ -1174,13 +1183,17 @@ export function mountConsole(root, host = null) {
               : now;
       $("#clock").textContent = view.tutorial
         ? t("Libre", "Untimed")
-        : duration(end - now);
+        : view.stage === "presence" && !view.players[seat]?.ready
+          ? t("En attente", "Waiting")
+          : duration((end ?? now) - now);
       $("#clock-caption").textContent = view.tutorial
         ? ""
         : view.stage === "programming"
           ? t("avant le saut", "until jump")
           : view.stage === "presence"
-            ? t("pour confirmer", "to confirm")
+            ? view.players[seat]?.ready
+              ? t("prêt encore", "ready for")
+              : ""
             : "";
     }, 100),
   );

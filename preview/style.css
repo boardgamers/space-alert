@@ -695,3 +695,15 @@ input:not([type="checkbox"]):not([type="range"]) {
 #lesson-list button {
   margin: 0.3rem 0.1rem;
 }
+
+.preparing .flight-layout,
+.preparing #journal {
+  display: none;
+}
+#preparation {
+  margin: 24px 0;
+}
+#ready-help {
+  margin-bottom: 12px;
+  color: var(--muted);
+}

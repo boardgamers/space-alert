@@ -45,12 +45,13 @@ test("local host shares state across seats and commits deadline changes on rejec
       type: "ready",
       sequence: 1,
     });
-    assert.equal(late.status, 409);
+    assert.equal(late.status, 200);
     const stored = await fetch(base + "/api/state?seat=0").then((r) =>
       r.json(),
     );
-    assert.equal(stored.stage, "cancelled");
-    assert.deepEqual(stored.cancellation.missingSeats, [1, 2, 3]);
+    assert.equal(stored.stage, "presence");
+    assert.equal(stored.players[0].ready, false);
+    assert.equal(stored.players[1].ready, true);
   } finally {
     server.close();
     await once(server, "close");

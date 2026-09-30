@@ -10,13 +10,14 @@ const ctx = (now, extra = {}) => ({
 });
 const initial = (options = {}) =>
   e.init(2, [], options, "private-seed", 0, ctx(1000));
-const launch = (s = initial()) =>
-  e.move(
-    e.move(s, { type: "ready", sequence: 1 }, 0, ctx(1001)),
-    { type: "ready", sequence: 1 },
-    1,
-    ctx(1002),
-  );
+const launch = (s = initial()) => {
+  s = e.move(s, { type: "ready", sequence: 1 }, 0, ctx(1001));
+  s = e.move(s, { type: "ready", sequence: 1 }, 1, ctx(1002));
+  const start = s.missionStartAt;
+  for (const seat of [0, 1])
+    s = e.move(s, { type: "presence" }, seat, ctx(start - 5000));
+  return e.advanceTime(s, ctx(start));
+};
 test("requires a trusted server timestamp and ignores client clock claims", () => {
   assert.throws(() => e.init(2, [], {}, "seed", 0), /server clock/);
   assert.throws(
@@ -60,18 +61,18 @@ test("catches up while disconnected, leaves resolution untimed, and repeats safe
   assert.equal(e.ended(resolved), true);
   assert.equal(e.scores(resolved)[0], e.scores(resolved)[1]);
 });
-test("missing readiness cancels without inventing player timeouts", () => {
+test("missing readiness keeps the table waiting without player timeouts", () => {
   const s = e.advanceTime(initial(), ctx(121000));
-  assert.equal(e.ended(s), true);
-  assert.equal(e.cancelled(s), true);
+  assert.equal(e.ended(s), false);
+  assert.equal(e.cancelled(s), false);
   assert.equal(e.nextWakeup(s), null);
-  assert.deepEqual(e.currentPlayer(s), []);
+  assert.deepEqual(e.currentPlayer(s), [0, 1]);
 });
 test("snapshots hide deck, future announcements and other hands from players and spectators", () => {
-  const s = e.advanceTime(launch(), ctx(4010));
+  const s = e.advanceTime(launch(), ctx(12000));
   for (const seat of [undefined, 0, 1]) {
-    const view = e.stripSecret(s, seat, ctx(4100));
-    assert.equal(view.serverNow, 4100);
+    const view = e.stripSecret(s, seat, ctx(12100));
+    assert.equal(view.serverNow, 12100);
     assert.equal(view.timeline, undefined);
     assert.equal(view.bgs.playerIds, undefined);
     assert.equal(view.game.seed, undefined);
@@ -132,5 +133,36 @@ test("a dropped player ends the cooperative session and unlocks explorer records
   assert.equal(e.cancelled(cancelled), true);
   assert.ok(
     Object.values(cancelled.bgs.explorers).every((p) => p.activeRun === null),
+  );
+});
+
+test("disconnect during launch returns to waiting; heartbeat never renews consent", () => {
+  let s = e.move(initial(), { type: "ready", sequence: 1 }, 0, ctx(1001));
+  s = e.move(s, { type: "ready", sequence: 1 }, 1, ctx(1002));
+  assert.equal(s.stage, "countdown");
+  s = e.advanceTime(s, ctx(12000));
+  assert.equal(s.stage, "presence");
+  assert.equal(e.ended(s), false);
+  assert.equal(s.missionStartAt, null);
+  s = e.move(s, { type: "ready", sequence: 2 }, 0, ctx(13000));
+  for (let at = 15000; at < 133000; at += 2000)
+    s = e.move(s, { type: "presence" }, 0, ctx(at));
+  s = e.advanceTime(s, ctx(133000));
+  assert.equal(s.players[0].ready, false);
+  assert.equal(e.nextWakeup(s), null);
+});
+test("expired readiness leaves careers editable and does not start a run", () => {
+  let s = e.move(
+    initial({ careers: true }),
+    { type: "ready", sequence: 1 },
+    0,
+    ctx(1001),
+  );
+  assert.equal(s.bgs.explorers.alice.activeRun, null);
+  s = e.advanceTime(s, ctx(100000));
+  assert.equal(
+    e.stripSecret(s, 0, ctx(100000)).explorers.find((x) => x.id === "alice")
+      .editable,
+    true,
   );
 });

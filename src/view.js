@@ -8,7 +8,7 @@ export function snapshot(state, seat) {
     revision: state.revision,
     stage: state.stage,
     serverNow: state.observedAt,
-    presenceDeadline: state.presenceDeadline,
+
     missionStartAt: state.missionStartAt,
     mission: state.mission,
     crewSize: state.crewSize,

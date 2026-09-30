@@ -15,13 +15,13 @@ npm run dev
 
 Open <http://127.0.0.1:5250>. Start with **Flight school / École de vol**: seven untimed exercises use the real engine, with editable programs and a teammate already maintaining the computer. The examples cover firing, energy, malfunctions, battlebots/interceptors, double actions, phasing and specializations.
 
-For a full mission, expand **Local session / Session locale**. Select 1–5 humans, the crew, mission, threat pools and optional modules. In solo, you control four androids and have access to the full action deck. In multiplayer testing, open another tab with `?seat=1`, etc. Confirm presence within two minutes; the shared mission starts three seconds after everyone is ready. Select a card half, then a turn. Advance individual phases to lock previous turns, or let the shared clock do so. After programming, the captain can resolve one step at a time or finish the mission; everyone can inspect the replay and log.
+For a full mission, expand **Local session / Session locale**. Select 1–5 humans, the crew, mission, threat pools and optional modules. In solo, you control four androids and have access to the full action deck. In multiplayer testing, open another tab with `?seat=1`, etc. Readiness lasts two minutes; everyone must be ready together. The local mission starts after a three-second countdown. If someone misses the window, the crew keeps waiting. Select a card half, then a turn. Advance individual phases to lock previous turns, or let the shared clock do so. After programming, the captain can resolve one step at a time or finish the mission; everyone can inspect the replay and log.
 
 The local seat selector, “Ready all” and “Next announcement” buttons are development tools. This host has **no authentication** and deliberately listens only on `127.0.0.1`. It is not an online multiplayer deployment. Use external voice for cooperation; browser speech synthesis is optional and communications-blackout silence relies on the players.
 
 ## Implemented
 
-- Trusted host clock, autonomous deadlines, presence cancellation, reconnection, atomic game commands and idempotent command sequences.
+- Trusted host clock, autonomous deadlines, expiring readiness, reconnection, atomic game commands and idempotent command sequences.
 - 34 imported fixed mission schedules, including 18 double-action missions. The randomized mission generator has not been ported.
 - Private hands and permitted card backs; phase packets, incoming data, transfers, android donations, solo programming and shared-slot conflict checks.
 - Exact 90-card base and 90-card double-action decks, 6 heroic cards and all 10 specializations at levels 1–3.

@@ -45,6 +45,16 @@ registerViewer("SpaceAlert", (context) => {
     },
   });
   ui.setPlayer(undefined);
+  const presence = setInterval(() => {
+    if (
+      document.visibilityState !== "visible" ||
+      pending ||
+      !lastState?.players[seat]?.ready
+    )
+      return;
+    if (["presence", "countdown"].includes(lastState.stage))
+      context.move({ type: "presence" });
+  }, 2000);
   function render(state) {
     lastState = state;
     // Finished games can be opened without reinstalling an archived engine.
@@ -92,6 +102,7 @@ registerViewer("SpaceAlert", (context) => {
       if (el) el.textContent = String(error);
     },
     destroy() {
+      clearInterval(presence);
       ui.destroy();
       if (pending) {
         clearTimeout(pending.timer);

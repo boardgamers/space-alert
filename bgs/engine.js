@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import {
   createSession,
+  keepPresent,
   advanceClock,
   nextWakeup as wakeup,
   submit,
@@ -35,9 +36,19 @@ function settle(state) {
     runId = g.campaign?.id ?? g.seed;
   for (const [seat, id] of (state.bgs?.playerIds ?? []).entries()) {
     const e = state.bgs.explorers?.[id];
-    if (!e?.activeRun) continue;
+    if (
+      e &&
+      !e.activeRun &&
+      !e.runs.some((run) => run.id === runId) &&
+      ["programming", "resolution"].includes(state.stage) &&
+      state.bgs.settings.careers
+    ) {
+      state.bgs.explorers[id] = startExplorer(e, runId);
+    }
+    const current = state.bgs.explorers?.[id];
+    if (!current?.activeRun) continue;
     if (state.stage === "cancelled") {
-      state.bgs.explorers[id] = cancelExplorer(e, runId);
+      state.bgs.explorers[id] = cancelExplorer(current, runId);
       continue;
     }
     const outcome = result(state);
@@ -54,7 +65,7 @@ function settle(state) {
         .filter((e) => e.type === "threat")
         .reduce((n, e) => n + (e.severity === "serious" ? 2 : 1), 0),
     };
-    state.bgs.explorers[id] = settleExplorer(e, {
+    state.bgs.explorers[id] = settleExplorer(current, {
       id: runId,
       ...outcome,
       count: g.campaign?.missions.length ?? 1,
@@ -124,6 +135,7 @@ export function init(players, expansions, options, seed, creator, context) {
   const state = createSession(
     {
       players,
+      connectionChecks: true,
       crewSize,
       mission,
       gameOptions: {
@@ -161,6 +173,11 @@ export function move(input, command, seat, context) {
   if (!Number.isInteger(seat) || !input.players[seat]) reject("Unknown player");
   if (!command || typeof command !== "object" || Array.isArray(command))
     reject("Invalid command");
+  if (command.type === "presence") {
+    if (Object.keys(command).some((key) => key !== "type"))
+      reject("Unsupported presence field");
+    return settle(keepPresent(input, seat, now));
+  }
   let state = advanceTime(input, context);
   if (!Number.isSafeInteger(command.sequence) || command.sequence < 1)
     reject("Invalid sequence");
@@ -196,6 +213,7 @@ export function move(input, command, seat, context) {
       const next = createSession(
         {
           players: state.players.length,
+          connectionChecks: true,
           crewSize: state.crewSize,
           mission,
           gameOptions: {
@@ -285,19 +303,6 @@ export function move(input, command, seat, context) {
       } else reject("Unknown career action");
       state.revision++;
     } else {
-      if (
-        command.type === "ready" &&
-        state.bgs.settings.careers &&
-        state.bgs.explorers[state.bgs.playerIds[seat]]
-      ) {
-        const id = state.bgs.playerIds[seat],
-          e = state.bgs.explorers[id];
-        if (!e.activeRun)
-          state.bgs.explorers[id] = startExplorer(
-            e,
-            state.game.campaign?.id ?? state.game.seed,
-          );
-      }
       const response = submit(state, seat, command, now);
       if (!response.accepted) reject(response.error);
       return settle(response.state);
