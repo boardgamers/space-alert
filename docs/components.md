@@ -58,4 +58,4 @@ The engine checks minimum levels before the run, successful completion, applicab
 
 ## Remaining validation and integration
 
-The exact action decks and all standard threat faces are now available; no missing component is filled with a guessed deck distribution. Remaining work before an online release includes broader human playtesting of expansion combinations, BGS identity and career storage, real-time scheduling/transport and mobile multi-client testing on physical devices. Random mission generation and licensed official art/audio are separate optional work; fixed missions and generated browser speech already run locally.
+The exact action decks and all standard threat faces are now available; no missing component is filled with a guessed deck distribution. Remaining work before an online release includes broader human playtesting of expansion combinations, mobile multi-client testing on physical devices and a decision about account-wide careers beyond the implemented table-local records. Random mission generation and licensed official art/audio are separate optional work; fixed missions and generated browser speech already run locally.

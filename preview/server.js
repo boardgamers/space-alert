@@ -400,6 +400,7 @@ export function createPreviewServer({ clock = Date.now, storagePath } = {}) {
       const file = {
         "/": "index.html",
         "/app.js": "app.js",
+        "/local.js": "local.js",
         "/text.js": "text.js",
         "/style.css": "style.css",
       }[url.pathname];

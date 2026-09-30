@@ -2,11 +2,11 @@
 
 A playable local adaptation of **Space Alert** and **The New Frontier**, with a deterministic engine and a French/English browser viewer. Repository: [boardgamers/space-alert](https://github.com/boardgamers/space-alert).
 
-**Status: local playtest, under rules review.** The game runs through programming, ship resolution and scoring. Nothing is connected or published to BGS; platform and protocol work remains deferred.
+**Status: local playtest, under rules review.** The game runs through programming, ship resolution and scoring. The BGS adapter is implemented and tested against an isolated platform instance. Public release still needs human playtesting.
 
 ## Play locally
 
-Node 24+, no dependencies:
+Node 24+. The standalone playtest and engine tests need no installed packages:
 
 ```sh
 npm test
@@ -41,7 +41,29 @@ The local host atomically saves the session, development clock offset and career
 
 - [Components and source verification](docs/components.md)
 - [Architecture and implementation status](docs/design.md)
-- [Deferred BGS real-time host contract](docs/realtime-host.md)
+- [BGS integration and deployment](docs/realtime-host.md)
 - [Third-party provenance and licenses](THIRD_PARTY.md)
 
 No publisher artwork, scanned cards, rulebook files or official voice recordings are bundled. The viewer uses original HTML/CSS symbols and its own explanatory text. Threat/achievement names remain in English. Code is AGPL-3.0-only; third-party materials retain their notices.
+
+## Build for BGS
+
+The viewer requires `@boardgamers/protocol` **0.7.0**, whose npm publication is separate from this repository. After it is published:
+
+```sh
+npm install
+npm run build
+npm pack
+```
+
+Before publication, with the BGS monorepo beside this checkout, install the local package instead:
+
+```sh
+cd ../boardgamers-mono
+pnpm --filter @boardgamers/protocol build
+cd ../space-alert
+npm install --no-save --package-lock=false ../boardgamers-mono/packages/protocol
+npm run build
+```
+
+Upload the generated engine tarball and `dist/viewer.js` through BGS admin. Use the metadata in [`bgs/gameinfo.json`](bgs/gameinfo.json): engine entry `bgs/engine.js`, viewer global `SpaceAlert`, game-managed time control, and no Elo. Keep the version private during playtesting. BGS assigns uploaded asset URLs; the example intentionally has no viewer URL. See [the integration notes](docs/realtime-host.md) for clock, table and career behavior.

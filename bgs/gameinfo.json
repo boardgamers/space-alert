@@ -1,0 +1,249 @@
+{
+  "version": {
+    "_id": {
+      "game": "space-alert",
+      "version": 1
+    },
+    "public": false,
+    "timeControl": "engine",
+    "rating": "none",
+    "meta": {},
+    "engine": {
+      "package": {
+        "name": "@boardgamers/space-alert",
+        "version": "0.1.0"
+      },
+      "entryPoint": "bgs/engine.js"
+    },
+    "viewer": {
+      "topLevelVariable": "SpaceAlert"
+    },
+    "preferences": [
+      {
+        "name": "sound",
+        "type": "checkbox",
+        "label": "Spoken announcements",
+        "default": false
+      }
+    ]
+  },
+  "metadata": {
+    "_id": "space-alert",
+    "slug": "space-alert",
+    "label": "Space Alert",
+    "emoji": "\ud83d\ude80",
+    "players": [1, 2, 3, 4, 5],
+    "releaseYear": 2008,
+    "tags": ["cooperative"],
+    "options": [
+      {
+        "name": "mission",
+        "type": "select",
+        "label": "Mission",
+        "default": "realmission1",
+        "items": [
+          {
+            "name": "firstTestRun",
+            "label": "Test run 1"
+          },
+          {
+            "name": "secondTestRun",
+            "label": "Test run 2"
+          },
+          {
+            "name": "simulation1",
+            "label": "Simulation 1"
+          },
+          {
+            "name": "simulation2",
+            "label": "Simulation 2"
+          },
+          {
+            "name": "simulation3",
+            "label": "Simulation 3"
+          },
+          {
+            "name": "advancedsimulation1",
+            "label": "Advanced simulation 1"
+          },
+          {
+            "name": "advancedsimulation2",
+            "label": "Advanced simulation 2"
+          },
+          {
+            "name": "advancedsimulation3",
+            "label": "Advanced simulation 3"
+          },
+          {
+            "name": "realmission1",
+            "label": "Mission 1"
+          },
+          {
+            "name": "realmission2",
+            "label": "Mission 2"
+          },
+          {
+            "name": "realmission3",
+            "label": "Mission 3"
+          },
+          {
+            "name": "realmission4",
+            "label": "Mission 4"
+          },
+          {
+            "name": "realmission5",
+            "label": "Mission 5"
+          },
+          {
+            "name": "realmission6",
+            "label": "Mission 6"
+          },
+          {
+            "name": "realmission7",
+            "label": "Mission 7"
+          },
+          {
+            "name": "realmission8",
+            "label": "Mission 8"
+          },
+          {
+            "name": "doubleActionEasierMission1",
+            "label": "Double-action easy mission 1"
+          },
+          {
+            "name": "doubleActionEasierMission2",
+            "label": "Double-action easy mission 2"
+          },
+          {
+            "name": "doubleActionEasierMission3",
+            "label": "Double-action easy mission 3"
+          },
+          {
+            "name": "doubleActionEasierMission4",
+            "label": "Double-action easy mission 4"
+          },
+          {
+            "name": "doubleActionEasierMission5",
+            "label": "Double-action easy mission 5"
+          },
+          {
+            "name": "doubleActionEasierMission6",
+            "label": "Double-action easy mission 6"
+          },
+          {
+            "name": "doubleActionMission1",
+            "label": "Double-action mission 1"
+          },
+          {
+            "name": "doubleActionMission2",
+            "label": "Double-action mission 2"
+          },
+          {
+            "name": "doubleActionMission3",
+            "label": "Double-action mission 3"
+          },
+          {
+            "name": "doubleActionMission4",
+            "label": "Double-action mission 4"
+          },
+          {
+            "name": "doubleActionMission5",
+            "label": "Double-action mission 5"
+          },
+          {
+            "name": "doubleActionMission6",
+            "label": "Double-action mission 6"
+          },
+          {
+            "name": "doubleActionMission7",
+            "label": "Double-action mission 7"
+          },
+          {
+            "name": "doubleActionMission8",
+            "label": "Double-action mission 8"
+          },
+          {
+            "name": "doubleActionMission9",
+            "label": "Double-action mission 9"
+          },
+          {
+            "name": "doubleActionMission10",
+            "label": "Double-action mission 10"
+          },
+          {
+            "name": "doubleActionMission11",
+            "label": "Double-action mission 11"
+          },
+          {
+            "name": "doubleActionMission12",
+            "label": "Double-action mission 12"
+          }
+        ]
+      },
+      {
+        "name": "campaign",
+        "type": "select",
+        "label": "Campaign",
+        "default": "0",
+        "items": [
+          {
+            "name": "0",
+            "label": "Single mission"
+          },
+          {
+            "name": "3",
+            "label": "Three missions"
+          },
+          {
+            "name": "5",
+            "label": "Five missions"
+          }
+        ]
+      },
+      {
+        "name": "difficulty",
+        "type": "select",
+        "label": "Threats",
+        "default": "1,2",
+        "items": [
+          {
+            "name": "1",
+            "label": "White"
+          },
+          {
+            "name": "1,2",
+            "label": "White / yellow"
+          },
+          {
+            "name": "2",
+            "label": "Yellow"
+          },
+          {
+            "name": "2,3",
+            "label": "Yellow / red"
+          },
+          {
+            "name": "3",
+            "label": "Red"
+          },
+          {
+            "name": "1,2,3",
+            "label": "All"
+          }
+        ]
+      },
+      {
+        "name": "careers",
+        "type": "checkbox",
+        "label": "Explorer careers at this table",
+        "default": false
+      }
+    ],
+    "expansions": [
+      {
+        "name": "new-frontier",
+        "label": "The New Frontier"
+      }
+    ]
+  }
+}

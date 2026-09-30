@@ -11,9 +11,9 @@ Use four separate components:
 1. **Mission source:** produces a deterministic, versioned sequence of announcements. It can import fixed schedules first and later generate missions from a server-secret seed. Threat cards and trajectories are separate seeded decks.
 2. **Game engine:** owns setup, cards, phase locks, transfers, androids, ship systems, threats, damage, resolution, scoring and expansion effects. It consumes ordered player commands and trusted time events. No `Date.now()`, client timer or audio playback position inside rule transitions.
 3. **Viewer:** programs cards, displays public and private information, plays localized announcements and animates resolution. It may predict a clock display, but cannot extend a deadline or reveal a future threat.
-4. **Host adapter:** binds the game to BGS authentication, durable ordering, deadlines, persistence, reconnect, cancellation and cooperative outcomes. The local host demonstrates this boundary without editing BGS.
+4. **Host adapter:** binds the game to BGS authentication, durable ordering, deadlines, persistence, reconnect, cancellation and cooperative outcomes. The BGS adapter uses protocol 0.7 and durable platform wakeups.
 
-The local implementation now contains all four layers, with the host adapter restricted to a localhost development server. Announcements deal cards, reveal threats and open transfers; programming resolves to a scored result. The BGS binding is deliberately deferred.
+All four layers are implemented, with both a standalone local host and an authenticated BGS adapter. Announcements deal cards, reveal threats and open transfers; programming resolves to a scored result.
 
 ## Base game
 
@@ -71,6 +71,6 @@ For the current audit of the complete standard inventory, see [components](compo
 2. **Local play:** private physical cards, Android/solo rules, ship resolution, all threat cards, all specialization abilities, scoring, campaigns and local explorer persistence implemented.
 3. **Teaching/viewer:** seven untimed guided exercises use the actual engine. FR/EN controls and effect descriptions, threat details, replay, native scrolling and journal available. Official names remain English; original visual symbols are placeholders for any later licensed artwork.
 4. **Rules validation:** deterministic fixtures cover critical interactions, and every threat terminates and replays from serialized state. This is not exhaustive proof of all combinations; human playtests remain necessary before claiming release readiness.
-5. **BGS release:** deferred as requested. Add authenticated identity, trusted wakeups, durable session/career commits, cooperative results, live transport and external/integrated voice decisions to the platform only when authorized.
+5. **BGS release:** the private-playtest adapter is implemented; see [integration and deployment](realtime-host.md). Public release awaits human playtesting. Careers currently persist within a table, and voice remains external.
 
 The fixed mission catalogue is playable. Porting the random mission generator and supplying official recordings/art are separate tasks, not silently emulated by invented components. Achievement criteria requiring group judgment remain explicit manual claims; the optional group-defined Hometown Hero entry is not automated.

@@ -443,7 +443,9 @@ function word(x, locale) {
   return choose(dictionary[x], locale) ?? String(x ?? "");
 }
 function station(x, locale) {
-  if (!x) return "";
+  if (x && typeof x === "object" && x.zone && x.deck) x = `${x.zone}-${x.deck}`;
+  if (typeof x !== "string" || !/^(red|white|blue)-(upper|lower)$/.test(x))
+    return "";
   const [z, d] = x.split("-");
   return `${word(z, locale)} ${d === "upper" ? "↑" : "↓"}`;
 }

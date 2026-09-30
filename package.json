@@ -11,10 +11,26 @@
   "scripts": {
     "test": "node --test test/*.test.js",
     "dev": "node preview/server.js",
-    "check": "npm test"
+    "check": "npm test",
+    "build": "node scripts/build.mjs"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/boardgamers/space-alert.git"
-  }
+  },
+  "devDependencies": {
+    "@boardgamers/protocol": "^0.7.0",
+    "esbuild": "^0.28.2"
+  },
+  "exports": {
+    "./engine": "./bgs/engine.js"
+  },
+  "files": [
+    "bgs/engine.js",
+    "src",
+    "mission-data",
+    "dist/viewer.js",
+    "README.md",
+    "LICENSE"
+  ]
 }
