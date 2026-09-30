@@ -94,8 +94,14 @@ test("careers carry by account across reordered seats, and only their owner can 
       previous: { state: old, gameId: "old", playerIds: ["alice", "bob"] },
     }),
   );
-  const learned = e.move(
+  const teammateReady = e.move(
     next,
+    { type: "ready", sequence: 1 },
+    0,
+    ctx(2000),
+  );
+  const learned = e.move(
+    teammateReady,
     { type: "career", action: "learn", specialization: "medic", sequence: 1 },
     1,
     ctx(2001),

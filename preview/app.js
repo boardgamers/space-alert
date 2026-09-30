@@ -767,7 +767,7 @@ export function mountConsole(root, host = null) {
           host &&
           e.editable &&
           view.stage === "presence" &&
-          !view.players.some((p) => p.ready)
+          !view.players[seat]?.ready
             ? e.dead
               ? `<button data-new-explorer="${e.id}">${t("Nouvel explorateur", "New explorer")}</button>`
               : Object.keys(e.specializations)

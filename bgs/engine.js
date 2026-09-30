@@ -237,8 +237,8 @@ export function move(input, command, seat, context) {
         )
       )
         reject("Unsupported career field");
-      if (state.stage !== "presence" || state.players.some((p) => p.ready))
-        reject("Choose careers before anyone confirms readiness");
+      if (state.stage !== "presence" || state.players[seat].ready)
+        reject("Choose your career before confirming readiness");
       const id = state.bgs.playerIds[seat],
         e = state.bgs.explorers[id];
       if (!e || !state.bgs.settings.careers)
@@ -351,7 +351,8 @@ export function stripSecret(state, seat, context) {
       e.id === id && e.runs.length
         ? eligibleAchievements(e, e.runs.at(-1).id)
         : [],
-    editable: e.id === id,
+    editable:
+      e.id === id && state.stage === "presence" && !state.players[seat]?.ready,
   }));
   return view;
 }

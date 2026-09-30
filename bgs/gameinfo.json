@@ -11,7 +11,7 @@
     "engine": {
       "package": {
         "name": "@boardgamers/space-alert",
-        "version": "0.1.0"
+        "version": "0.1.1"
       },
       "entryPoint": "bgs/engine.js"
     },
