@@ -1,4 +1,12 @@
 const choose = (pair, locale) => pair?.[locale === "fr" ? 0 : 1];
+const zoneLabels = {
+  red: ["Gauche", "Left"],
+  white: ["Centre", "Center"],
+  blue: ["Droite", "Right"],
+};
+export function zoneLabel(zone, locale) {
+  return choose(zoneLabels[zone], locale) ?? zone;
+}
 const specials = {
   rocketeer: [
     [
@@ -7,7 +15,7 @@ const specials = {
     ],
     [
       "En bas à droite : lance deux roquettes en un tir de force 5. Ailleurs : effectue C.",
-      "Lower blue: launch two rockets as a strength-5 shot. Elsewhere: perform C.",
+      "Lower right: launch two rockets as a strength-5 shot. Elsewhere: perform C.",
     ],
   ],
   "data-analyst": [
@@ -67,7 +75,7 @@ const specials = {
     ],
     [
       "En bas au centre, au tour 10 ou 11 : termine ce tour puis passe au dernier tour sans actions d’équipage.",
-      "Lower white on turn 10 or 11: finish this turn, then skip to the final turn without crew actions.",
+      "Lower center on turn 10 or 11: finish this turn, then skip to the final turn without crew actions.",
     ],
   ],
   "special-ops": [
@@ -87,7 +95,7 @@ const specials = {
     ],
     [
       "Avec des robots actifs, sauf en bas à droite : rejoint les intercepteurs et décolle. Déjà en vol : attaque héroïque.",
-      "With active battlebots, except in lower blue: reach the interceptors and launch. Already in space: heroic attack.",
+      "With active battlebots, except in lower right: reach the interceptors and launch. Already in space: heroic attack.",
     ],
   ],
   mechanic: [
@@ -162,7 +170,7 @@ const traits = {
   ],
   deathKnockout: [
     "Réparation terminée : assomme les équipiers en bas dans les zones latérales.",
-    "Final repair knocks out crew in lower red and lower blue.",
+    "Final repair knocks out crew in lower left and lower right.",
   ],
   deathKnocksAttacker: [
     "Détruite : assomme son attaquant et désactive ses robots, même avec une attaque héroïque.",
@@ -219,16 +227,16 @@ Object.assign(traits, {
     "The final repair consumes 1 local reactor energy; it cannot finish with an empty reactor.",
   ],
   parityStation: [
-    "Station initiale : rouge supérieur sur un numéro impair, bleu supérieur sur un numéro pair.",
-    "Starts in upper red on an odd threat number, upper blue on an even number.",
+    "Station initiale : haut à gauche sur un numéro impair, haut à droite sur un numéro pair.",
+    "Starts in upper left on an odd threat number, upper right on an even number.",
   ],
   shortCircuit: [
     "Bloque l’impulsion. Chaque tir du laser lourd central provoque une attaque 1 sur chaque zone.",
     "Blocks pulse. Every central heavy-laser shot triggers an attack 1 on every zone.",
   ],
   poison: [
-    "Dès son apparition, le Ninja empoisonne les mouvements commençant ou finissant en bleu supérieur ou blanc inférieur. Après sa destruction, seuls les déjà empoisonnés restent menacés jusqu’à Z.",
-    "From appearance, Ninja poisons movements starting or ending in upper blue or lower white. After destruction, only already-poisoned crew remain threatened until Z.",
+    "Dès son apparition, le Ninja empoisonne les mouvements commençant ou finissant en haut à droite ou bas au centre. Après sa destruction, seuls les déjà empoisonnés restent menacés jusqu’à Z.",
+    "From appearance, Ninja poisons movements starting or ending in upper right or lower center. After destruction, only already-poisoned crew remain threatened until Z.",
   ],
   infection: [
     "Les infections déjà transmises restent actives jusqu’à Z, même après sa destruction.",
@@ -243,8 +251,8 @@ Object.assign(traits, {
     "At Z, a surprise common internal threat resolves all its actions.",
   ],
   teleportsOnHit: [
-    "Après un dégât, se téléporte en rouge supérieur.",
-    "After taking damage, teleports to upper red.",
+    "Après un dégât, se téléporte en haut à gauche.",
+    "After taking damage, teleports to upper left.",
   ],
   gremlin: [
     "Si non détruit avant le saut, assomme tout l’équipage. Les systèmes sabotés se réparent séparément.",
@@ -326,9 +334,9 @@ export function traitDescriptions(th, locale) {
   return result;
 }
 const dictionary = {
-  red: ["rouge", "red"],
-  white: ["blanc", "white"],
-  blue: ["bleu", "blue"],
+  red: ["gauche", "left"],
+  white: ["centre", "center"],
+  blue: ["droite", "right"],
   shield: ["bouclier", "shield"],
   reactor: ["réacteur", "reactor"],
   speed: ["vitesse", "speed"],
@@ -372,8 +380,8 @@ const dictionary = {
     "+1 shield to all external threats until destroyed",
   ],
   "double-red": [
-    "double les dégâts à la zone rouge",
-    "double damage to red zone",
+    "double les dégâts à la zone de gauche",
+    "double damage to left zone",
   ],
   "double-all": [
     "double les dégâts à toutes les zones",
@@ -422,16 +430,16 @@ Object.assign(dictionary, {
     "subsequent attacks ignore shields",
   ],
   "poison-entry": [
-    "empoisonne ceux qui commencent ou terminent un déplacement en bleu supérieur ou blanc inférieur",
-    "poisons crew starting or ending a movement in upper blue or lower white",
+    "empoisonne ceux qui commencent ou terminent un déplacement en haut à droite ou bas au centre",
+    "poisons crew starting or ending a movement in upper right or lower center",
   ],
   "sealed-red": [
-    "portes vers la zone rouge scellées",
-    "doors to red zone sealed",
+    "portes vers la zone de gauche scellées",
+    "doors to left zone sealed",
   ],
   "sealed-blue": [
-    "portes vers la zone bleue scellées",
-    "doors to blue zone sealed",
+    "portes vers la zone de droite scellées",
+    "doors to right zone sealed",
   ],
   "sealed-door": ["porte scellée", "sealed door"],
   "cyber-gremlin": [
@@ -442,12 +450,12 @@ Object.assign(dictionary, {
 function word(x, locale) {
   return choose(dictionary[x], locale) ?? String(x ?? "");
 }
-function station(x, locale) {
+export function stationLabel(x, locale) {
   if (x && typeof x === "object" && x.zone && x.deck) x = `${x.zone}-${x.deck}`;
   if (typeof x !== "string" || !/^(red|white|blue)-(upper|lower)$/.test(x))
     return "";
   const [z, d] = x.split("-");
-  return `${word(z, locale)} ${d === "upper" ? "↑" : "↓"}`;
+  return `${zoneLabel(z, locale)} ${d === "upper" ? "↑" : "↓"}`;
 }
 export function effectDescription(e, locale) {
   const t = (fr, en) => (locale === "fr" ? fr : en),
@@ -502,7 +510,7 @@ export function effectDescription(e, locale) {
     case "disable-stored-bots":
       text = t(
         "Désactive les robots en réserve en bas à gauche.",
-        "Disable stored battlebots in lower red.",
+        "Disable stored battlebots in lower left.",
       );
       break;
     case "fuel-lost":
@@ -597,8 +605,8 @@ export function effectDescription(e, locale) {
       break;
     case "drill-move":
       text = t(
-        "Avance d’une station vers la zone la plus endommagée ; égalité : vers le blanc.",
-        "Move one station toward the most damaged zone; ties: toward white.",
+        "Avance d’une station vers la zone la plus endommagée ; égalité : vers le centre.",
+        "Move one station toward the most damaged zone; ties: toward the center.",
       );
       break;
     case "shambler":
@@ -609,8 +617,8 @@ export function effectDescription(e, locale) {
       break;
     case "blind":
       text = t(
-        `Obstrue la visée ${e.zone === "lateral" ? "d’une zone latérale" : "du blanc"}. Observation ou intercepteurs requis pour y tirer au laser.`,
-        `Obscure ${e.zone === "lateral" ? "a side zone" : "white"} targeting. Visual confirmation or interceptors are required for laser fire there.`,
+        `Obstrue la visée ${e.zone === "lateral" ? "d’une zone latérale" : "du centre"}. Observation ou intercepteurs requis pour y tirer au laser.`,
+        `Obscure ${e.zone === "lateral" ? "a side zone" : "center"} targeting. Visual confirmation or interceptors are required for laser fire there.`,
       );
       break;
     case "mine":
@@ -639,8 +647,8 @@ export function effectDescription(e, locale) {
       break;
     case "poison-detonate":
       text = t(
-        "Assomme les empoisonnés. Si le Ninja vit encore : chaque roquette restante provoque une attaque 2 en rouge, puis est détruite.",
-        "Knock out poisoned crew. If Ninja is still alive, each remaining rocket causes an attack 2 on red, then is destroyed.",
+        "Assomme les empoisonnés. Si le Ninja vit encore : chaque roquette restante provoque une attaque 2 à gauche, puis est détruite.",
+        "Knock out poisoned crew. If Ninja is still alive, each remaining rocket causes an attack 2 on the left, then is destroyed.",
       );
       break;
     case "repeat-action":
@@ -651,8 +659,8 @@ export function effectDescription(e, locale) {
       break;
     case "swap-zones":
       text = t(
-        "Les équipiers en zones latérales échangent rouge / bleu, sans changer de pont.",
-        "Crew in side zones swap red / blue without changing deck.",
+        "Les équipiers en zones latérales échangent gauche / droite, sans changer de pont.",
+        "Crew in side zones swap left / right without changing deck.",
       );
       break;
     case "vortex-draw":
@@ -687,8 +695,8 @@ export function effectDescription(e, locale) {
       break;
     case "parasite-attack":
       text = t(
-        "5 dégâts directs dans la zone de l’hôte ; hôte en vol : attaque 5 en blanc.",
-        "5 direct damage to the host’s zone; host in space: attack 5 on white.",
+        "5 dégâts directs dans la zone de l’hôte ; hôte en vol : attaque 5 au centre.",
+        "5 direct damage to the host’s zone; host in space: attack 5 in the center.",
       );
       break;
     default:
@@ -742,20 +750,20 @@ export function eventDescription(e, locale, threats) {
     ),
     "cryoshield-broken": t("Cryobouclier détruit", "Cryoshield broken"),
     move: t(
-      `${station(e.from, locale)} → ${station(e.to, locale)}`,
-      `${station(e.from, locale)} → ${station(e.to, locale)}`,
+      `${stationLabel(e.from, locale)} → ${stationLabel(e.to, locale)}`,
+      `${stationLabel(e.from, locale)} → ${stationLabel(e.to, locale)}`,
     ),
     teleport: t(
-      `Téléportation → ${station(e.to, locale)}`,
-      `Teleport → ${station(e.to, locale)}`,
+      `Téléportation → ${stationLabel(e.to, locale)}`,
+      `Teleport → ${stationLabel(e.to, locale)}`,
     ),
     fire: t(
-      `Tir ${station(e.station, locale)}, force ${e.strength}, portée ${e.range}`,
-      `Fire ${station(e.station, locale)}, strength ${e.strength}, range ${e.range}`,
+      `Tir ${stationLabel(e.station, locale)}, force ${e.strength}, portée ${e.range}`,
+      `Fire ${stationLabel(e.station, locale)}, strength ${e.strength}, range ${e.range}`,
     ),
     energy: t(
-      `Transfert de ${e.amount} énergie · ${station(e.station, locale)} · ${w(e.system)}`,
-      `Transfer ${e.amount} energy · ${station(e.station, locale)} · ${w(e.system)}`,
+      `Transfert de ${e.amount} énergie · ${stationLabel(e.station, locale)} · ${w(e.system)}`,
+      `Transfer ${e.amount} energy · ${stationLabel(e.station, locale)} · ${w(e.system)}`,
     ),
     computer: t(
       `Ordinateur entretenu · phase ${e.phase}`,

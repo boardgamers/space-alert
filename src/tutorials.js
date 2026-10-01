@@ -33,8 +33,8 @@ export const LESSONS = [
     ["Énergie et coordination", "Energy and coordination"],
     [
       [
-        "Le réacteur blanc commence avec 3 énergies. Le laser lourd et l’impulsion utilisent cette même réserve ; B à l’étage recharge le bouclier, pas le réacteur.",
-        "White starts with 3 reactor energy. Heavy laser and pulse share it; B upstairs fills the shield, not the reactor.",
+        "Le réacteur central commence avec 3 énergies. Le laser lourd et l’impulsion utilisent cette même réserve ; B à l’étage recharge le bouclier, pas le réacteur.",
+        "The central reactor starts with 3 energy. Heavy laser and pulse share it; B upstairs fills the shield, not the reactor.",
       ],
       [
         "Androïde 1 : A, A, A aux tours 1–3, puis A au tour 4. Sans ravitaillement, ce dernier tir échouera. Essayez ensuite : androïde 3, ascenseur au tour 1 puis B au tour 2.",
@@ -51,12 +51,12 @@ export const LESSONS = [
     ["Réparer une panne", "Repairing a malfunction"],
     [
       [
-        "La panne apparaît en bleu supérieur au tour 2. Une panne détourne le bouton indiqué : il répare au lieu d’utiliser le système.",
-        "The malfunction appears in upper blue on turn 2. It overrides the indicated button: that button repairs instead of using the system.",
+        "La panne apparaît en haut à droite au tour 2. Une panne détourne le bouton indiqué : il répare au lieu d’utiliser le système.",
+        "The malfunction appears in upper right on turn 2. It overrides the indicated button: that button repairs instead of using the system.",
       ],
       [
-        "Androïde 1 : flèche bleue au tour 1, puis B aux tours 2, 3 et 4. Inspectez la carte de menace pour lire ses vies et ses actions X/Y/Z.",
-        "Android 1: blue arrow on turn 1, then B on turns 2, 3 and 4. Inspect the threat card for hit points and X/Y/Z effects.",
+        "Androïde 1 : flèche droite au tour 1, puis B aux tours 2, 3 et 4. Inspectez la carte de menace pour lire ses vies et ses actions X/Y/Z.",
+        "Android 1: right arrow on turn 1, then B on turns 2, 3 and 4. Inspect the threat card for hit points and X/Y/Z effects.",
       ],
       [
         "Un B joué avant l’apparition aurait chargé le bouclier au lieu de réparer. Comparez les résultats en modifiant le programme après avoir recommencé.",
@@ -70,12 +70,12 @@ export const LESSONS = [
     ["Robots et intercepteurs", "Battlebots and interceptors"],
     [
       [
-        "Les robots attendent en bleu supérieur et rouge inférieur. C prend une escouade ; le symbole robot est une action distincte qui combat les intrus.",
-        "Battlebots wait in upper blue and lower red. C picks up a squad; the battlebot symbol is a separate action for fighting intruders.",
+        "Les robots attendent en haut à droite et en bas à gauche. C prend une escouade ; le symbole robot est une action distincte qui combat les intrus.",
+        "Battlebots wait in upper right and lower left. C picks up a squad; the battlebot symbol is a separate action for fighting intruders.",
       ],
       [
-        "Androïde 1 : flèche bleue, C, flèche rouge aux tours 1–3. En phase 2 : flèche rouge puis C pour décoller depuis le rouge supérieur avec vos robots.",
-        "Android 1: blue arrow, C, red arrow on turns 1–3. In phase 2: red arrow, then C to launch from upper red with your battlebots.",
+        "Androïde 1 : flèche droite, C, flèche gauche aux tours 1–3. En phase 2 : flèche gauche puis C pour décoller depuis la salle en haut à gauche avec vos robots.",
+        "Android 1: right arrow, C, left arrow on turns 1–3. In phase 2: left arrow, then C to launch from upper left with your battlebots.",
       ],
       [
         "En vol : robot pour rester et tirer ; une case vide vous fait rentrer. Une autre action est retardée au retour. Les robots désactivés ne permettent pas de décoller.",
@@ -92,8 +92,8 @@ export const LESSONS = [
         "This deck has double-action cards. Choose a half normally: its two symbols execute left to right.",
       ],
       [
-        "Comparez flèche bleue + A avec A + flèche bleue au tour 2 : le laser utilisé change. Vous ne pouvez pas volontairement ignorer une moitié réalisable.",
-        "Compare blue arrow + A with A + blue arrow on turn 2: they fire different lasers. You cannot voluntarily skip a performable half.",
+        "Comparez flèche droite + A avec A + flèche droite au tour 2 : le laser utilisé change. Vous ne pouvez pas volontairement ignorer une moitié réalisable.",
+        "Compare right arrow + A with A + right arrow on turn 2: they fire different lasers. You cannot voluntarily skip a performable half.",
       ],
       [
         "Si la première moitié provoque un retard (ascenseur occupé, Slime), la seconde passe au tour suivant. Les intercepteurs peuvent désormais changer de portée avec les doubles actions.",

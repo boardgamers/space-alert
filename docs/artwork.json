@@ -1,0 +1,44 @@
+{
+  "generator": "Built-in image_gen tool",
+  "usage": "Original illustrative equipment and threat art; live values and rules remain HTML overlays, never baked into images.",
+  "encoding": "WebP quality 84, original dimensions and alpha preserved.",
+  "assets": [
+    {
+      "file": "preview/assets/fighter.webp",
+      "prompt": "Use case: stylized-concept. Asset type: polished illustrated object for a science-fiction cooperative board-game UI on a dark navy background. Primary request: One enemy fighter spacecraft, shown whole in a dynamic three-quarter top view, nose pointing down-left toward the viewer. Angular silver armor, burnt-orange wing panels, twin blazing cyan engines, threatening but readable silhouette, a faint translucent blue defensive shield arc around the hull. No other ships. Style: colorful hand-painted 3D game inventory illustration, premium tabletop game art, clear large shapes, crisp silhouette, bright ivory highlights and vivid cyan/amber accents, strong readable contrast at 120 pixels. Composition: one centered object filling 85 percent of a square image, generous clean edge margin, three-quarter isometric perspective. Background: uniform very dark navy #0b1722, no room or scenery, no star field. Lighting: bright soft key light and cyan edge light so the entire object remains readable; avoid muddy darkness. No text, UI, panels, labels, logos, watermark or border. Original design, not copied from an existing franchise."
+    },
+    {
+      "file": "preview/assets/laser.webp",
+      "prompt": "Use case: stylized-concept. Asset type: polished illustrated object for a science-fiction cooperative board-game UI on a dark navy background. Primary request: One heavy shipboard laser turret: a large futuristic twin-barrel cannon on a circular rotating mount, ivory armor, brass mechanics, glowing amber energy chamber, two bright short red targeting beams pointing toward the upper right. The whole isolated object is visible. Style: colorful hand-painted 3D game inventory illustration, premium tabletop game art, clear large shapes, crisp silhouette, bright ivory highlights and vivid cyan/amber accents, strong readable contrast at 120 pixels. Composition: one centered object filling 85 percent of a square image, generous clean edge margin, three-quarter isometric perspective. Background: uniform very dark navy #0b1722, no room or scenery, no star field. Lighting: bright soft key light and cyan edge light so the entire object remains readable; avoid muddy darkness. No text, UI, panels, labels, logos, watermark or border. Original design, not copied from an existing franchise."
+    },
+    {
+      "file": "preview/assets/computer.webp",
+      "prompt": "Use case: stylized-concept. Asset type: polished illustrated object for a science-fiction cooperative board-game UI on a dark navy background. Primary request: One shipboard command computer console: a broad physical workstation with two angled glowing turquoise displays, tactile amber buttons and an ivory armored pedestal. Screen graphics are abstract radar circles and blocks, absolutely no letters or numbers. The whole isolated object is visible. Style: colorful hand-painted 3D game inventory illustration, premium tabletop game art, clear large shapes, crisp silhouette, bright ivory highlights and vivid cyan/amber accents, strong readable contrast at 120 pixels. Composition: one centered object filling 85 percent of a square image, generous clean edge margin, three-quarter isometric perspective. Background: uniform very dark navy #0b1722, no room or scenery, no star field. Lighting: bright soft key light and cyan edge light so the entire object remains readable; avoid muddy darkness. No text, UI, panels, labels, logos, watermark or border. Original design, not copied from an existing franchise."
+    },
+    {
+      "file": "preview/assets/battlebots.webp",
+      "prompt": "Use case: stylized-concept. Asset type: polished illustrated object for a science-fiction cooperative board-game UI on a dark navy background. Primary request: One sturdy friendly battle robot, full body, three-quarter front view, ivory armor over dark mechanical joints, bright cyan visor, two short heavy arm cannons, gold shoulder plates, stocky clear silhouette. The whole isolated robot is visible. Style: colorful hand-painted 3D game inventory illustration, premium tabletop game art, clear large shapes, crisp silhouette, bright ivory highlights and vivid cyan/amber accents, strong readable contrast at 120 pixels. Composition: one centered object filling 85 percent of a square image, generous clean edge margin, three-quarter isometric perspective. Background: uniform very dark navy #0b1722, no room or scenery, no star field. Lighting: bright soft key light and cyan edge light so the entire object remains readable; avoid muddy darkness. No text, UI, panels, labels, logos, watermark or border. Original design, not copied from an existing franchise."
+    },
+    {
+      "file": "preview/assets/shield.webp",
+      "prompt": "Use case: stylized-concept. Asset type: isolated illustrated equipment for a science-fiction board-game UI on dark navy. One shipboard defensive shield generator: a squat circular ivory-and-brass projector emitting a vivid turquoise transparent hexagonal shield dome, clear protective shield silhouette. Match premium hand-painted 3D game inventory art: bright ivory armor, brass mechanisms, crisp large shapes and strong cyan/amber edge lighting. One centered object fills 85% of a square image, three-quarter isometric view, generous clean edge margin. Plain very dark navy #0b1722 backdrop without room or scenery. Readable at 80px. No text, UI, numbers, labels, logo, watermark or border. Original design."
+    },
+    {
+      "file": "preview/assets/reactor.webp",
+      "prompt": "Use case: stylized-concept. Asset type: isolated illustrated equipment for a science-fiction board-game UI on dark navy. One shipboard power reactor: a cylindrical glowing golden-orange energy core in an ivory armored housing, heavy copper connectors and three clearly readable illuminated energy cells. Match premium hand-painted 3D game inventory art: bright ivory armor, brass mechanisms, crisp large shapes and strong cyan/amber edge lighting. One centered object fills 85% of a square image, three-quarter isometric view, generous clean edge margin. Plain very dark navy #0b1722 backdrop without room or scenery. Readable at 80px. No text, UI, numbers, labels, logo, watermark or border. Original design."
+    },
+    {
+      "file": "preview/assets/pulse.webp",
+      "prompt": "Use case: stylized-concept. Asset type: isolated illustrated equipment for a science-fiction board-game UI on dark navy. One shipboard omnidirectional pulse cannon: a round ivory-and-brass emitter on a rotating mount with a vivid violet-blue plasma sphere and two broad luminous concentric shockwave rings. It must look different from a barrel-shaped laser cannon. Match premium hand-painted 3D game inventory art: bright ivory armor, brass mechanisms, crisp large shapes and strong cyan/amber edge lighting. One centered object fills 85% of a square image, three-quarter isometric view, generous clean edge margin. Plain very dark navy #0b1722 backdrop without room or scenery. Readable at 80px. No text, UI, numbers, labels, logo, watermark or border. Original design."
+    },
+    {
+      "file": "preview/assets/rocket.webp",
+      "prompt": "Use case: stylized-concept. Asset type: isolated illustrated equipment for a science-fiction board-game UI on dark navy. One futuristic ship-launched missile on a small rack: an ivory rocket with orange fins, metallic body and brilliant cyan exhaust, angled diagonally up-right, whole object visible. Match premium hand-painted 3D game inventory art: bright ivory armor, brass mechanisms, crisp large shapes and strong cyan/amber edge lighting. One centered object fills 85% of a square image, three-quarter isometric view, generous clean edge margin. Plain very dark navy #0b1722 backdrop without room or scenery. Readable at 80px. No text, UI, numbers, labels, logo, watermark or border. Original design."
+    }
+  ],
+  "currentRendering": {
+    "equipment": "Flat, original SVG drawings in preview/icons.js (equipmentPicture). These replace the detailed equipment bitmaps on the ship, cards and inspectors.",
+    "ship": "HTML rooms and original SVG/CSS hull, doors, lifts and energy conduits in preview/tactical.js and preview/style.css.",
+    "threats": "Flat, original SVG silhouettes in preview/icons.js, grouped by threat family in preview/art.js. All previous bitmap illustrations are retained as design sources but are no longer displayed or bundled."
+  }
+}

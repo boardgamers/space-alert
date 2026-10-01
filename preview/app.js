@@ -1,8 +1,14 @@
+import { mountNavigation } from "./navigation.js";
+import { pictogram, shipLocator, specializationIcons } from "./icons.js";
+import { createTacticalView } from "./tactical.js";
+import { illustration } from "./art.js";
 import {
   specialDescription,
   traitDescriptions,
   effectDescription,
   eventDescription,
+  zoneLabel,
+  stationLabel,
 } from "./text.js";
 export function mountConsole(root, host = null) {
   const $ = (s) => root.querySelector(s);
@@ -40,15 +46,18 @@ export function mountConsole(root, host = null) {
     combine = false,
     lastSpoken = 0;
   const t = (fr, en) => (locale === "fr" ? fr : en);
+  const navigation = mountNavigation(root, {
+    locale: () => locale,
+    hosted: !!host,
+  });
+  let appearance = {};
+  const playerBadge = (i) => {
+    const badge = appearance.players?.[i]?.pro && appearance.supporterBadge;
+    return badge ? `<img class="supporter-badge" src="${esc(badge.url)}" alt="${esc(badge.label)}" title="${esc(badge.label)}" width="14" height="14">` : "";
+  };
   const playerName = (i) =>
     esc(view?.players[i]?.name ?? `${t("Joueur", "Player")} ${i + 1}`);
-  const zones = ["red", "white", "blue"];
-  const zoneName = (z) =>
-    ({
-      red: t("Rouge", "Red"),
-      white: t("Blanc", "White"),
-      blue: t("Bleu", "Blue"),
-    })[z] ?? z;
+  const zoneName = (z) => zoneLabel(z, locale);
   const names = {
     rocketeer: ["Artilleur", "Rocketeer"],
     "data-analyst": ["Analyste", "Data Analyst"],
@@ -74,28 +83,52 @@ export function mountConsole(root, host = null) {
         "C · Station system or repair",
       ),
       bots: t("Attaquer avec les robots", "Battlebot attack"),
-      red: t("Aller vers le rouge", "Move red"),
-      blue: t("Aller vers le bleu", "Move blue"),
+      red: t("Aller à gauche", "Move left"),
+      blue: t("Aller à droite", "Move right"),
       lift: t("Changer de pont", "Change deck"),
     })[a] ??
     (a.startsWith("special:")
       ? `${specialName(a.split(":")[1])} · ${a.endsWith("advanced") ? t("avancé", "advanced") : t("basique", "basic")}`
       : a.startsWith("teleport:")
-        ? t("Déplacement héroïque · ", "Heroic move · ") + a.slice(9)
+        ? t("Déplacement héroïque · ", "Heroic move · ") +
+          stationLabel(a.slice(9), locale)
         : a.startsWith("hero:")
           ? t("Héroïque · ", "Heroic · ") + label(a.slice(5))
           : a);
   function icon(a) {
+    if (a === "bots")
+      return `<span class="card-art">${illustration("battlebots")}</span>`;
     if (a.startsWith("special:"))
-      return `<span class="tiny">✦ ${esc(specialName(a.split(":")[1]))}<br>${a.endsWith("advanced") ? "Ⅱ" : "Ⅰ"}</span>`;
-    if (a.startsWith("hero:")) return "★" + icon(a.slice(5));
+      return `<span class="special-action">${pictogram(specializationIcons[a.split(":")[1]])}<small>${a.endsWith("advanced") ? "Ⅱ" : "Ⅰ"}</small></span>`;
+    if (a.startsWith("hero:"))
+      return `<span class="hero-action">${pictogram("star")}${icon(a.slice(5))}</span>`;
     if (a.startsWith("teleport:"))
-      return `<span class="tiny">↗ ${esc(zoneName(a.split(":")[1].split("-")[0]))}<br>${a.endsWith("upper") ? "↑" : "↓"}</span>`;
-    return (
-      { A: "A", B: "B", C: "C", bots: "♟", red: "←", blue: "→", lift: "↕" }[
-        a
-      ] ?? esc(a)
-    );
+      return `<span class="teleport-action" style="--zone:var(--${esc(a.slice(9).split("-")[0])})">${pictogram("teleport")}${shipLocator([a.slice(9)])}</span>`;
+    const actionIcon = {
+      bots: "bots",
+      red: "left",
+      blue: "right",
+      lift: "lift",
+    }[a];
+    return actionIcon ? pictogram(actionIcon) : esc(a);
+  }
+  const symbol = (name, description, content = "") =>
+    `<span class="symbol-stat" role="img" title="${esc(description)}" aria-label="${esc(description)}">${pictogram(name)}${content}</span>`;
+  const { shipCutaway, threatPortrait } = createTacticalView({
+    t,
+    esc,
+    symbol,
+    zoneName,
+  });
+  function updateSound() {
+    const button = $("#sound");
+    const description = sound
+      ? t("Désactiver les annonces vocales", "Mute voice announcements")
+      : t("Activer les annonces vocales", "Enable voice announcements");
+    button.title = description;
+    button.setAttribute("aria-label", description);
+    button.setAttribute("aria-pressed", String(sound));
+    button.innerHTML = pictogram(sound ? "speaker" : "muted");
   }
   const duration = (ms) => {
     const s = Math.max(0, Math.ceil(ms / 1000));
@@ -135,12 +168,28 @@ export function mountConsole(root, host = null) {
     );
   }
   function button(command, text, disabled = false, extra = "") {
-    return `<button data-command="${command}" ${disabled ? "disabled" : ""} ${extra}>${text}</button>`;
+    const name = {
+      ready: "check",
+      unready: "close",
+      "advance-phase": "step",
+      "finish-planning": "lock",
+      draw: "cards",
+      "draw-android": "android",
+      resolve: "step",
+      "resolve-all": "forward",
+    }[command];
+    return `<button data-command="${command}" ${disabled ? "disabled" : ""} ${extra}>${name ? pictogram(name) : ""}<span>${text}</span></button>`;
   }
   function phaseFor(turn) {
     return turn <= 3 ? 1 : turn <= 7 ? 2 : 3;
   }
   function localizeSetup() {
+    updateSound();
+    $("#seat").setAttribute("aria-label", t("Point de vue", "Viewpoint"));
+    $("#program-crew").setAttribute(
+      "aria-label",
+      t("Équipier à programmer", "Crew to program"),
+    );
     const fields = {
       players: ["Joueurs", "Players"],
       "crew-size": ["Équipage", "Crew"],
@@ -194,27 +243,21 @@ export function mountConsole(root, host = null) {
       ],
     };
     options.difficulty = options["serious-difficulty"] = [
-      ["Blanches", "White"],
-      ["Blanches + jaunes", "White + yellow"],
-      ["Jaunes", "Yellow"],
-      ["Toutes", "All"],
-      ["Jaunes + rouges", "Yellow + red"],
-      ["Rouges", "Red"],
+      ["Niveau 1", "Level 1"],
+      ["Niveaux 1 + 2", "Levels 1 + 2"],
+      ["Niveau 2", "Level 2"],
+      ["Tous les niveaux", "All levels"],
+      ["Niveaux 2 + 3", "Levels 2 + 3"],
+      ["Niveau 3", "Level 3"],
     ];
     for (const [id, values] of Object.entries(options))
       [...$("#" + id).options].forEach(
         (o, i) => (o.textContent = t(...values[i])),
       );
     for (const [id, words] of Object.entries({
-      "new-button": ["Nouvelle session locale", "New local session"],
-      "ready-all": [
-        "Confirmer tous les joueurs · test local",
-        "Ready all players · local test",
-      ],
-      "next-event": [
-        "Prochaine annonce · test local",
-        "Next announcement · local test",
-      ],
+      "new-button": ["Préparer la mission", "Prepare mission"],
+      "ready-all": ["Tout l’équipage est prêt", "Ready all crew"],
+      "next-event": ["Prochaine annonce", "Next announcement"],
       "create-explorer-button": ["Créer un explorateur", "Create explorer"],
     }))
       $("#" + id).textContent = t(...words);
@@ -230,12 +273,6 @@ export function mountConsole(root, host = null) {
     if (crew >= view.crewSize) crew = seat;
     root.lang = locale;
     localizeSetup();
-    $("#locale").value = locale;
-    const openThreats = new Set(
-      [...root.querySelectorAll("details[data-threat][open]")].map(
-        (el) => el.dataset.threat,
-      ),
-    );
     const g = view.game,
       own = view.players[seat] ?? {
         ready: true,
@@ -266,30 +303,12 @@ export function mountConsole(root, host = null) {
     $("#crew").innerHTML = view.players
       .map(
         (p) =>
-          `<span class="crew-member ${p.ready ? "ready" : ""} ${p.seat === seat ? "own" : ""}">${playerName(p.seat)} · ${p.planningPhase ? `${p.finishedPlanning ? "🔒" : t("Phase", "Phase")} ${p.planningPhase}` : p.ready ? t("présent", "ready") : t("attente", "waiting")}</span>`,
+          `<span class="crew-member ${p.ready ? "ready" : ""} ${p.seat === seat ? "own" : ""}">${playerName(p.seat)}${playerBadge(p.seat)} · ${p.planningPhase ? `${p.finishedPlanning ? "🔒" : t("Phase", "Phase")} ${p.planningPhase}` : p.ready ? t("présent", "ready") : t("attente", "waiting")}</span>`,
       )
       .join("");
     $("#ship-title").textContent = t("Le vaisseau", "The ship");
     $("#threat-title").textContent = t("Menaces détectées", "Detected threats");
     $("#program-title").textContent = t("Programme de vol", "Flight program");
-    $("#journal-title").textContent = t("Journal de mission", "Mission log");
-    $("#setup-title").textContent = t(
-      "Session locale · configuration",
-      "Local session · setup",
-    );
-    $("#help-title").textContent = t("Guide de bord", "Flight guide");
-    $("#notice").textContent = t(
-      "Jeu de base et The New Frontier · version locale en cours de validation.",
-      "Base game and The New Frontier · local playtest under rules review.",
-    );
-    $("#scope").textContent = t(
-      "103 menaces, doubles actions, spécialisations et carrières disponibles. Choisissez une mission courte pour débuter.",
-      "103 threats, double actions, specializations and careers available. Choose a short mission to start.",
-    );
-    $("#lessons-title").textContent = t(
-      "École de vol · exercices libres",
-      "Flight school · untimed exercises",
-    );
     $("#lesson-list").innerHTML = lessons
       .map(
         (l) =>
@@ -298,55 +317,45 @@ export function mountConsole(root, host = null) {
       .join(" ");
     $("#lesson-guide").hidden = !view.tutorial;
     $("#lesson-guide").innerHTML = view.tutorial
-      ? `<h2>${esc(view.tutorial.title[locale === "fr" ? 0 : 1])}</h2><ol>${view.tutorial.instructions.map((p) => `<li>${esc(p[locale === "fr" ? 0 : 1])}</li>`).join("")}</ol>${view.stage === "programming" ? `<button id="lesson-next">${view.phase === 1 ? t("Phase 2 →", "Phase 2 →") : t("Terminer la programmation", "Finish programming")}</button>` : ""} <button data-lesson="${view.tutorial.id}" class="quiet">${t("Recommencer", "Restart")}</button>`
+      ? `<ol>${view.tutorial.instructions.map((p) => `<li>${esc(p[locale === "fr" ? 0 : 1])}</li>`).join("")}</ol>${view.stage === "programming" ? `<button id="lesson-next" class="icon-label">${pictogram(view.phase === 1 ? "step" : "lock")}<span>${view.phase === 1 ? t("Phase 2", "Phase 2") : t("Terminer la programmation", "Finish programming")}</span></button>` : ""} <button data-lesson="${view.tutorial.id}" class="quiet icon-button" title="${t("Recommencer", "Restart")}" aria-label="${t("Recommencer", "Restart")}">${pictogram("restart")}</button>`
       : "";
-    $("#footer").textContent = t(
-      "Adaptation en cours · Space Alert, Vlaada Chvátil / Czech Games Edition. Hôte local de test ; aucune connexion à BGS.",
-      "Adaptation in progress · Space Alert, Vlaada Chvátil / Czech Games Edition. Local test host; no BGS connection.",
+    $("#comms").innerHTML = symbol(
+      view.communicationsAvailable ? "comms" : "muted",
+      view.communicationsAvailable
+        ? t("Communications disponibles", "Communications online")
+        : t(
+            "Communications interrompues : gardez le silence",
+            "Communications down: stay silent",
+          ),
+      view.communicationsAvailable
+        ? ""
+        : `<span>${t("Silence", "Silence")}</span>`,
     );
-    $("#comms").textContent = view.communicationsAvailable
-      ? t("COMMS · OK", "COMMS · ONLINE")
-      : t("COMMS · SILENCE", "COMMS · BLACKOUT");
     $("#comms").classList.toggle("offline", !view.communicationsAvailable);
     $("#phase").textContent = view.phase
       ? `${t("PHASE", "PHASE")} ${view.phase}`
       : "";
     if (ship) {
-      $("#ship").innerHTML = ["upper", "lower"]
-        .flatMap((deck) =>
-          zones.map((z) => {
-            const station = `${z}-${deck}`,
-              s = ship.zones[z],
-              crewHere = ship.crew.filter(
-                (p) => p.station === station && !p.space,
-              );
-            const system = deck === "upper" ? "shield" : "reactor",
-              capacity =
-                (system === "shield"
-                  ? z === "white"
-                    ? 3
-                    : 2
-                  : z === "white"
-                    ? 5
-                    : 3) - Number(s.damage.includes(system));
-            const c = {
-              "red-upper": t("Intercepteurs", "Interceptors"),
-              "white-upper": t("Ordinateur", "Computer"),
-              "blue-upper": t("Robots", "Battlebots"),
-              "red-lower": t("Robots", "Battlebots"),
-              "white-lower": t("Observation", "Visual confirmation"),
-              "blue-lower": t("Roquette", "Rocket"),
-            }[station];
-            return `<div class="station" style="--zone:var(--${z})"><div class="station-title">${esc(zoneName(z))} ${deck === "upper" ? "↑" : "↓"}</div><div class="weapon">${deck === "lower" && z === "white" ? "◎" : "⌁"} <small>${(deck === "upper" ? (z === "white" ? 5 : 4) : z === "white" ? 1 : 2) - Number(s.damage.includes(`${deck}-weapon`) && station !== "white-lower")}</small></div><div class="systems"><div><b>A</b> ${deck === "lower" && z === "white" ? t("Impulsion", "Pulse") : t("Laser", "Laser")}</div><div><b>B</b> ${system === "shield" ? "⛨" : "⚡"} ${s[system]}/${capacity}</div><div><b>C</b> ${esc(c)}</div></div><div class="occupants">${crewHere.map((p) => `<span class="pawn ${p.knockedOut ? "out" : ""}" title="${t("Équipier", "Crew")} ${p.id + 1}${p.bots !== null ? " · ♟" : ""}">${p.id + 1}</span>`).join("")}</div>${s.damage.length ? `<div class="damage">${t("Dégâts", "Damage")} ${s.damage.length}/6</div>` : ""}</div>`;
-          }),
-        )
-        .join("");
+      $("#ship").innerHTML = shipCutaway({
+        ship,
+        selectedCrew: crew,
+        canPlan:
+          view.stage === "programming" &&
+          seat >= 0 &&
+          (g?.solo || crew === seat || crew >= view.players.length) &&
+          !own.finishedPlanning,
+        crewLabel: (id) =>
+          view.players[id]?.name ?? `${t("Androïde", "Android")} ${id + 1}`,
+      });
       $("#resources").innerHTML =
-        `<span>⚡ ${t("Combustible", "Fuel")} <b>${ship.fuel}</b></span><span>↗ ${t("Roquettes", "Rockets")} <b>${ship.rockets}</b></span><span>⌨ ${ship.computer.map((x) => (x ? "●" : "○")).join(" ")}</span><span>♟ ${ship.bots.filter((b) => b.owner === null && b.station && !b.disabled).length} ${t("disponibles", "available")}</span>${ship.crew
+        `${symbol("fuel", `${t("Combustible", "Fuel")} : ${ship.fuel}`, `<b>${ship.fuel}</b>`)}${symbol("rocket", `${t("Roquettes", "Rockets")} : ${ship.rockets}`, `<b>${ship.rockets}</b>`)}${symbol("computer", t("Ordinateur", "Computer") + " · " + ship.computer.map((x, i) => `${t("Phase", "Phase")} ${i + 1} : ${x ? t("entretenu", "maintained") : t("à entretenir", "not maintained")}`).join(" · "), ship.computer.map((x, i) => `<span class="computer-phase ${x ? "maintained" : ""}">${i + 1}</span>`).join(""))}${symbol("bots", `${t("Robots disponibles", "Available battlebots")} : ${ship.bots.filter((b) => b.owner === null && b.station && !b.disabled).length}`, `<b>${ship.bots.filter((b) => b.owner === null && b.station && !b.disabled).length}</b>`)}${ship.crew
           .filter((p) => p.space)
-          .map(
-            (p) =>
-              `<span>↗ ${t("Équipier", "Crew")} ${p.id + 1} · ${t("portée", "range")} ${p.space}${p.knockedOut ? " †" : ""}</span>`,
+          .map((p) =>
+            symbol(
+              "interceptor",
+              `${t("Équipier", "Crew")} ${p.id + 1} · ${t("portée", "range")} ${p.space}${p.knockedOut ? " · " + t("hors combat", "knocked out") : ""}`,
+              `<b>${p.id + 1}</b> · ${p.space}${p.knockedOut ? " †" : ""}`,
+            ),
           )
           .join("")}`;
     }
@@ -359,7 +368,7 @@ export function mountConsole(root, host = null) {
       threats
         .map(
           (th) =>
-            `<details data-threat="${th.instance}" ${openThreats.has(String(th.instance)) ? "open" : ""} class="threat" style="--zone:var(--${th.zone ?? "gold"})"><summary><span>T+${th.turn}</span><strong>${esc(th.name)}</strong><span class="stats">${th.status === "destroyed" ? "✓" : th.status === "survived" ? "↘" : `${Math.max(0, th.hp - (th.damage ?? 0))} ♥ · ${th.shield} ⛨`}</span></summary><p>${th.position === "internal" ? esc(th.stations.join(", ")) + " · " + esc(label(th.repair)) : esc(zoneName(th.zone))} · ${t("Vitesse", "Speed")} ${th.speed}</p>${traitDescriptions(
+            `<article class="threat illustrated-threat" style="--zone:var(--${th.zone ?? "gold"})"><button class="threat-card" data-inspect="${th.instance}" data-inspect-title="${esc(th.name)} · T+${th.turn}" aria-haspopup="dialog" aria-label="${esc(th.name)} · ${t("Tour", "Turn")} ${th.turn} · ${esc(th.position === "internal" ? th.stations.map((s) => stationLabel(s, locale)).join(", ") : zoneName(th.zone))} · ${t("Détails", "Details")}"><span class="threat-heading"><strong>${esc(th.name)}</strong><span class="threat-timing" title="${t("Arrivée au tour", "Arrival on turn")} ${th.turn}">T+${th.turn}</span></span>${threatPortrait(th)}<span class="threat-footer">${symbol("speed", `${t("Vitesse", "Speed")} : ${th.speed}`, th.speed)}<span>${t("Détails", "Details")}</span></span></button>${(th.track ?? g.tracks[th.zone ?? "internal"]) ? trackHtml(th, g) : ""}<template>${threatPortrait(th)}<div class="threat-facts">${symbol("speed", `${t("Vitesse", "Speed")} : ${th.speed}`, th.speed)}</div><p>${th.position === "internal" ? esc(th.stations.map((s) => stationLabel(s, locale)).join(", ")) + " · " + esc(label(th.repair)) : esc(zoneName(th.zone))}</p>${traitDescriptions(
               th,
               locale,
             )
@@ -371,7 +380,7 @@ export function mountConsole(root, host = null) {
               )
               .join(
                 "",
-              )}${calledHtml(th.calledCard)}${(th.track ?? g.tracks[th.zone ?? "internal"]) ? trackHtml(th, g) : ""}</details>`,
+              )}${calledHtml(th.calledCard)}${(th.track ?? g.tracks[th.zone ?? "internal"]) ? trackHtml(th, g) : ""}</template></article>`,
         )
         .join("") ||
       `<p class="empty">${t("En attente des premières détections.", "Awaiting the first detections.")}</p>`;
@@ -401,7 +410,7 @@ export function mountConsole(root, host = null) {
     $("#program-crew").innerHTML = Array.from(
       { length: view.crewSize },
       (_, i) =>
-        `<option value="${i}" ${crew === i ? "selected" : ""}>${g?.solo || i >= view.players.length ? `${t("Androïde", "Android")} ${i + 1}` : playerName(i)}${g?.specializations[i] ? " · " + esc(specialName(g.specializations[i].name)) : ""}</option>`,
+        `<option value="${i}" data-kind="${g?.solo || i >= view.players.length ? "android" : "crew"}" data-short-label="${g?.solo || i >= view.players.length ? i + 1 : playerName(i)}" data-specialization="${g?.specializations[i]?.name ?? ""}" ${crew === i ? "selected" : ""}>${g?.solo || i >= view.players.length ? `${t("Androïde", "Android")} ${i + 1}` : playerName(i)}${g?.specializations[i] ? " · " + esc(specialName(g.specializations[i].name)) : ""}</option>`,
     ).join("");
     const planning = view.stage === "programming",
       canOwn =
@@ -416,7 +425,8 @@ export function mountConsole(root, host = null) {
           canOwn &&
           !own.finishedPlanning &&
           phaseFor(slot.turn) === ownPhase;
-        return `<button class="slot ${phaseFor(slot.turn) < ownPhase ? "locked" : ""} ${phaseFor(slot.turn) > ownPhase ? "future" : ""}" data-turn="${slot.turn}" ${editable ? "" : "disabled"} title="T+${slot.turn}"><span class="turn">T+${slot.turn} ${phaseFor(slot.turn) < ownPhase ? "🔒" : ""}</span><span class="action">${slot.cards.map((c) => (c.sides ? c.sides[c.side].map(icon).join(" ") : c.category === "movement" ? "↔" : "◆")).join(" + ") || "·"}</span></button>`;
+        const description = `T+${slot.turn} · ${slot.cards.map((c) => (c.sides ? c.sides[c.side].map(label).join(" → ") : c.category === "movement" ? t("Déplacement", "Movement") : t("Action", "Action"))).join(" + ") || t("Vide", "Empty")}`;
+        return `<button class="slot ${phaseFor(slot.turn) < ownPhase ? "locked" : ""} ${phaseFor(slot.turn) > ownPhase ? "future" : ""}" data-turn="${slot.turn}" ${editable ? "" : "disabled"} title="${esc(description)}" aria-label="${esc(description)}"><span class="turn">T+${slot.turn} ${phaseFor(slot.turn) < ownPhase ? pictogram("lock") : ""}</span><span class="action">${slot.cards.map((c) => (c.sides ? c.sides[c.side].map(icon).join(" ") : pictogram(c.category === "movement" ? "move" : "cards"))).join(" + ") || "·"}</span></button>`;
       })
       .join("");
     $("#player-help").textContent = planning
@@ -426,8 +436,8 @@ export function mountConsole(root, host = null) {
             "Choose a turn for this card.",
           )
         : t(
-            "Choisissez une moitié de carte, puis un tour. Cliquez sur un tour rempli pour reprendre sa carte.",
-            "Choose a card half, then a turn. Click a filled turn to retrieve its card.",
+            "Choisissez une carte, puis un tour.",
+            "Choose a card, then a turn.",
           )
       : view.stage === "presence"
         ? t(
@@ -469,7 +479,10 @@ export function mountConsole(root, host = null) {
     $("#ready-controls").replaceChildren(
       ...(preparing ? [...$("#controls").childNodes] : []),
     );
-    if (preparing && host) $("#notice").textContent = view.mission.title;
+    if (preparing)
+      $("#ready-help").textContent =
+        view.mission.title + " · " + $("#ready-help").textContent;
+    $("#crew").hidden = view.players.length === 1 && !preparing;
     const hand = [
       ...(g?.hand ?? []),
       ...(g?.androidCards ?? []).filter((c) => c.owner === crew),
@@ -491,7 +504,7 @@ export function mountConsole(root, host = null) {
       g.specializations.some(
         (s) => s && ["medic", "special-ops"].includes(s.name),
       )
-        ? `<button id="combine" class="quiet" aria-pressed="${combine}">${t("Combiner deux cartes", "Combine two cards")} ${combine ? "●" : ""}</button>`
+        ? `<button id="combine" class="quiet icon-button" title="${t("Combiner deux cartes", "Combine two cards")}" aria-label="${t("Combiner deux cartes", "Combine two cards")}" aria-pressed="${combine}">${pictogram("combine")}</button>`
         : "";
     $("#card-help").textContent = selected
       .map((choice) => {
@@ -528,11 +541,11 @@ export function mountConsole(root, host = null) {
             .join("")
         : "";
     $("#hand-filter").innerHTML =
-      planning && canOwn && grouped.length > 12
+      planning && canOwn && (grouped.length > 12 || handFilter !== "all")
         ? ["all", "A", "B", "C", "bots", "move"]
             .map(
               (f) =>
-                `<button data-filter="${f}" class="quiet" aria-pressed="${handFilter === f}">${f === "all" ? t("Tout", "All") : f === "bots" ? "♟" : f === "move" ? "↔" : f}</button>`,
+                `<button data-filter="${f}" class="quiet icon-button" aria-pressed="${handFilter === f}" title="${esc(f === "all" ? t("Toutes les cartes", "All cards") : f === "move" ? t("Déplacements", "Movement") : label(f))}" aria-label="${esc(f === "all" ? t("Toutes les cartes", "All cards") : f === "move" ? t("Déplacements", "Movement") : label(f))}">${f === "all" ? pictogram("cards") : f === "bots" ? pictogram("bots") : f === "move" ? pictogram("move") : f}</button>`,
             )
             .join("")
         : "";
@@ -569,15 +582,36 @@ export function mountConsole(root, host = null) {
     $("#ready-all").disabled = view.stage !== "presence";
     $("#next-event").disabled =
       !!view.tutorial || !["programming", "countdown"].includes(view.stage);
-    $("#help").innerHTML = t(
-      "<p><b>Planifier.</b> A utilise l’arme, B l’énergie, C le système indiqué dans la station. Les flèches déplacent votre équipier. Les déplacements planifiés ne déplacent pas encore les pions : tout sera exécuté pendant la résolution.</p><p><b>Coordonner.</b> Chaque arme ne tire qu’une fois par tour. Le réacteur de la zone alimente le laser lourd et l’impulsion ; les petits lasers ont leur propre batterie. Deux équipiers prenant le même ascenseur retardent le second.</p><p><b>Ordinateur.</b> Quelqu’un doit faire C sur la passerelle pendant les deux premiers tours de chaque phase (1–2, 4–5, 8–9), sinon les actions suivantes sont retardées.</p><p><b>Menaces.</b> Les tirs se combinent avant de retirer le bouclier adverse. Une roquette touche au tour suivant. Les ennemis avancent après les actions et exécutent X, Y, Z en les franchissant.</p><p><b>Coopérer à distance.</b> Utilisez une conversation vocale externe. Pendant une panne de communication, gardez le silence : cette page ne peut pas couper votre appel.</p>",
-      "<p><b>Plan.</b> A operates a weapon, B transfers energy, C uses the station system. Arrows move your crew member. Planning does not move the real ship pieces; programs execute during resolution.</p><p><b>Coordinate.</b> Each weapon fires once per turn. Heavy lasers and pulse draw from the zone reactor; light lasers have their own battery. A second crew member using the same lift is delayed.</p><p><b>Computer.</b> Someone must perform C on the bridge within the first two turns of each phase (1–2, 4–5, 8–9), or the next actions are delayed.</p><p><b>Threats.</b> Combine fire before subtracting enemy shields. Rockets hit on the following turn. Threats move after crew actions and execute X, Y and Z as they cross them.</p><p><b>Remote cooperation.</b> Use external voice chat. Stay silent during communications blackouts; this page cannot mute your call.</p>",
-    );
+    $("#ready-all").hidden = $("#ready-all").disabled;
+    $("#next-event").hidden = $("#next-event").disabled;
+    $("#help").innerHTML =
+      `<div class="pictogram-legend">${[
+        ["laser", t("Laser", "Laser")],
+        ["pulse", t("Impulsion", "Pulse")],
+        ["shield", t("Bouclier", "Shield")],
+        ["reactor", t("Réacteur", "Reactor")],
+        ["fuel", t("Combustible", "Fuel")],
+        ["computer", t("Ordinateur", "Computer")],
+        ["bots", t("Robots", "Battlebots")],
+        ["android", t("Androïde", "Android")],
+        ["interceptor", t("Intercepteurs", "Interceptors")],
+        ["observation", t("Observation", "Visual confirmation")],
+        ["rocket", t("Roquette", "Rocket")],
+        ["hull", t("Points de vie", "Hit points")],
+      ]
+        .map(([name, text]) => `<span>${pictogram(name)}${esc(text)}</span>`)
+        .join("")}</div>` +
+      `<p>${t("Les zones gauche, centre et droite correspondent aux zones rouge, blanche et bleue des annonces originales. Le petit plan sur chaque menace indique sa trajectoire ou les salles touchées.", "Left, center and right correspond to red, white and blue in the original announcements. Each threat’s miniature map shows its trajectory or affected rooms.")}</p>` +
+      t(
+        "<p><b>Planifier.</b> Choisissez une carte puis un tour ; cliquez sur un tour rempli pour reprendre la carte. A utilise l’arme, B l’énergie, C le système indiqué dans la station. Les flèches déplacent votre équipier. Les déplacements planifiés ne déplacent pas encore les pions : tout sera exécuté pendant la résolution.</p><p><b>Coordonner.</b> Chaque arme ne tire qu’une fois par tour. Le réacteur de la zone alimente le laser lourd et l’impulsion ; les petits lasers ont leur propre batterie. Deux équipiers prenant le même ascenseur retardent le second.</p><p><b>Ordinateur.</b> Quelqu’un doit faire C sur la passerelle pendant les deux premiers tours de chaque phase (1–2, 4–5, 8–9), sinon les actions suivantes sont retardées.</p><p><b>Menaces.</b> Les tirs se combinent avant de retirer le bouclier adverse. Une roquette touche au tour suivant. Les ennemis avancent après les actions et exécutent X, Y, Z en les franchissant.</p><p><b>Coopérer à distance.</b> Utilisez une conversation vocale externe. Pendant une panne de communication, gardez le silence : cette page ne peut pas couper votre appel.</p>",
+        "<p><b>Plan.</b> Choose a card then a turn; click a filled turn to retrieve its card. A operates a weapon, B transfers energy, C uses the station system. Arrows move your crew member. Planning does not move the real ship pieces; programs execute during resolution.</p><p><b>Coordinate.</b> Each weapon fires once per turn. Heavy lasers and pulse draw from the zone reactor; light lasers have their own battery. A second crew member using the same lift is delayed.</p><p><b>Computer.</b> Someone must perform C on the bridge within the first two turns of each phase (1–2, 4–5, 8–9), or the next actions are delayed.</p><p><b>Threats.</b> Combine fire before subtracting enemy shields. Rockets hit on the following turn. Threats move after crew actions and execute X, Y and Z as they cross them.</p><p><b>Remote cooperation.</b> Use external voice chat. Stay silent during communications blackouts; this page cannot mute your call.</p>",
+      );
+    navigation.sync();
   }
   function calledHtml(data) {
     if (!data) return "";
     const c = data.card;
-    return `<div class="called-threat"><h4>${t("Renfort", "Reinforcement")} · ${esc(c.name)}</h4><p>${c.hp} ♥ · ${c.shield} ⛨ · ${t("Vitesse", "Speed")} ${c.speed}${c.stations ? " · " + esc(c.stations.join(", ")) + " · " + esc(label(c.repair)) : ""}</p>${traitDescriptions(
+    return `<div class="called-threat"><h4>${t("Renfort", "Reinforcement")} · ${esc(c.name)}</h4><p>${c.hp} ♥ · ${c.shield} ⛨ · ${t("Vitesse", "Speed")} ${c.speed}${c.stations ? " · " + esc(c.stations.map((s) => stationLabel(s, locale)).join(", ")) + " · " + esc(label(c.repair)) : ""}</p>${traitDescriptions(
       c,
       locale,
     )
@@ -591,15 +625,16 @@ export function mountConsole(root, host = null) {
   }
   function trackHtml(th, g) {
     const track = th.track ?? g.tracks[th.zone ?? "internal"];
-    return `<div class="track">${Array.from(
+    const pending = ["pending", "announced", "waiting"].includes(th.status);
+    return `<div class="approach-track"><span class="track-caption">${pending ? t("À l’arrivée", "On arrival") : t("Approche", "Approach")}</span><div class="track" aria-label="${t("Piste d’approche", "Approach track")}">${Array.from(
       { length: track.length },
       (_, i) => track.length - i,
     )
       .map(
         (n) =>
-          `<span class="${th.positionOnTrack === n ? "current" : ""} ${track.marks.some((x) => x[0] === n) ? "mark" : ""}">${track.marks.find((x) => x[0] === n)?.[1] ?? ""}</span>`,
+          `<span title="${n}${track.marks.find((x) => x[0] === n)?.[1] ? " · " + track.marks.find((x) => x[0] === n)[1] : ""}" class="${!pending && th.positionOnTrack === n ? "current" : ""} ${pending && n === track.length ? "entry" : ""} ${track.marks.some((x) => x[0] === n) ? "mark" : ""}">${track.marks.find((x) => x[0] === n)?.[1] ?? (!pending && th.positionOnTrack === n ? "●" : "")}</span>`,
       )
-      .join("")}</div>`;
+      .join("")}</div>${pictogram("ship")}</div>`;
   }
   function logText(e) {
     return eventDescription(
@@ -625,7 +660,7 @@ export function mountConsole(root, host = null) {
       ? Array.from(
           { length: Number($("#players").value) },
           (_, id) =>
-            `<label>${t("Joueur", "Player")} ${id + 1}<select data-career-seat="${id}"><option value="">${t("Choisir un explorateur", "Choose explorer")}</option>${(
+            `<label>${t("Joueur", "Player")} ${id + 1}<select id="career-seat-${id}" data-career-seat="${id}"><option value="">${t("Choisir un explorateur", "Choose explorer")}</option>${(
               view?.explorers ?? []
             )
               .filter((e) => !e.dead && !e.activeRun)
@@ -663,9 +698,10 @@ export function mountConsole(root, host = null) {
                 .filter((s) => s.level);
             }
             const selected = previous[id] ?? (careers ? "" : choices[id]?.name);
-            return `<label>${t("Équipier", "Crew")} ${id + 1}<select>${careers ? `<option value="">${t("Aucune spécialisation", "No specialization")}</option>` : ""}${choices.map((s) => `<option value="${s.name}" data-level="${s.level}" ${selected === s.name ? "selected" : ""}>${esc(specialName(s.name))} ${careers ? s.level : ""}</option>`).join("")}</select></label>`;
+            return `<label>${t("Équipier", "Crew")} ${id + 1}<select id="specialist-${id}">${careers ? `<option value="">${t("Aucune spécialisation", "No specialization")}</option>` : ""}${choices.map((s) => `<option value="${s.name}" data-level="${s.level}" ${selected === s.name ? "selected" : ""}>${esc(specialName(s.name))} ${careers ? s.level : ""}</option>`).join("")}</select></label>`;
           }).join("")
         : "";
+    navigation.syncChoices();
   }
   for (const id of [
     "players",
@@ -728,7 +764,7 @@ export function mountConsole(root, host = null) {
         )
         .join("")}</select></label>`;
     if (c.stage === "ready")
-      content += `<p>${t("Prochaine mission : celle sélectionnée dans la configuration.", "Next mission: the one selected in setup.")}</p><label>${t("Si une seule escouade reste :", "If one battlebot squad remains:")}<select id="campaign-bots"><option value="red-lower">${t("Rouge ↓", "Red ↓")}</option><option value="blue-upper">${t("Bleu ↑", "Blue ↑")}</option></select></label><button id="campaign-next" ${seat === 0 ? "" : "disabled"}>${t("Mission suivante", "Next mission")}</button>`;
+      content += `<p>${t("Prochaine mission : celle sélectionnée dans la configuration.", "Next mission: the one selected in setup.")}</p><label>${t("Si une seule escouade reste :", "If one battlebot squad remains:")}<select id="campaign-bots"><option value="red-lower">${stationLabel("red-lower", locale)}</option><option value="blue-upper">${stationLabel("blue-upper", locale)}</option></select></label><button id="campaign-next" ${seat === 0 ? "" : "disabled"}>${t("Mission suivante", "Next mission")}</button>`;
     if (c.outcome)
       content += `<p>${t("Score de campagne", "Campaign score")} : <strong>${c.outcome.score}</strong></p>`;
     $("#campaign").innerHTML = content;
@@ -737,15 +773,6 @@ export function mountConsole(root, host = null) {
     const k = JSON.stringify([locale, next.explorers]);
     if (k === careerKey) return;
     careerKey = k;
-    $("#career-title").textContent = t(
-      host ? "Explorateurs · cette table" : "Explorateurs · carrières locales",
-      host ? "Explorers · this table" : "Explorers · local careers",
-    );
-    const opened = new Set(
-      [...root.querySelectorAll("details[data-explorer][open]")].map(
-        (d) => d.dataset.explorer,
-      ),
-    );
     $("#explorers").innerHTML = (next.explorers ?? [])
       .map((e) => {
         const spent = Object.values(e.specializations).reduce(
@@ -766,9 +793,9 @@ export function mountConsole(root, host = null) {
             : "";
         const claims =
           !e.activeRun && !e.dead && e.eligible.length && (!host || e.editable)
-            ? `<p><a target="_blank" rel="noopener" href="https://filemanager.czechgames.com/storage/files/space-alert-the-new-frontier/other-downloads/achievements/space-alert-2-achievements-${locale === "fr" ? "fr" : "en"}.pdf">${t("Conditions officielles des succès", "Official achievement requirements")}</a></p><label><input type="checkbox" data-agrees="${e.id}">${t("Conditions vérifiées ; accord de l’équipage si nécessaire.", "Requirements checked; crew agrees where required.")}</label><select data-claim-choice="${e.id}">${e.eligible.map((a) => `<option value="${a.id}">${esc(a.name)} · +${a.xp}</option>`).join("")}</select><button data-claim="${e.id}">${t("Valider le succès", "Record achievement")}</button>`
+            ? `<p><a target="_blank" rel="noopener" href="https://filemanager.czechgames.com/storage/files/space-alert-the-new-frontier/other-downloads/achievements/space-alert-2-achievements-${locale === "fr" ? "fr" : "en"}.pdf">${t("Conditions officielles des succès", "Official achievement requirements")}</a></p><label><input type="checkbox" data-agrees="${e.id}">${t("Conditions vérifiées ; accord de l’équipage si nécessaire.", "Requirements checked; crew agrees where required.")}</label><select id="claim-${e.id}" aria-label="${t("Succès", "Achievement")}" data-claim-choice="${e.id}">${e.eligible.map((a) => `<option value="${a.id}">${esc(a.name)} · +${a.xp}</option>`).join("")}</select><button data-claim="${e.id}">${t("Valider le succès", "Record achievement")}</button>`
             : "";
-        return `<details data-explorer="${e.id}" ${opened.has(e.id) ? "open" : ""}><summary>${esc(e.name)} · ${t("Niveau", "Level")} ${e.level} · ${e.xp} XP ${e.dead ? "†" : e.activeRun ? "· " + t("en mission", "on mission") : ""}</summary><p>${e.cloning ? t("Clonage autorisé", "Cloning enabled") : t("Hardcore", "Hardcore")} · ${e.clones} ${t("clone(s)", "clone(s)")}</p><p>${Object.entries(
+        return `<article class="explorer-card" data-explorer="${e.id}"><h3>${esc(e.name)} · ${t("Niveau", "Level")} ${e.level} · ${e.xp} XP ${e.dead ? "†" : e.activeRun ? "· " + t("en mission", "on mission") : ""}</h3><p>${e.cloning ? t("Clonage autorisé", "Cloning enabled") : t("Hardcore", "Hardcore")} · ${e.clones} ${t("clone(s)", "clone(s)")}</p><p>${Object.entries(
           e.specializations,
         )
           .map(([n, l]) => `${esc(specialName(n))} ${l}`)
@@ -794,7 +821,7 @@ export function mountConsole(root, host = null) {
             (r) =>
               `<li>${r.survived ? "✓" : "✕"} ${r.score} · +${r.xp} XP</li>`,
           )
-          .join("")}</ol></details>`;
+          .join("")}</ol></article>`;
       })
       .join("");
     setupSpecialists();
@@ -854,7 +881,7 @@ export function mountConsole(root, host = null) {
     try {
       const next = await fetch(`/api/state?seat=${seat}`).then((r) => r.json());
       render(next);
-      $("#connection").textContent = t("HÔTE LOCAL", "LOCAL HOST");
+      $("#connection").textContent = "";
     } catch {
       $("#connection").textContent = t("RECONNEXION", "RECONNECTING");
     }
@@ -868,8 +895,7 @@ export function mountConsole(root, host = null) {
       return;
     if (!el || pending) return;
     if (el.id === "open-setup") {
-      $("#setup").open = true;
-      $("#setup").scrollIntoView({ block: "start" });
+      navigation.openPanel("setup");
       return;
     }
     if (el.dataset.lesson) {
@@ -879,7 +905,7 @@ export function mountConsole(root, host = null) {
         selected = [];
         replayFrame = null;
         await localPost("/api/lesson", { lesson: el.dataset.lesson });
-        $("#lessons").open = false;
+        navigation.closePanel();
         $("#lesson-guide").scrollIntoView({ block: "start" });
       });
       return;
@@ -891,6 +917,14 @@ export function mountConsole(root, host = null) {
     if (el.dataset.filter) {
       handFilter = el.dataset.filter;
       rerender();
+      return;
+    }
+    if (el.dataset.pickAction) {
+      handFilter = el.dataset.pickAction;
+      selected = [];
+      navigation.closePanel();
+      rerender();
+      $("#hand-filter").scrollIntoView({ block: "center" });
       return;
     }
     if (el.id === "campaign-continue" || el.id === "campaign-return") {
@@ -1070,8 +1104,7 @@ export function mountConsole(root, host = null) {
     }
     if (el.id === "sound") {
       sound = !sound;
-      el.setAttribute("aria-pressed", sound);
-      el.textContent = sound ? "♫" : "♪";
+      updateSound();
       if (sound) speak(t("Annonces activées", "Announcements enabled"));
       else speechSynthesis.cancel();
     }
@@ -1094,10 +1127,6 @@ export function mountConsole(root, host = null) {
       replayFrame = null;
       rerender();
     }
-  });
-  $("#locale").addEventListener("change", (e) => {
-    locale = e.target.value;
-    rerender();
   });
   $("#seat").addEventListener("change", (e) => {
     seat = Number(e.target.value);
@@ -1167,7 +1196,7 @@ export function mountConsole(root, host = null) {
       selected = [];
       crew = seat;
       render(next);
-      $("#setup").open = false;
+      navigation.closePanel();
     });
   });
   if (!host) intervals.push(setInterval(refresh, 650));
@@ -1211,7 +1240,7 @@ export function mountConsole(root, host = null) {
   if (host) {
     root.classList.add("bgs-hosted");
     fillMissions(host.missions);
-    $("#connection").textContent = "BGS";
+    $("#connection").textContent = "";
     $(".brand").removeAttribute("href");
   } else {
     void (async () => {
@@ -1231,7 +1260,7 @@ export function mountConsole(root, host = null) {
           "1,2";
       }
       render(next);
-      if (host) $("#connection").textContent = "BGS";
+      if (host) $("#connection").textContent = "";
     },
     setPlayer(index) {
       seat = index ?? -1;
@@ -1240,11 +1269,13 @@ export function mountConsole(root, host = null) {
       rerender();
     },
     setPreferences(prefs) {
+      appearance = prefs.bgs ?? {};
       if (prefs.locale) locale = prefs.locale;
       if (prefs.sound !== undefined) sound = !!prefs.sound;
       rerender();
     },
     destroy() {
+      navigation.destroy();
       for (const id of intervals) clearInterval(id);
       for (const [type, fn] of rootListeners)
         root.removeEventListener(type, fn);

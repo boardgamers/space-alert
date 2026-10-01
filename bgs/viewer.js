@@ -11,7 +11,7 @@ registerViewer("SpaceAlert", (context) => {
   style.textContent =
     css +
     `
- .bgs-hosted #setup,.bgs-hosted #lessons,.bgs-hosted #create-explorer,.bgs-hosted #seat,.bgs-hosted #ready-all,.bgs-hosted #next-event,.bgs-hosted #footer,.bgs-hosted #open-setup {display:none!important}
+ .bgs-hosted #setup,.bgs-hosted #lessons,.bgs-hosted #create-explorer,.bgs-hosted #seat,.bgs-hosted #ready-all,.bgs-hosted #next-event,.bgs-hosted #open-setup {display:none!important}
  .bgs-hosted #career-manager:has(#explorers:empty) {display:none}
  `;
   target.innerHTML = html

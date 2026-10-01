@@ -9,14 +9,10 @@
   <body>
     <header>
       <a class="brand" href="/"
-        >✦
-        <span>SPACE ALERT<small>SITTING DUCK · FLIGHT CONSOLE</small></span></a
+        >✦ <span>SPACE ALERT<small>SITTING DUCK</small></span></a
       >
       <div class="header-tools">
-        <select id="locale" aria-label="Langue">
-          <option value="fr">FR</option>
-          <option value="en">EN</option></select
-        ><select id="seat" aria-label="Joueur"></select
+        <select id="seat" aria-label="Joueur"></select
         ><button
           id="sound"
           class="quiet"
@@ -27,10 +23,11 @@
         </button>
       </div>
     </header>
+    <nav id="console-nav" class="console-nav" aria-label="Menu"></nav>
     <main>
       <div class="mission-line">
         <div>
-          <span id="connection">LOCAL</span>
+          <span id="connection"></span>
           <h1 id="status">Space Alert</h1>
         </div>
         <div class="timer">
@@ -43,7 +40,6 @@
         <div id="ready-controls" class="controls"></div>
       </section>
       <div id="error" role="alert"></div>
-      <div id="notice" class="notice"></div>
       <section id="lesson-guide" hidden></section>
       <div class="flight-layout">
         <section class="tactical">
@@ -51,7 +47,7 @@
             <h2 id="ship-title"></h2>
             <span id="comms"></span>
           </div>
-          <div id="ship" class="ship"></div>
+          <div id="ship" class="ship cutaway"></div>
           <div id="resources" class="resources"></div>
           <div class="section-heading">
             <h2 id="threat-title"></h2>
@@ -63,11 +59,8 @@
         <section id="planning">
           <div class="section-heading">
             <h2 id="program-title"></h2>
-            <select
-              id="program-crew"
-              aria-label="Équipier à programmer"
-            ></select>
           </div>
+          <select id="program-crew" aria-label="Équipier à programmer"></select>
           <div id="program" class="program"></div>
           <p id="player-help"></p>
           <div id="controls" class="controls"></div>
@@ -81,117 +74,131 @@
           <div id="campaign"></div>
         </section>
       </div>
-      <details id="journal">
-        <summary id="journal-title"></summary>
-        <ol id="announcements"></ol>
-      </details>
-      <details id="lessons">
-        <summary id="lessons-title">École de vol · exercices libres</summary>
-        <div id="lesson-list"></div>
-      </details>
-      <details id="setup">
-        <summary id="setup-title"></summary>
-        <form id="new-session">
-          <label id="players-label"
-            >Joueurs
-            <select id="players">
-              <option value="1">Solo · 4 androïdes</option>
-              <option value="2">2 + 2 androïdes</option>
-              <option value="3">3 + 1 androïde</option>
-              <option value="4" selected>4</option>
-              <option value="5">5</option>
-            </select></label
-          ><label
-            >Équipage<select id="crew-size">
-              <option value="0">Standard</option>
-              <option value="5">5 équipiers (androïde supplémentaire)</option>
-              <option value="3">3 joueurs sans androïde</option>
-            </select></label
-          ><label
-            >Mission
-            <select id="mission"></select></label
-          ><label id="special-label"
-            >Spécialisations
-            <select id="specialization">
-              <option value="">Aucune</option>
-              <option value="1">Niveau 1</option>
-              <option value="2">Niveau 2</option>
-              <option value="3">Niveau 3</option>
-            </select></label
-          ><label
-            >Menaces<select id="threat-expansion">
-              <option value="0">Jeu de base</option>
-              <option value="1">+ The New Frontier</option>
-            </select></label
-          >
-          <label
-            >Menaces communes<select id="difficulty">
-              <option value="1">Blanches</option>
-              <option value="1,2">Blanches + jaunes</option>
-              <option value="2">Jaunes</option>
-              <option value="1,2,3">Toutes</option>
-              <option value="2,3">Jaunes + rouges</option>
-              <option value="3">Rouges</option>
-            </select></label
-          >
-          <label
-            >Menaces sérieuses<select id="serious-difficulty">
-              <option value="1">Blanches</option>
-              <option value="1,2">Blanches + jaunes</option>
-              <option value="2">Jaunes</option>
-              <option value="1,2,3">Toutes</option>
-              <option value="2,3">Jaunes + rouges</option>
-              <option value="3">Rouges</option>
-            </select></label
-          >
-          <label
-            >Format<select id="campaign-limit">
-              <option value="0">Mission unique</option>
-              <option value="3">Campagne · 3 missions</option>
-              <option value="5">Campagne · 5 missions</option>
-            </select></label
-          >
-          <label
-            >Expérience<select id="careers-enabled">
-              <option value="0">Partie libre</option>
-              <option value="1">Carrières enregistrées</option>
-            </select></label
-          >
-          <div id="career-seats" class="token-controls"></div>
-          <div id="specialists" class="token-controls"></div>
-          <button type="submit" id="new-button">Nouvelle session locale</button>
-        </form>
-        <p id="scope"></p>
-        <button id="ready-all" class="quiet">
-          Confirmer tous les joueurs · test local</button
-        ><button id="next-event" class="quiet">
-          Prochaine annonce · test local
-        </button>
-      </details>
-      <details id="career-manager">
-        <summary id="career-title">Explorateurs · carrières locales</summary>
-        <form id="create-explorer">
-          <label
-            >Nom<input
-              id="explorer-name"
-              required
-              maxlength="80"
-              autocomplete="off" /></label
-          ><label
-            >Clonage<select id="explorer-cloning">
-              <option value="1">Autorisé</option>
-              <option value="0">Hardcore · mort définitive</option>
-            </select></label
-          ><button id="create-explorer-button">Créer un explorateur</button>
-        </form>
-        <div id="explorers"></div>
-      </details>
-      <details>
-        <summary id="help-title"></summary>
-        <div id="help"></div>
-      </details>
-      <footer id="footer"></footer>
     </main>
+    <dialog
+      id="console-menu"
+      class="console-dialog"
+      aria-labelledby="menu-title"
+    >
+      <div class="dialog-header">
+        <h2 id="menu-title"></h2>
+        <button type="button" data-close-dialog aria-label="Fermer">×</button>
+      </div>
+      <div class="dialog-body">
+        <section id="journal" data-panel-content hidden>
+          <ol id="announcements"></ol>
+        </section>
+        <section id="lessons" data-panel-content hidden>
+          <div id="lesson-list"></div>
+        </section>
+        <section id="setup" data-panel-content hidden>
+          <form id="new-session">
+            <label id="players-label"
+              >Joueurs
+              <select id="players">
+                <option value="1">Solo · 4 androïdes</option>
+                <option value="2">2 + 2 androïdes</option>
+                <option value="3">3 + 1 androïde</option>
+                <option value="4" selected>4</option>
+                <option value="5">5</option>
+              </select></label
+            ><label
+              >Équipage<select id="crew-size">
+                <option value="0">Standard</option>
+                <option value="5">5 équipiers (androïde supplémentaire)</option>
+                <option value="3">3 joueurs sans androïde</option>
+              </select></label
+            ><label
+              >Mission
+              <select id="mission"></select></label
+            ><label id="special-label"
+              >Spécialisations
+              <select id="specialization">
+                <option value="">Aucune</option>
+                <option value="1">Niveau 1</option>
+                <option value="2">Niveau 2</option>
+                <option value="3">Niveau 3</option>
+              </select></label
+            ><label
+              >Menaces<select id="threat-expansion">
+                <option value="0">Jeu de base</option>
+                <option value="1">+ The New Frontier</option>
+              </select></label
+            >
+            <label
+              >Menaces communes<select id="difficulty">
+                <option value="1">Niveau 1</option>
+                <option value="1,2">Niveaux 1 + 2</option>
+                <option value="2">Niveau 2</option>
+                <option value="1,2,3">Tous les niveaux</option>
+                <option value="2,3">Niveaux 2 + 3</option>
+                <option value="3">Niveau 3</option>
+              </select></label
+            >
+            <label
+              >Menaces sérieuses<select id="serious-difficulty">
+                <option value="1">Niveau 1</option>
+                <option value="1,2">Niveaux 1 + 2</option>
+                <option value="2">Niveau 2</option>
+                <option value="1,2,3">Tous les niveaux</option>
+                <option value="2,3">Niveaux 2 + 3</option>
+                <option value="3">Niveau 3</option>
+              </select></label
+            >
+            <label
+              >Format<select id="campaign-limit">
+                <option value="0">Mission unique</option>
+                <option value="3">Campagne · 3 missions</option>
+                <option value="5">Campagne · 5 missions</option>
+              </select></label
+            >
+            <label
+              >Expérience<select id="careers-enabled">
+                <option value="0">Partie libre</option>
+                <option value="1">Carrières enregistrées</option>
+              </select></label
+            >
+            <div id="career-seats" class="token-controls"></div>
+            <div id="specialists" class="token-controls"></div>
+            <button type="submit" id="new-button">Préparer la mission</button>
+          </form>
+          <button id="ready-all" class="quiet">Tout l’équipage est prêt</button
+          ><button id="next-event" class="quiet">Prochaine annonce</button>
+        </section>
+        <section id="career-manager" data-panel-content hidden>
+          <form id="create-explorer">
+            <label
+              >Nom<input
+                id="explorer-name"
+                required
+                maxlength="80"
+                autocomplete="off" /></label
+            ><label
+              >Clonage<select id="explorer-cloning">
+                <option value="1">Autorisé</option>
+                <option value="0">Hardcore · mort définitive</option>
+              </select></label
+            ><button id="create-explorer-button">Créer un explorateur</button>
+          </form>
+          <div id="explorers"></div>
+        </section>
+        <section id="guide" data-panel-content hidden>
+          <div id="help"></div>
+        </section>
+        <section id="inspection" data-panel-content hidden></section>
+      </div>
+    </dialog>
+    <dialog
+      id="choice-menu"
+      class="console-dialog choice-dialog"
+      aria-labelledby="choice-title"
+    >
+      <div class="dialog-header">
+        <h2 id="choice-title"></h2>
+        <button type="button" data-close-dialog aria-label="Fermer">×</button>
+      </div>
+      <div id="choice-list" class="dialog-body choice-list"></div>
+    </dialog>
     <script type="module" src="/local.js"></script>
   </body>
 </html>

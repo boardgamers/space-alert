@@ -397,11 +397,28 @@ export function createPreviewServer({ clock = Date.now, storagePath } = {}) {
           view: viewFor(seat),
         });
       }
+      if (
+        req.method === "GET" &&
+        /^\/assets\/(fighter|laser|computer|battlebots|shield|reactor|pulse|rocket)\.webp$/.test(
+          url.pathname,
+        )
+      ) {
+        res.writeHead(200, {
+          "Content-Type": "image/webp",
+          "Cache-Control": "no-store",
+        });
+        res.end(await readFile(new URL(`.${url.pathname}`, import.meta.url)));
+        return;
+      }
       const file = {
         "/": "index.html",
         "/app.js": "app.js",
         "/local.js": "local.js",
         "/text.js": "text.js",
+        "/navigation.js": "navigation.js",
+        "/icons.js": "icons.js",
+        "/art.js": "art.js",
+        "/tactical.js": "tactical.js",
         "/style.css": "style.css",
       }[url.pathname];
       if (req.method === "GET" && file) {
