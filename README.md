@@ -48,7 +48,7 @@ No publisher artwork, scanned cards, rulebook files or official voice recordings
 
 ## Build for BGS
 
-The BGS integration requires `@boardgamers/protocol` **0.8.0**, whose npm publication is separate from this repository. After it is published:
+The BGS integration requires the published `@boardgamers/protocol` **0.8.x** package:
 
 ```sh
 npm install
@@ -56,7 +56,7 @@ npm run build
 npm pack
 ```
 
-Before publication, with the BGS monorepo beside this checkout, install the local package instead:
+When testing unreleased protocol changes, with the BGS monorepo beside this checkout, install the local package instead:
 
 ```sh
 cd ../boardgamers-mono

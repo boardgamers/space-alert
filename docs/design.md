@@ -11,7 +11,7 @@ Use four separate components:
 1. **Mission source:** produces a deterministic, versioned sequence of announcements. It can import fixed schedules first and later generate missions from a server-secret seed. Threat cards and trajectories are separate seeded decks.
 2. **Game engine:** owns setup, cards, phase locks, transfers, androids, ship systems, threats, damage, resolution, scoring and expansion effects. It consumes ordered player commands and trusted time events. No `Date.now()`, client timer or audio playback position inside rule transitions.
 3. **Viewer:** programs cards, displays public and private information, plays localized announcements and animates resolution. It may predict a clock display, but cannot extend a deadline or reveal a future threat.
-4. **Host adapter:** binds the game to BGS authentication, durable ordering, deadlines, persistence, reconnect, cancellation and cooperative outcomes. The BGS adapter uses protocol 0.7 and durable platform wakeups.
+4. **Host adapter:** binds the game to BGS authentication, durable ordering, deadlines, persistence, reconnect, cancellation and cooperative outcomes. The BGS adapter uses protocol 0.8 and durable platform wakeups.
 
 All four layers are implemented, with both a standalone local host and an authenticated BGS adapter. Announcements deal cards, reveal threats and open transfers; programming resolves to a scored result.
 
