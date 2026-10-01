@@ -168,6 +168,7 @@ h1 {
   margin: 8px 0 16px;
 }
 .crew-member {
+  box-shadow: inset 3px 0 var(--player-color, transparent);
   font-size: 12px;
   border: 1px solid var(--line);
   padding: 5px 9px;
@@ -1360,19 +1361,22 @@ input:not([type="checkbox"]):not([type="range"]) {
   display: inline-flex;
   width: 23px;
   height: 29px;
-  color: #bfd0db;
+  color: var(--player-color, #bfd0db);
 }
 .crew-pawn > svg {
   width: 100%;
   height: 100%;
   fill: currentColor;
-  stroke: #0a2231;
+  stroke: var(--player-stroke, #0a2231);
   stroke-width: 1.5;
 }
 .crew-pawn .visor {
   fill: #2a5969;
 }
 .crew-pawn b {
+  text-shadow:
+    0 0 2px #fff,
+    0 0 2px #fff;
   position: absolute;
   bottom: 3px;
   width: 100%;
@@ -1381,7 +1385,7 @@ input:not([type="checkbox"]):not([type="range"]) {
   font-size: 11px;
 }
 .crew-pawn.selected {
-  color: #ffe0a0;
+  color: var(--player-color, #ffe0a0);
   filter: drop-shadow(0 0 2px #e8c98460);
 }
 .crew-pawn.out {

@@ -1,7 +1,13 @@
 import { illustration, threatIllustration } from "./art.js";
 import { pictogram, shipLocator } from "./icons.js";
 
-export function createTacticalView({ t, esc, symbol, zoneName }) {
+export function createTacticalView({
+  t,
+  esc,
+  symbol,
+  zoneName,
+  playerColor = () => "",
+}) {
   const meter = (value, capacity) =>
     `<span class="charge-pips" aria-hidden="true">${Array.from({ length: capacity }, (_, i) => `<i class="${i < value ? "filled" : ""}"></i>`).join("")}</span>`;
 
@@ -141,7 +147,7 @@ export function createTacticalView({ t, esc, symbol, zoneName }) {
             level === "upper"
               ? t("Pont supérieur", "Upper deck")
               : t("Pont inférieur", "Lower deck");
-          return `<section class="station ${occupants.some((p) => p.id === selectedCrew) ? "selected-station" : ""}" data-station="${station}" style="--zone:var(--${zone})" aria-label="${esc(zoneName(zone))} · ${deckName}"><div class="station-title">${esc(zoneName(zone))}${symbol(level === "upper" ? "up" : "down", deckName)}${level === "upper" && s.damage.length ? `<span class="damage">${symbol("warning", `${t("Dégâts de la zone", "Zone damage")} : ${s.damage.length}/6`, `${s.damage.length}/6`)}</span>` : ""}</div>${stationControls({ station, zone, deck: level, ship, power, capacity, system, cIcon, c, canPlan })}<div class="occupants">${occupants.map((p) => `<span class="crew-pawn ${p.id === selectedCrew ? "selected" : ""} ${p.knockedOut ? "out" : ""}" role="img" title="${esc(crewLabel(p.id))}${p.knockedOut ? " · " + t("Hors combat", "Knocked out") : ""}${p.bots !== null ? " · " + t("Robots", "Battlebots") : ""}" aria-label="${esc(crewLabel(p.id))}${p.knockedOut ? " · " + t("Hors combat", "Knocked out") : ""}${p.bots !== null ? " · " + t("Robots", "Battlebots") : ""}"><svg viewBox="0 0 24 30" aria-hidden="true"><path d="M4 28v-9a8 8 0 0 1 16 0v9Z"/><circle cx="12" cy="8" r="7"/><path class="visor" d="M7 6h10v5H7z"/></svg><b>${p.id + 1}</b>${p.bots !== null ? `<i>${pictogram("bots")}</i>` : ""}</span>`).join("")}</div></section>`;
+          return `<section class="station ${occupants.some((p) => p.id === selectedCrew) ? "selected-station" : ""}" data-station="${station}" style="--zone:var(--${zone})" aria-label="${esc(zoneName(zone))} · ${deckName}"><div class="station-title">${esc(zoneName(zone))}${symbol(level === "upper" ? "up" : "down", deckName)}${level === "upper" && s.damage.length ? `<span class="damage">${symbol("warning", `${t("Dégâts de la zone", "Zone damage")} : ${s.damage.length}/6`, `${s.damage.length}/6`)}</span>` : ""}</div>${stationControls({ station, zone, deck: level, ship, power, capacity, system, cIcon, c, canPlan })}<div class="occupants">${occupants.map((p) => `<span style="${playerColor(p.id) ? `--player-color:${playerColor(p.id)};--player-stroke:#c4d4e0` : ""}" class="crew-pawn ${p.id === selectedCrew ? "selected" : ""} ${p.knockedOut ? "out" : ""}" role="img" title="${esc(crewLabel(p.id))}${p.knockedOut ? " · " + t("Hors combat", "Knocked out") : ""}${p.bots !== null ? " · " + t("Robots", "Battlebots") : ""}" aria-label="${esc(crewLabel(p.id))}${p.knockedOut ? " · " + t("Hors combat", "Knocked out") : ""}${p.bots !== null ? " · " + t("Robots", "Battlebots") : ""}"><svg viewBox="0 0 24 30" aria-hidden="true"><path d="M4 28v-9a8 8 0 0 1 16 0v9Z"/><circle cx="12" cy="8" r="7"/><path class="visor" d="M7 6h10v5H7z"/></svg><b>${p.id + 1}</b>${p.bots !== null ? `<i>${pictogram("bots")}</i>` : ""}</span>`).join("")}</div></section>`;
         })
         .join(
           "",

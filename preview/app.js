@@ -51,9 +51,17 @@ export function mountConsole(root, host = null) {
     hosted: !!host,
   });
   let appearance = {};
+  const playerColor = (i) => {
+    const color = appearance.playerColors?.[i];
+    return typeof color === "string" && /^#[a-f0-9]{6}$/i.test(color)
+      ? color
+      : "";
+  };
   const playerBadge = (i) => {
     const badge = appearance.players?.[i]?.pro && appearance.supporterBadge;
-    return badge ? `<img class="supporter-badge" src="${esc(badge.url)}" alt="${esc(badge.label)}" title="${esc(badge.label)}" width="14" height="14">` : "";
+    return badge
+      ? `<img class="supporter-badge" src="${esc(badge.url)}" alt="${esc(badge.label)}" title="${esc(badge.label)}" width="14" height="14">`
+      : "";
   };
   const playerName = (i) =>
     esc(view?.players[i]?.name ?? `${t("Joueur", "Player")} ${i + 1}`);
@@ -119,6 +127,7 @@ export function mountConsole(root, host = null) {
     esc,
     symbol,
     zoneName,
+    playerColor,
   });
   function updateSound() {
     const button = $("#sound");
@@ -303,7 +312,7 @@ export function mountConsole(root, host = null) {
     $("#crew").innerHTML = view.players
       .map(
         (p) =>
-          `<span class="crew-member ${p.ready ? "ready" : ""} ${p.seat === seat ? "own" : ""}">${playerName(p.seat)}${playerBadge(p.seat)} · ${p.planningPhase ? `${p.finishedPlanning ? "🔒" : t("Phase", "Phase")} ${p.planningPhase}` : p.ready ? t("présent", "ready") : t("attente", "waiting")}</span>`,
+          `<span style="${playerColor(p.seat) ? `--player-color:${playerColor(p.seat)}` : ""}" class="crew-member ${p.ready ? "ready" : ""} ${p.seat === seat ? "own" : ""}">${playerName(p.seat)}${playerBadge(p.seat)} · ${p.planningPhase ? `${p.finishedPlanning ? "🔒" : t("Phase", "Phase")} ${p.planningPhase}` : p.ready ? t("présent", "ready") : t("attente", "waiting")}</span>`,
       )
       .join("");
     $("#ship-title").textContent = t("Le vaisseau", "The ship");
