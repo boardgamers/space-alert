@@ -22,3 +22,17 @@ Read [integration notes](docs/realtime-host.md) before touching lifecycle code. 
 - `npm test`, `npm run build`, then `npm pack`; upload the tarball with entry `bgs/engine.js` and `dist/viewer.js` with global `SpaceAlert`. Follow [README](README.md#build-for-bgs); `bgs/gameinfo.json` is a metadata template, not a snapshot of the deployed package version.
 - BGS admin API base: `https://admin.boardgamers.space/api/admin/gameinfo/space-alert`. Load the bearer token from `~/.bgs` without printing it. Read/back up `/1` and `/meta` first; POST the tarball to `/1/engine`, POST the viewer to `/1/viewer/file?filename=viewer.js&bundle=<content-hash>`, then PUT `/1` with the returned asset metadata while preserving unrelated settings. Verify the private flag, clock/table settings and downloaded viewer bytes afterward. Bump the package version for engine changes.
 - Lifecycle changes need multi-client checks: expired readiness, background/disconnected tabs, late commands, reconnect, and Play again with seats reordered/careers retained. Rules tests alone do not validate deployed table behavior or phone audio. Broader expansion playtesting remains necessary before public release.
+
+## BGS publication and Git delivery
+
+Whenever changes are published to BGS, commit the corresponding source, tests,
+dependency/lockfile changes and version bumps, then push them to this repository's
+`main` or `master` release branch in the same task. A BGS upload or a push only to
+a feature branch does not complete delivery. This is standing authorization to
+commit and push published changes without asking for separate confirmation.
+
+Fetch and integrate the latest release-branch changes, run the relevant repository
+checks, and push without force. Update any public mirrors required by this repo's
+existing workflow too. Keep credentials, generated artifacts excluded by the repo,
+and unrelated unfinished work out of the commit. Verify the remote branch contains
+the delivered commit and report any blocker instead of claiming delivery.
