@@ -2,6 +2,7 @@ import { basicsView } from "./basics.js";
 import { mountNavigation } from "./navigation.js";
 import { pictogram, shipLocator, specializationIcons } from "./icons.js";
 import { createTacticalView } from "./tactical.js";
+import { forecastMovement, checkpointAppearance } from "./threat-track.js";
 import { illustration } from "./art.js";
 import {
   specialDescription,
@@ -688,19 +689,24 @@ export function mountConsole(root, host = null) {
   function trackHtml(th, g) {
     const track = th.track ?? g.tracks[th.zone ?? "internal"];
     const pending = ["pending", "announced", "waiting"].includes(th.status);
-    return `<div class="approach-track"><span class="track-caption">${pending ? t("À l’arrivée", "On arrival") : t("Approche", "Approach")}</span><div class="track" aria-label="${t("Piste d’approche", "Approach track")}">${Array.from(
+    const context = (replayFrame !== null ? g.resolution?.frames[replayFrame] : g.resolution) ?? {};
+    const groups = forecastMovement(th, track, { ...context, threats: context.threats ?? g.threats.map(item => ({ ...item, ...item.card })) });
+    const projection = t("Prévision sans intervention de l’équipage ; changements de vitesse propres à la menace inclus.", "Forecast without crew intervention; includes the threat’s own speed changes.");
+    return `<div class="approach-track"><div class="track-distance" style="--track-length:${track.length}"><div class="track" aria-label="${t("Piste d’approche", "Approach track")}">${Array.from(
       { length: track.length },
       (_, i) => track.length - i,
     )
       .map(n => {
         const mark = track.marks.find(([position]) => position === n)?.[1];
         const effects = th.effects?.[mark] ?? [];
-        const attack = effects.length === 1 && effects[0].type === "attack" && typeof effects[0].amount === "number" ? effects[0] : null;
-        const description = mark ? `${mark} · ${effects.map(effect => effectDescription(effect, locale)).join(" · ") || t("Aucun effet", "No effect")}` : String(n);
+        const appearance = checkpointAppearance(th, effects);
+        const groupIndex = groups.findIndex(group => group.positions.includes(n));
+        const group = groups[groupIndex];
+        const description = `${mark ? effects.map(effect => effectDescription(effect, locale)).join(" · ") || t("Aucun effet", "No effect") : t("Case", "Space") + " " + n}${group ? ` · T+${group.turn} · ${projection}` : ""}`;
         const current = !pending && th.positionOnTrack === n;
-        return `<span title="${esc(description)}" aria-label="${esc(description)}" ${current ? 'aria-current="step"' : ""} class="${current ? "current" : ""} ${pending && n === track.length ? "entry" : ""} ${mark ? "mark" : ""} ${attack ? "attack-mark" : ""}">${attack ? `${pictogram("laser")}<b>${attack.amount}</b>` : mark ?? (current ? "●" : "")}</span>`;
+        return `<span title="${esc(description)}" aria-label="${esc(description)}" ${current ? 'aria-current="step"' : ""} ${group ? `data-forecast-turn="${group.turn}"` : ""} class="${current ? "current" : ""} ${pending && n === track.length ? "entry" : ""} ${appearance ? "mark effect-mark" : ""} ${group ? `forecast-cell forecast-tone-${groupIndex % 2} ${n === group.positions[0] ? "forecast-start" : ""} ${n === group.positions.at(-1) ? "forecast-end" : ""}` : ""}">${appearance ? `${pictogram(appearance.icon)}<b>${esc(appearance.value)}</b>` : current ? "●" : ""}</span>`;
       })
-      .join("")}</div>${pictogram("ship")}</div>`;
+      .join("")}</div>${groups.length ? `<div class="track-turns" aria-label="${esc(projection)}"><small title="${esc(projection)}">T+</small>${groups.map((group, i) => `<span class="forecast-tone-${i % 2}" style="grid-column:${track.length - group.positions[0] + 1} / span ${group.positions.length}" title="${esc(`T+${group.turn} · ${group.positions.length} ${t("cases", "spaces")} · ${projection}`)}" aria-label="${esc(`T+${group.turn} · ${projection}`)}">${group.turn}</span>`).join("")}</div>` : ""}</div>${pictogram("ship")}</div>`;
   }
   function logText(e) {
     return eventDescription(

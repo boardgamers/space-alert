@@ -1,5 +1,6 @@
 // Shared silhouettes keep the ship, cards and controls visually consistent.
 const paths = {
+  impact: "m12 2 2 6 6-4-3 7 5 3-7 1 1 7-5-5-5 4 1-7-5-3 7-1 3-8Z",
   wait: "M6 3h12M6 21h12M7 3v4l5 5-5 5v4m10-18v4l-5 5 5 5v4",
   clock: "M2 12a10 10 0 1 0 20 0 10 10 0 1 0-20 0Zm10-6v6l4 2",
   pause: "M7 4h3v16H7zM14 4h3v16h-3z",

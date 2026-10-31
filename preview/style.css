@@ -2537,7 +2537,23 @@ input:not([type="checkbox"]):not([type="range"]) {
   box-shadow: 0 0 0 4px #ffe19a18;
 }
 #program .slot.current .turn { color: #ffe19a; font-weight: 700; }
-.approach-track .track:has(.attack-mark) > span { height: 30px; line-height: 28px; }
-.approach-track .track .attack-mark { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; line-height: 1; }
-.attack-mark .pictogram { width: 11px; height: 11px; }
-.attack-mark b { font-size: 10px; line-height: 10px; }
+.track-distance { flex: 1; min-width: 0; overflow-x: auto; padding: 2px; }
+.approach-track .track, .track-turns {
+  display: grid;
+  grid-template-columns: repeat(var(--track-length), minmax(14px, 1fr));
+  gap: 2px;
+}
+.approach-track .track > span { height: 32px; line-height: 30px; }
+.approach-track .track .effect-mark { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; line-height: 1; }
+.effect-mark .pictogram { width: 12px; height: 12px; }
+.effect-mark b { font-size: 10px; line-height: 10px; }
+.approach-track .track .forecast-tone-0 { background: #264d55; }
+.approach-track .track .forecast-tone-1 { background: #30405c; }
+.approach-track .track .forecast-start { border-left: 1px solid #91b7bb; }
+.approach-track .track .forecast-end { border-right: 1px solid #91b7bb; }
+.approach-track .track .current { background: #ffe19a; color: #13202c; }
+.track-turns { margin-top: 4px; align-items: center; text-align: center; font-size: 10px; }
+.track-turns > small { grid-column: 1; color: var(--muted); font-size: 8px; }
+.track-turns > span { padding: 2px 0; border-radius: 2px; border-bottom: 2px solid; }
+.track-turns .forecast-tone-0 { color: #acf0e5; border-color: #72c9bb; background: #264d5580; }
+.track-turns .forecast-tone-1 { color: #c0d5fa; border-color: #87a9e1; background: #30405c80; }
