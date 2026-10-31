@@ -2528,3 +2528,17 @@ input:not([type="checkbox"]):not([type="range"]) {
 @media (max-width: 760px) {
   .compact-console-header .console-nav button { flex-direction: row; padding: 6px; }
 }
+
+/* The program and threat track follow the same live or replay frame. */
+#program .slot.current {
+  opacity: 1;
+  border-color: #ffe19a;
+  outline: 2px solid #ffe19a;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 4px #ffe19a18;
+}
+#program .slot.current .turn { color: #ffe19a; font-weight: 700; }
+.approach-track .track:has(.attack-mark) > span { height: 30px; line-height: 28px; }
+.approach-track .track .attack-mark { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; line-height: 1; }
+.attack-mark .pictogram { width: 11px; height: 11px; }
+.attack-mark b { font-size: 10px; line-height: 10px; }

@@ -329,7 +329,8 @@ export function mountConsole(root, host = null) {
       },
       resolution = g?.resolution,
       frame = replayFrame !== null ? resolution?.frames[replayFrame] : null,
-      ship = frame?.ship ?? g?.ship;
+      ship = frame?.ship ?? g?.ship,
+      activeTurn = frame?.turn ?? resolution?.turn ?? 0;
     $("#seat").innerHTML = view.players
       .map(
         (p) =>
@@ -427,7 +428,7 @@ export function mountConsole(root, host = null) {
       threats
         .map(
           (th) =>
-            `<article class="threat illustrated-threat" style="--zone:var(--${th.zone ?? "gold"})"><button class="threat-card" data-inspect="${th.instance}" data-inspect-title="${esc(th.name)} · T+${th.turn}" aria-haspopup="dialog" aria-label="${esc(th.name)} · ${t("Tour", "Turn")} ${th.turn} · ${esc(th.position === "internal" ? th.stations.map((s) => stationLabel(s, locale)).join(", ") : zoneName(th.zone))} · ${t("Détails", "Details")}"><span class="threat-heading"><strong>${esc(th.name)}</strong><span class="threat-timing" title="${t("Arrivée au tour", "Arrival on turn")} ${th.turn}">${t("Arrivée", "Arrival")} T+${th.turn}</span></span>${threatPortrait(th)}<span class="threat-footer">${symbol("speed", `${t("Vitesse", "Speed")} : ${th.speed}`, th.speed)}<span>${t("Détails", "Details")}</span></span></button>${(th.track ?? g.tracks[th.zone ?? "internal"]) ? trackHtml(th, g) : ""}<template>${threatPortrait(th)}<div class="threat-facts">${symbol("speed", `${t("Vitesse", "Speed")} : ${th.speed}`, th.speed)}</div><p>${th.position === "internal" ? esc(th.stations.map((s) => stationLabel(s, locale)).join(", ")) + " · " + esc(label(th.repair)) : esc(zoneName(th.zone))}</p>${traitDescriptions(
+            `<article class="threat illustrated-threat" style="--zone:var(--${th.zone ?? "gold"})"><button class="threat-card" data-inspect="${th.instance}" data-inspect-title="${esc(th.name)} · T+${th.turn}" aria-haspopup="dialog" aria-label="${esc(th.name)} · ${t("Tour", "Turn")} ${th.turn} · ${esc(th.position === "internal" ? th.stations.map((s) => stationLabel(s, locale)).join(", ") : zoneName(th.zone))} · ${t("Détails", "Details")}"><span class="threat-heading"><strong>${esc(th.name)}</strong><span class="threat-timing" title="${t("Arrivée au tour", "Arrival on turn")} ${th.turn}">${t("Arrivée", "Arrival")} T+${th.turn}</span></span>${threatPortrait(th)}<span class="threat-footer">${symbol("speed", `${th.speed} ${t("cases par tour", "spaces per turn")}`, th.speed)}<span>${t("Détails", "Details")}</span></span></button>${(th.track ?? g.tracks[th.zone ?? "internal"]) ? trackHtml(th, g) : ""}<template>${threatPortrait(th)}<div class="threat-facts">${symbol("speed", `${th.speed} ${t("cases par tour", "spaces per turn")}`, th.speed)}</div><p>${th.position === "internal" ? esc(th.stations.map((s) => stationLabel(s, locale)).join(", ")) + " · " + esc(label(th.repair)) : esc(zoneName(th.zone))}</p>${traitDescriptions(
               th,
               locale,
             )
@@ -485,7 +486,7 @@ export function mountConsole(root, host = null) {
           !own.finishedPlanning &&
           phaseFor(slot.turn) === ownPhase;
         const description = `T+${slot.turn} · ${slot.cards.map((c) => (c.sides ? c.sides[c.side].map(label).join(" → ") : c.category === "movement" ? t("Déplacement", "Movement") : t("Action", "Action"))).join(" + ") || t("Vide", "Empty")}`;
-        return `<button class="slot ${slot.cards.length ? "filled" : "empty"} ${(basic || firstShot) && resolution && slot.turn === (resolution.step === "damage" ? resolution.turn : Math.max(0, resolution.turn - 1)) ? "current" : ""} ${phaseFor(slot.turn) < ownPhase ? "locked" : ""} ${phaseFor(slot.turn) > ownPhase ? "future" : ""}" data-turn="${slot.turn}" ${editable ? "" : "disabled"} title="${esc(description)}" aria-label="${esc(description)}">${firstShot && slot.turn === 2 ? `<span class="slot-arrival" title="${t("La cible arrive avant ce tir", "Target arrives before this shot")}">${pictogram("down")}${t("Arrivée", "Arrival")}</span>` : ""}<span class="turn">T+${slot.turn} ${phaseFor(slot.turn) < ownPhase ? pictogram("lock") : ""}</span><span class="action">${slot.cards.map((c) => (c.sides ? c.sides[c.side].map(icon).join(" ") : pictogram(c.category === "movement" ? "move" : "cards"))).join(" + ") || pictogram("wait")}</span></button>`;
+        return `<button class="slot ${slot.cards.length ? "filled" : "empty"} ${slot.turn === activeTurn ? "current" : ""} ${phaseFor(slot.turn) < ownPhase ? "locked" : ""} ${phaseFor(slot.turn) > ownPhase ? "future" : ""}" data-turn="${slot.turn}" ${slot.turn === activeTurn ? 'aria-current="step"' : ""} ${editable ? "" : "disabled"} title="${esc(description)}" aria-label="${esc(description)}">${firstShot && slot.turn === 2 ? `<span class="slot-arrival" title="${t("La cible arrive avant ce tir", "Target arrives before this shot")}">${pictogram("down")}${t("Arrivée", "Arrival")}</span>` : ""}<span class="turn">T+${slot.turn} ${phaseFor(slot.turn) < ownPhase ? pictogram("lock") : ""}</span><span class="action">${slot.cards.map((c) => (c.sides ? c.sides[c.side].map(icon).join(" ") : pictogram(c.category === "movement" ? "move" : "cards"))).join(" + ") || pictogram("wait")}</span></button>`;
       })
       .join("");
     $("#program").setAttribute("aria-keyshortcuts", "ArrowLeft ArrowRight ArrowUp ArrowDown Backspace");
@@ -691,10 +692,14 @@ export function mountConsole(root, host = null) {
       { length: track.length },
       (_, i) => track.length - i,
     )
-      .map(
-        (n) =>
-          `<span title="${n}${track.marks.find((x) => x[0] === n)?.[1] ? " · " + track.marks.find((x) => x[0] === n)[1] : ""}" class="${!pending && th.positionOnTrack === n ? "current" : ""} ${pending && n === track.length ? "entry" : ""} ${track.marks.some((x) => x[0] === n) ? "mark" : ""}">${track.marks.find((x) => x[0] === n)?.[1] ?? (!pending && th.positionOnTrack === n ? "●" : "")}</span>`,
-      )
+      .map(n => {
+        const mark = track.marks.find(([position]) => position === n)?.[1];
+        const effects = th.effects?.[mark] ?? [];
+        const attack = effects.length === 1 && effects[0].type === "attack" && typeof effects[0].amount === "number" ? effects[0] : null;
+        const description = mark ? `${mark} · ${effects.map(effect => effectDescription(effect, locale)).join(" · ") || t("Aucun effet", "No effect")}` : String(n);
+        const current = !pending && th.positionOnTrack === n;
+        return `<span title="${esc(description)}" aria-label="${esc(description)}" ${current ? 'aria-current="step"' : ""} class="${current ? "current" : ""} ${pending && n === track.length ? "entry" : ""} ${mark ? "mark" : ""} ${attack ? "attack-mark" : ""}">${attack ? `${pictogram("laser")}<b>${attack.amount}</b>` : mark ?? (current ? "●" : "")}</span>`;
+      })
       .join("")}</div>${pictogram("ship")}</div>`;
   }
   function logText(e) {
