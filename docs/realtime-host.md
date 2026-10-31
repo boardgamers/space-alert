@@ -28,7 +28,7 @@ Careers are **table-local**, not account-wide profiles. Moving to another table 
 
 Configure `timeControl: "engine"` and `rating: "none"`. Players receive the shared mission/campaign score, without competitive Elo settlement. BGS individual clock rings and turn emails are disabled. Game-managed clocks do not yet support BGS analysis mode. The viewer retains its own resolution replay.
 
-Use external voice for cooperation. Speech synthesis is optional; no official recordings or publisher artwork are bundled. Players must honor communications blackouts in their external voice channel. Physical-device audio/background behavior and expansion combinations still need human playtesting before public release.
+Use external voice for cooperation. Mission announcements are visual; no synthesized voice, official recordings or publisher artwork are bundled. Players must honor communications blackouts in their external voice channel. Physical-device audio/background behavior and expansion combinations still need human playtesting before public release.
 
 ## Verification
 

@@ -57,7 +57,6 @@ export function mountConsole(root, host = null) {
     replayFrame = null,
     sound = true,
     combine = false,
-    lastSpoken = 0,
     basicsStarted = false,
     basicsPicked = false,
     basicsMarkup;
@@ -175,8 +174,8 @@ export function mountConsole(root, host = null) {
   function updateSound() {
     const button = $("#sound");
     const description = sound
-      ? t("app.mute_voice_announcements")
-      : t("app.enable_voice_announcements");
+      ? t("app.mute_sounds")
+      : t("app.enable_sounds");
     button.title = description;
     button.setAttribute("aria-label", description);
     button.setAttribute("aria-pressed", String(sound));
@@ -493,11 +492,6 @@ export function mountConsole(root, host = null) {
           : announcements.length
             ? announcement(announcements.at(-1).event)
             : t("app.everyone_confirms_their_presence_before_launch");
-    if (sound)
-      for (const item of announcements.filter((x) => x.id > lastSpoken)) {
-        if (item === announcements.at(-1)) speak(announcement(item.event));
-      }
-    lastSpoken = announcements.at(-1)?.id ?? 0;
     $("#program-crew").innerHTML = Array.from(
       { length: view.crewSize },
       (_, i) =>
@@ -992,14 +986,6 @@ export function mountConsole(root, host = null) {
       $("#explorer-name").value = "";
     });
   });
-  function speak(text) {
-    if (!("speechSynthesis" in window)) return;
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = locale === "fr" ? "fr-FR" : "en-US";
-    u.rate = 1.1;
-    speechSynthesis.cancel();
-    speechSynthesis.speak(u);
-  }
   async function command(type, extra = {}, target = seat) {
     if (host) {
       if (target !== seat || seat < 0)
@@ -1484,8 +1470,7 @@ export function mountConsole(root, host = null) {
       sound = !sound;
       updateSound();
       audio?.enable(sound);
-      if (sound) speak(t("app.announcements_enabled"));
-      else if ("speechSynthesis" in window) speechSynthesis.cancel();
+      if (sound) cue("select");
     }
     if (el.id === "ready-all")
       perform(async () => {
@@ -1698,7 +1683,6 @@ export function mountConsole(root, host = null) {
       for (const id of intervals) clearInterval(id);
       for (const [type, fn] of rootListeners)
         root.removeEventListener(type, fn);
-      if (sound && "speechSynthesis" in window) speechSynthesis.cancel();
     },
   };
 }

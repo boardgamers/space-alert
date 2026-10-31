@@ -19,7 +19,7 @@ For a full mission, expand **Local session / Session locale**. Select 1–5 huma
 
 Training starts with its clock paused. **Start practice clock** and **Pause clock** control time only in training; normal missions retain their shared, continuous clock. You can also advance lesson phases explicitly.
 
-The local seat selector, “Ready all” and “Next announcement” buttons are development tools. This host has **no authentication** and deliberately listens only on `127.0.0.1`. It is not an online multiplayer deployment. Use external voice for cooperation; browser speech synthesis is optional and communications-blackout silence relies on the players.
+The local seat selector, “Ready all” and “Next announcement” buttons are development tools. This host has **no authentication** and deliberately listens only on `127.0.0.1`. It is not an online multiplayer deployment. Use external voice for cooperation; mission announcements are visual, with sound effects for game actions. Communications-blackout silence relies on the players.
 
 ## Implemented
 
