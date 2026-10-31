@@ -2328,7 +2328,6 @@ input:not([type="checkbox"]):not([type="range"]) {
 .native-guide h1 { font-size: clamp(1.4rem, 3vw, 2rem); margin: 20px 0 8px; }
 .native-guide-text { line-height: 1.6; white-space: pre-line; max-width: 65ch; }
 .native-guide-controls { margin-top: 16px; }
-.native-guide-controls small { color: #9db0bf; margin-left: auto; }
 .native-guide .basics-stages { grid-template-columns: repeat(3, 1fr); margin: 16px 0; }
 .native-tutorial .basics-top,
 .native-tutorial #basics-guide > .basics-stages,
@@ -2349,7 +2348,6 @@ input:not([type="checkbox"]):not([type="range"]) {
 @media (max-width: 520px) {
   .native-guide .basics-stages { gap: 3px; }
   .native-guide .basics-stages button { flex-direction: column; gap: 6px; padding: 10px 4px; text-align: center; }
-  .native-guide-controls small { width: 100%; margin: 0; }
 }
 .native-tutorial #basics-run { width: 64px; height: 48px; }
 .practice-readiness > span { display: inline-flex; align-items: center; gap: 6px; }
