@@ -2476,3 +2476,22 @@ input:not([type="checkbox"]):not([type="range"]) {
 @media (max-width: 800px) { .native-tutorial .flight-layout { grid-template-columns: 1fr; } }
 /* BGS already supplies the game name and chapter header. */
 .native-tutorial > header { display: none; }
+
+/* Empty former room labels should not reserve a header row. */
+.station-title:empty { display: none; }
+.native-guide-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 948px;
+}
+.native-guide .native-guide-row .basics-stages {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+.native-guide-row .native-guide-tools { flex: 0 0 auto; }
+@media (max-width: 520px) {
+  .native-guide-row { gap: 6px; }
+  .native-guide-row .native-guide-tools a { display: none; }
+}
