@@ -1145,6 +1145,7 @@ input:not([type="checkbox"]):not([type="range"]) {
   position: relative;
   padding: 0 14px 12px;
 }
+.ship-vessel { position: relative; transform-origin: 50% 30%; }
 .ship-hull::before {
   content: "";
   position: absolute;
@@ -1535,6 +1536,7 @@ input:not([type="checkbox"]):not([type="range"]) {
   width: 12px;
   height: 14px;
   transform: translateY(12px);
+  transform-origin: 50% 0;
   background: #95dfe7;
   border-radius: 0 0 6px 6px;
   box-shadow: 0 3px 7px #82eff04a;
@@ -2640,3 +2642,8 @@ input:not([type="checkbox"]):not([type="range"]) {
 .fx-ring { width: 52px; height: 52px; border: 2px solid var(--fx-color); border-radius: 50%; box-shadow: inset 0 0 20px var(--fx-color),0 0 12px var(--fx-color); }
 .fx-spark { width: 5px; height: 5px; border-radius: 50%; background: var(--fx-color); box-shadow: 0 0 7px var(--fx-color); }
 .fx-delta { color: var(--fx-color); font-size: 24px; font-weight: 800; text-shadow: 0 2px 4px #020a10,0 0 8px #020a10; white-space: nowrap; }
+.fx-jump-star { width: 2px; height: 45px; border-radius: 50%; background: linear-gradient(transparent,var(--fx-color),transparent); box-shadow: 0 0 6px #8eeaff70; }
+.ship-jump-effects { position: absolute; inset: 0; z-index: 3; overflow: hidden; pointer-events: none; }
+.ship-jump-effects > span { position: absolute; }
+.fx-jump-success { display: grid; place-items: center; width: 80px; height: 80px; border: 2px solid var(--fx-color); border-radius: 50%; background: #102b32ee; color: var(--fx-color); box-shadow: 0 0 30px #76e5c650,inset 0 0 20px #76e5c620; }
+.fx-jump-success .pictogram { width: 44px; height: 44px; }

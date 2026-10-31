@@ -476,7 +476,7 @@ export function mountConsole(root, host = null) {
               .join("")}${Object.entries(th.effects)
               .map(
                 ([mark, es]) =>
-                  `<p><b>${mark}</b> ${es.map((e) => esc(effectDescription(e, locale))).join(" · ") || "—"}</p>`,
+                  `<p><b>${mark}</b> ${es.map((e) => esc(effectDescription(e, locale))).join(" · ") || "-"}</p>`,
               )
               .join(
                 "",
@@ -745,7 +745,7 @@ export function mountConsole(root, host = null) {
       .join("")}${Object.entries(c.effects)
       .map(
         ([mark, es]) =>
-          `<p><b>${mark}</b> ${es.map((e) => esc(effectDescription(e, locale))).join(" · ") || "—"}</p>`,
+          `<p><b>${mark}</b> ${es.map((e) => esc(effectDescription(e, locale))).join(" · ") || "-"}</p>`,
       )
       .join("")}${calledHtml(data.calledCard)}</div>`;
   }

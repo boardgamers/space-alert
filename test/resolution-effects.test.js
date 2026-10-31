@@ -67,3 +67,38 @@ test("meteoroid impact reports shield absorption and hull damage once", () => {
   assert.equal(attack[0].damage, 4);
   assert.ok(!effects.some(e => e.kind === "direct-damage" || e.kind === "destroy"));
 });
+
+test("jump celebrates survival only after final threat movement, once", () => {
+  let r = mission([], [{ cardId: "E1-10", turn: 6, zone: "white" }]);
+  const effects = [];
+  let before;
+  while (!r.outcome) {
+    before = r.frames.at(-1);
+    const [result, events] = next(r);
+    for (const event of events) {
+      if (event.kind === "jump") {
+        assert.equal(result.turn, result.finalTurn);
+        assert.equal(before.step, "computer");
+        assert.equal(result.outcome.survived, true);
+        assert.ok(effects.some(e => e.kind === "attack"), "impact resolves before jumping");
+      }
+    }
+    effects.push(...events); r = result;
+  }
+  assert.equal(effects.filter(e => e.kind === "jump").length, 1);
+  const final = r.frames.at(-1);
+  // The public viewer receives the outcome and frames, not engine-only lastTurn.
+  const view = { outcome: r.outcome, log: r.log, frames: r.frames };
+  assert.deepEqual(resolutionEffects(view, before, final), [{ kind: "jump" }]);
+  assert.deepEqual(resolutionEffects(r, final, final), []);
+  assert.ok(!resolutionEffects(r, r.frames[1], r.frames[2]).some(e => e.kind === "jump"), "old frames never celebrate a future result");
+  assert.deepEqual(resolutionEffects(r, null, final), [], "opening a completed mission stays still");
+});
+
+test("a destroyed ship never jumps", () => {
+  let r = mission([]);
+  r.ship.destroyed = true;
+  const [result, events] = next(r);
+  assert.equal(result.outcome.survived, false);
+  assert.ok(!events.some(e => e.kind === "jump"));
+});

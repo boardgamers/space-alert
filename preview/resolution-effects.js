@@ -1,6 +1,8 @@
+import { pictogram } from "./icons.js";
+
 // Presentation only: consume resolved events, never predict damage or change game state.
 export function resolutionEffects(resolution, before, after) {
-  if (!before || !after || after.logEnd < before.logEnd) return [];
+  if (!before || !after || before === after || after.logEnd < before.logEnd) return [];
   const events = resolution.log.slice(before.logEnd, after.logEnd);
   const fires = resolution.log.filter(e => e.turn === after.turn && e.type === "fire");
   const effects = [];
@@ -48,6 +50,11 @@ export function resolutionEffects(resolution, before, after) {
       if (!effects.some(e => e.kind === "hit" && e.sources.some(s => s.station === f.station)))
         effects.push({ kind: "miss", station: f.station });
   }
+  // Survival is only confirmed after the final threat movement. A completed
+  // three-turn exercise, an old replay frame or a destroyed ship is not a jump.
+  if (resolution.outcome?.survived && after === resolution.frames.at(-1) &&
+      before.step === "computer" && after.step === "appear")
+    effects.push({ kind: "jump" });
   return effects;
 }
 
@@ -59,7 +66,7 @@ export function createResolutionEffects(root, cue) {
   layer.className = "resolution-effects";
   layer.setAttribute("aria-hidden", "true");
   root.append(layer);
-  let previous = null, previousIndex = -1, busyUntil = 0;
+  let previous = null, previousIndex = -1, busyUntil = 0, jumping = false;
   let oldPawns = new Map();
   const animations = new Set(), timers = new Set(), restores = [];
   const q = selector => root.querySelector(selector);
@@ -76,9 +83,9 @@ export function createResolutionEffects(root, cue) {
     const id = win.setTimeout(() => { timers.delete(id); callback(); }, ms);
     timers.add(id);
   }
-  function animate(element, frames, duration, delay = 0) {
+  function animate(element, frames, duration, delay = 0, easing = "ease-out") {
     if (!element?.animate) return;
-    const animation = element.animate(frames, { duration, delay, easing: "ease-out", fill: "both" });
+    const animation = element.animate(frames, { duration, delay, easing, fill: "both" });
     animations.add(animation);
     animation.finished.then(() => { animations.delete(animation); animation.cancel(); }, () => {});
     busyUntil = Math.max(busyUntil, performance.now() + duration + delay);
@@ -91,12 +98,13 @@ export function createResolutionEffects(root, cue) {
     for (const restore of restores.splice(0)) restore();
     layer.replaceChildren();
     busyUntil = 0;
+    jumping = false;
   }
-  function node(name, p, color) {
+  function node(name, p, color, parent = layer) {
     const element = doc.createElement("span");
     element.className = name;
     element.style.cssText = `left:${p.x}px;top:${p.y}px;--fx-color:${color}`;
-    layer.append(element);
+    parent.append(element);
     return element;
   }
   function burst(p, color, large = false) {
@@ -145,6 +153,74 @@ export function createResolutionEffects(root, cue) {
     restores.push(restore);
     later(restore, delay);
   }
+  function jump(sound) {
+    const vessel = q(".ship-vessel"), position = point(vessel);
+    if (!position) return;
+    // Keep the jump attached to the ship even if completion text changes the
+    // page's scroll position. Combat projectiles use viewport coordinates.
+    const stage = doc.createElement("div");
+    stage.className = "ship-jump-effects";
+    stage.setAttribute("aria-hidden", "true");
+    vessel.parentElement.append(stage);
+    restores.push(() => stage.remove());
+    const bounds = vessel.getBoundingClientRect(), base = stage.getBoundingClientRect();
+    const p = { x: bounds.left - base.left + bounds.width / 2,
+      y: bounds.top - base.top + bounds.height / 2, width: bounds.width, height: bounds.height };
+    const jumpSound = kind => sound(kind, position);
+    jumping = true;
+    const duration = reduced.matches ? 900 : 2800;
+    const departure = reduced.matches ? 0 : 1100;
+    const arrival = reduced.matches ? 0 : 1500;
+    if (!reduced.matches) {
+      jumpSound("thruster");
+      for (const nozzle of vessel.querySelectorAll(".ship-stern i")) {
+        animate(nozzle, [
+          { transform: "translateY(12px) scaleY(1)", filter: "brightness(1)" },
+          { transform: "translateY(12px) scaleY(2.5)", filter: "brightness(1.6)", offset: .5 },
+          { transform: "translateY(12px) scaleY(5)", filter: "brightness(2.3)", offset: .76 },
+          { transform: "translateY(12px) scaleY(5)", filter: "brightness(2.3)" },
+        ], 1450, 0, "linear");
+      }
+      animate(vessel, [
+        { transform: "translateY(0) scale(1)", opacity: 1 },
+        { transform: "translateY(-5px) scale(1)", opacity: 1, offset: departure / duration },
+        { transform: `translateY(${-p.height * .3}px) scale(.08,.6)`, opacity: 0, offset: .52 },
+        { transform: "translateY(0) scale(1)", opacity: 0, offset: .78 },
+        { transform: "translateY(0) scale(1)", opacity: 1 },
+      ], duration, 0, "linear");
+      later(() => {
+        jumpSound("jump");
+        // Streaks stay around the ship instead of flashing the whole screen.
+        for (let i = 0; i < 22; i++) {
+          const star = node("fx-jump-star", {
+            x: p.x + ((i * .618034) % 1 - .5) * p.width,
+            y: p.y + ((i * .381966) % 1 - .5) * p.height,
+          }, "#a1f4ef", stage);
+          animate(star, [
+            { transform: "scaleY(.2)", opacity: 0 },
+            { transform: "translateY(20px) scaleY(1)", opacity: .8, offset: .3 },
+            { transform: "translateY(90px) scaleY(2)", opacity: 0 },
+          ], 550);
+          later(() => star.remove(), 560);
+        }
+      }, departure);
+    } else {
+      animate(vessel, [{ filter: "brightness(1.15)" }, { filter: "brightness(1)" }], 500);
+    }
+    later(() => {
+      jumpSound("victory");
+      const seal = node("fx-jump-success", p, "#76e5c6", stage);
+      seal.innerHTML = pictogram("check");
+      animate(seal, [
+        { transform: `translate(-50%,-50%) scale(${reduced.matches ? 1 : .85})`, opacity: 0 },
+        { transform: "translate(-50%,-50%) scale(1)", opacity: 1, offset: .2 },
+        { transform: "translate(-50%,-50%) scale(1)", opacity: 1, offset: .7 },
+        { transform: "translate(-50%,-50%) scale(1)", opacity: 0 },
+      ], duration - arrival);
+      later(() => { stage.remove(); jumping = false; }, duration - arrival);
+    }, arrival);
+    busyUntil = Math.max(busyUntil, performance.now() + duration);
+  }
   function play(events, before, after, oldMeters) {
     const delay = reduced.matches ? 0 : 310;
     const spoken = new Set();
@@ -155,6 +231,7 @@ export function createResolutionEffects(root, cue) {
     };
     const moved = new Set();
     for (const e of events) {
+      if (e.kind === "jump") jump(sound);
       if (e.kind === "move" && !moved.has(e.crew)) {
         moved.add(e.crew);
         const pawn = q(`[data-crew="${e.crew}"]`), from = oldPawns.get(String(e.crew)), to = point(pawn);
@@ -248,7 +325,8 @@ export function createResolutionEffects(root, cue) {
   }
   // Moving/resizing the viewport invalidates projectile coordinates.
   win.addEventListener("resize", clear);
-  doc.addEventListener("scroll", clear, true);
+  const scroll = () => { if (!jumping) clear(); };
+  doc.addEventListener("scroll", scroll, true);
   const visibility = () => { if (doc.hidden) clear(); };
   doc.addEventListener("visibilitychange", visibility);
   return {
@@ -258,7 +336,7 @@ export function createResolutionEffects(root, cue) {
     destroy() {
       clear(); layer.remove();
       win.removeEventListener("resize", clear);
-      doc.removeEventListener("scroll", clear, true);
+      doc.removeEventListener("scroll", scroll, true);
       doc.removeEventListener("visibilitychange", visibility);
     },
   };

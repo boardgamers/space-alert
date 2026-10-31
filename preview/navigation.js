@@ -144,7 +144,7 @@ export function mountNavigation(root, { locale, hosted }) {
           `${text} : ${select.selectedOptions[0]?.textContent ?? ""}`,
         );
         const value = document.createElement("span");
-        value.textContent = select.selectedOptions[0]?.textContent ?? "—";
+        value.textContent = select.selectedOptions[0]?.textContent ?? "-";
         trigger.append(value);
         const symbol = document.createElement("span");
         symbol.className = "choice-symbol";

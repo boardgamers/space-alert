@@ -248,7 +248,8 @@ export async function mountLesson(
     if (s.step !== lastStep) {
       ui.resetTutorial();
 
-      if (s.completed && lastStep >= 0 && s.step > lastStep)
+      if (s.completed && lastStep >= 0 && s.step > lastStep &&
+          !s.state.game.resolution?.outcome?.survived)
         sound.cue("complete");
       lastStep = s.step;
     }

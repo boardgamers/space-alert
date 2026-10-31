@@ -32,7 +32,7 @@ test("combat cues have distinct layers, mute stops active sounds, and re-enablin
     assert.equal(nodes.length, 0, "no audio before opt-in/gesture");
     sound.enable(true);
     const counts = [];
-    for (const kind of ["move", "charge", "laser-fire", "shield-hit", "hull-hit", "explosion"]) {
+    for (const kind of ["move", "charge", "laser-fire", "shield-hit", "hull-hit", "explosion", "thruster", "jump", "victory"]) {
       const before = nodes.filter(n => n.started).length;
       sound.cue(kind, .5);
       counts.push(nodes.filter(n => n.started).length - before);

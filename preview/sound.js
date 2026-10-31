@@ -17,7 +17,7 @@ export function createSoundDesign() {
       void context.suspend().catch(() => {});
     }
   }
-  function voice({ from = 440, to = from, duration = .2, volume = .035, delay = 0, type = "sine", cutoff = 1400 }, pan) {
+  function voice({ from = 440, to = from, duration = .2, volume = .035, delay = 0, type = "sine", cutoff = 1400, cutoffTo = cutoff * .2, attack = .008 }, pan) {
     const source = type === "noise" ? context.createBufferSource() : context.createOscillator();
     if (type === "noise") {
       if (!noise) {
@@ -35,10 +35,10 @@ export function createSoundDesign() {
     const at = context.currentTime + delay;
     filter.type = "lowpass";
     filter.frequency.setValueAtTime(cutoff, at);
-    filter.frequency.exponentialRampToValueAtTime(Math.max(80, cutoff * .2), at + duration);
+    filter.frequency.exponentialRampToValueAtTime(Math.max(80, cutoffTo), at + duration);
     stereo.pan.value = Math.max(-1, Math.min(1, pan));
     gain.gain.setValueAtTime(.0001, at);
-    gain.gain.exponentialRampToValueAtTime(volume, at + .008);
+    gain.gain.exponentialRampToValueAtTime(volume, at + Math.min(attack, duration * .95));
     gain.gain.exponentialRampToValueAtTime(.0001, at + duration);
     source.connect(filter).connect(gain).connect(stereo).connect(context.destination);
     voices.add(source);
@@ -72,6 +72,20 @@ export function createSoundDesign() {
         { type: "noise", cutoff: 2800, duration: .75, volume: .12 },
         { from: 110, to: 25, duration: .65, volume: .12 },
         { type: "noise", cutoff: 600, delay: .12, duration: .55, volume: .06 },
+      ],
+      thruster: [
+        { from: 65, to: 420, type: "triangle", duration: 1.2, attack: 1.05, volume: .075, cutoff: 450, cutoffTo: 2200 },
+        { type: "noise", duration: 1.2, attack: 1.05, volume: .06, cutoff: 200, cutoffTo: 3200 },
+      ],
+      jump: [
+        { from: 420, to: 1800, duration: .35, volume: .05, cutoff: 3000, cutoffTo: 4000 },
+        { type: "noise", cutoff: 4500, duration: .65, volume: .09 },
+        { from: 80, to: 30, duration: .5, volume: .07 },
+      ],
+      victory: [
+        { from: 523.25, duration: .55, volume: .025 },
+        { from: 659.25, delay: .12, duration: .55, volume: .025 },
+        { from: 783.99, delay: .24, duration: .65, volume: .03 },
       ],
     }[kind];
     if (layers) { for (const layer of layers) voice(layer, pan); return; }
