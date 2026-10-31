@@ -38,6 +38,7 @@ export function mountConsole(root, host = null) {
     received = 0,
     key = "",
     selected = [],
+    placements = [],
     handFilter = "all",
     lessons = [],
     careerKey = "",
@@ -480,6 +481,7 @@ export function mountConsole(root, host = null) {
         return `<button class="slot ${basic && resolution && slot.turn === (resolution.step === "damage" ? resolution.turn : Math.max(0, resolution.turn - 1)) ? "current" : ""} ${phaseFor(slot.turn) < ownPhase ? "locked" : ""} ${phaseFor(slot.turn) > ownPhase ? "future" : ""}" data-turn="${slot.turn}" ${editable ? "" : "disabled"} title="${esc(description)}" aria-label="${esc(description)}"><span class="turn">T+${slot.turn} ${phaseFor(slot.turn) < ownPhase ? pictogram("lock") : ""}</span><span class="action">${slot.cards.map((c) => (c.sides ? c.sides[c.side].map(icon).join(" ") : pictogram(c.category === "movement" ? "move" : "cards"))).join(" + ") || pictogram("wait")}</span></button>`;
       })
       .join("");
+    $("#program").setAttribute("aria-keyshortcuts", "ArrowLeft ArrowRight ArrowUp ArrowDown Backspace");
     $("#player-help").textContent = planning
       ? selected.length
         ? t(
@@ -487,8 +489,8 @@ export function mountConsole(root, host = null) {
             "Choose a turn for this card.",
           )
         : t(
-            "Choisissez une carte, puis un tour.",
-            "Choose a card, then a turn.",
+            "Cliquez une carte pour remplir le prochain tour. Cliquez un tour rempli pour l’effacer ; Retour arrière annule le dernier ajout.",
+            "Click a card to fill the next turn. Click a filled turn to clear it; Backspace undoes the last placement.",
           )
       : view.stage === "presence"
         ? t(
@@ -944,6 +946,47 @@ export function mountConsole(root, host = null) {
   function rerender() {
     if (view) render(view, true);
   }
+  const editableTurns = () => [...root.querySelectorAll("#program [data-turn]:not(:disabled)")]
+    .filter(button => button.getClientRects().length > 0)
+    .map(button => Number(button.dataset.turn));
+  async function placeCard(turn, cards) {
+    const owner = crew;
+    await command("program", { crew: owner, turn, slotVersion: view.game.programs[owner][turn - 1].revision, cards });
+    placements.push({ crew: owner, turn, ids: cards.map(c => c.id).join(",") });
+    selected = [];
+    rerender();
+  }
+  const handlePlanningKey = event => {
+    if (!["Backspace", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key) || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return;
+    if (event.target.closest?.("input, textarea, select, [contenteditable]:not([contenteditable=false]), dialog")) return;
+    if (root.querySelector("dialog[open]")) return;
+    const editable = editableTurns();
+    if (!editable.length) return;
+    event.preventDefault();
+    if (pending || event.repeat) return;
+    if (event.key !== "Backspace") {
+      const action = { ArrowLeft: "red", ArrowRight: "blue", ArrowUp: "lift", ArrowDown: "lift" }[event.key];
+      const turn = editable.find(n => !view.game.programs[crew][n - 1].cards.length);
+      const hand = [...(view.game.hand ?? []), ...(view.game.androidCards ?? []).filter(c => c.owner === crew)];
+      const card = hand.find(c => c.sides.some(side => side.length === 1 && side[0] === action));
+      if (turn !== undefined && card) {
+        const side = card.sides.findIndex(side => side.length === 1 && side[0] === action);
+        perform(() => placeCard(turn, [{ id: card.id, side }]));
+      }
+      return;
+    }
+    const matches = placements.filter(p => p.crew === crew && editable.includes(p.turn) &&
+      view.game.programs[crew][p.turn - 1].cards.map(c => c.id).join(",") === p.ids);
+    const turn = matches.at(-1)?.turn ?? editable.filter(n => view.game.programs[crew][n - 1].cards.length).at(-1);
+    if (!turn) return;
+    event.preventDefault();
+    perform(async () => {
+      await command("remove", { crew, turn, slotVersion: view.game.programs[crew][turn - 1].revision });
+      selected = [];
+      rerender();
+    });
+  };
+  root.ownerDocument.addEventListener("keydown", handlePlanningKey);
   listenRoot("click", (e) => {
     const el = e.target.closest("button");
     if (host && ["ready-all", "next-event", "open-setup"].includes(el?.id))
@@ -1172,12 +1215,18 @@ export function mountConsole(root, host = null) {
           ...selected.filter((c) => c.id !== choice.id),
           choice,
         ].slice(-2);
-      else
+      else {
+        const turn = editableTurns().find(n => !view.game.programs[crew][n - 1].cards.length);
+        if (turn !== undefined) {
+          perform(() => placeCard(turn, [choice]));
+          return;
+        }
         selected = selected.some(
           (c) => c.id === choice.id && c.side === choice.side,
         )
           ? []
           : [choice];
+      }
       rerender();
       return;
     }
@@ -1185,12 +1234,8 @@ export function mountConsole(root, host = null) {
       const turn = Number(el.dataset.turn),
         slot = view.game.programs[crew][turn - 1];
       perform(async () => {
-        await command(selected.length ? "program" : "remove", {
-          crew,
-          turn,
-          slotVersion: slot.revision,
-          ...(selected.length ? { cards: selected } : {}),
-        });
+        if (selected.length) await placeCard(turn, selected);
+        else if (slot.cards.length) await command("remove", { crew, turn, slotVersion: slot.revision });
         selected = [];
         rerender();
       });
@@ -1419,6 +1464,7 @@ export function mountConsole(root, host = null) {
       rerender();
     },
     destroy() {
+      root.ownerDocument.removeEventListener("keydown", handlePlanningKey);
       navigation.destroy();
       for (const id of intervals) clearInterval(id);
       for (const [type, fn] of rootListeners)

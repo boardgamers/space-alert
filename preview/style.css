@@ -2408,3 +2408,6 @@ input:not([type="checkbox"]):not([type="range"]) {
   min-height: 68px;
   width: 100%;
 }
+
+.planning-shortcuts { display: flex; gap: 6px; margin-top: 12px; color: var(--muted); }
+.planning-shortcuts kbd { min-width: 25px; text-align: center; padding: 2px 5px; border: 1px solid var(--line); border-radius: 4px; font: inherit; font-size: 12px; }
