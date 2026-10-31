@@ -7,7 +7,7 @@ import {
   completedTurns,
 } from "../src/tutorial-controller.js";
 
-async function place(tutorial, turn, direction) {
+async function place(tutorial, turn, direction, crew = 0) {
   const s = tutorial.snapshot.state;
   const id = s.game.hands[0].find((id) =>
     s.game.cards[id].sides.some(
@@ -20,9 +20,9 @@ async function place(tutorial, turn, direction) {
   assert.equal(
     await tutorial.play({
       type: "program",
-      crew: 0,
+      crew,
       turn,
-      slotVersion: s.game.slotVersions[0][turn - 1],
+      slotVersion: s.game.slotVersions[crew][turn - 1],
       cards: [{ id, side }],
     }),
     true,
@@ -174,6 +174,12 @@ test("every chapter can plan, execute, complete, and replay through native contr
     } else if (lesson.id === "first-shot") {
       await place(tutorial, 2, "A");
       await place(tutorial, 3, "A");
+    } else if (lesson.id === 'energy') {
+      for (const turn of [1, 2, 3]) await place(tutorial, turn, 'A');
+      await place(tutorial, 1, 'lift', 2);
+      await place(tutorial, 2, 'B', 2);
+      await tutorial.play({ type: 'practice-phase' });
+      await place(tutorial, 4, 'A');
     }
     while (tutorial.snapshot.state.stage === "programming")
       assert.equal(
@@ -195,6 +201,33 @@ test("every chapter can plan, execute, complete, and replay through native contr
     assert.equal(tutorial.snapshot.completed, false, lesson.id);
     assert.equal(completedTurns(tutorial.snapshot.state), 0, lesson.id);
     tutorial.destroy();
+  }
+});
+
+test('energy tutorial requires four actual center shots and a refill, not just playback', async () => {
+  for (const shots of [0, 1, 4]) {
+    for (const refill of [false, true]) {
+      const tutorial = await createLessonTutorial('energy');
+      await tutorial.continue();
+      assert.ok(tutorial.snapshot.state.game.androidCards.every(id =>
+        tutorial.snapshot.state.game.cards[id].kind !== 'heroic'));
+      for (let turn = 1; turn <= Math.min(shots, 3); turn++)
+        await place(tutorial, turn, 'A');
+      if (refill) {
+        await place(tutorial, 1, 'lift', 2);
+        await place(tutorial, 2, 'B', 2);
+      }
+      await tutorial.play({type: 'practice-phase'});
+      if (shots === 4) await place(tutorial, 4, 'A');
+      await tutorial.play({type: 'practice-run'});
+      while (completedTurns(tutorial.snapshot.state) < 4)
+        assert.equal(await tutorial.play({type: 'resolve'}), true);
+      assert.equal(tutorial.snapshot.completed, shots === 4 && refill, `${shots} shots/refill ${refill}`);
+      assert.ok(tutorial.snapshot.state.game.resolution.frames.every(frame =>
+        frame.ship.zones.white.reactor <= 5));
+      if (!tutorial.snapshot.completed) assert.match(tutorial.snapshot.text, /\/4 shots fired/);
+      tutorial.destroy();
+    }
   }
 });
 

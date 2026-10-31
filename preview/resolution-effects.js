@@ -66,8 +66,9 @@ export function createResolutionEffects(root, cue) {
   layer.className = "resolution-effects";
   layer.setAttribute("aria-hidden", "true");
   root.append(layer);
-  let previous = null, previousIndex = -1, busyUntil = 0, jumping = false;
+  let previous = null, previousIndex = -1, busyUntil = 0, jumping = false, pendingFrame = null;
   let oldPawns = new Map();
+  let oldShip = null;
   const animations = new Set(), timers = new Set(), restores = [];
   const q = selector => root.querySelector(selector);
   const threat = id => q(`[data-threat="${id}"] .threat-portrait`);
@@ -91,6 +92,8 @@ export function createResolutionEffects(root, cue) {
     busyUntil = Math.max(busyUntil, performance.now() + duration + delay);
   }
   function clear() {
+    if (pendingFrame !== null) win.cancelAnimationFrame(pendingFrame);
+    pendingFrame = null;
     for (const id of timers) win.clearTimeout(id);
     timers.clear();
     for (const animation of animations) animation.cancel();
@@ -309,6 +312,7 @@ export function createResolutionEffects(root, cue) {
   let oldMeters = new Map();
   function beforeRender() {
     clear();
+    oldShip = point(q(".ship-vessel"));
     oldPawns = new Map([...root.querySelectorAll("[data-crew]")].map(p => [p.dataset.crew, point(p)]));
     oldMeters = new Map([...root.querySelectorAll("[data-threat]")].map(p => [`threat-${p.dataset.threat}`, p.querySelector(".threat-hud")?.innerHTML]));
     for (const zone of ["red", "white", "blue"]) {
@@ -318,14 +322,32 @@ export function createResolutionEffects(root, cue) {
   }
   function afterRender(resolution, index) {
     const current = resolution?.frames[index];
-    if (current && previous && index === previousIndex + 1 && !doc.hidden)
-      play(resolutionEffects(resolution, previous, current), previous, current, oldMeters);
+    if (current && previous && index === previousIndex + 1 && !doc.hidden) {
+      const events = resolutionEffects(resolution, previous, current), before = previous;
+      if (events.length) {
+        // Tutorial completion also updates the guide and removes controls. Let
+        // layout and scroll anchoring settle before locating beams and targets.
+        busyUntil = performance.now() + 1000;
+        pendingFrame = win.requestAnimationFrame(() => {
+          pendingFrame = win.requestAnimationFrame(() => {
+            pendingFrame = null;
+            const ship = point(q(".ship-vessel"));
+            if (oldShip && ship)
+              oldPawns = new Map([...oldPawns].map(([id, p]) => [id, p && {
+                ...p, x: p.x + ship.x - oldShip.x, y: p.y + ship.y - oldShip.y,
+              }]));
+            busyUntil = 0;
+            play(events, before, current, oldMeters);
+          });
+        });
+      }
+    }
     previous = current;
     previousIndex = index;
   }
   // Moving/resizing the viewport invalidates projectile coordinates.
   win.addEventListener("resize", clear);
-  const scroll = () => { if (!jumping) clear(); };
+  const scroll = () => { if (!jumping && pendingFrame === null) clear(); };
   doc.addEventListener("scroll", scroll, true);
   const visibility = () => { if (doc.hidden) clear(); };
   doc.addEventListener("visibilitychange", visibility);

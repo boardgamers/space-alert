@@ -363,6 +363,30 @@ h2 {
 .slot.selected {
   outline: 2px solid var(--gold);
 }
+#program .slot.insertion {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+#program .slot.insertion .turn { color: var(--gold); font-weight: 700; }
+.program-edit-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.program-edit-tools button { padding: 7px 10px; min-height: 38px; }
+.program-edit-tools kbd { color: var(--muted); font: inherit; font-size: 11px; }
+.program-edit-tools small { color: var(--gold); }
+
+/* Reveal equipment in the lesson that first uses it. The room layout stays familiar. */
+.native-tutorial:is([data-chapter="first-shot"], [data-chapter="energy"]) .system-card,
+.native-tutorial:is([data-chapter="first-shot"], [data-chapter="energy"]) .ship-passage,
+.native-tutorial:is([data-chapter="first-shot"], [data-chapter="energy"]) .energy-conduits,
+.native-tutorial:is([data-chapter="first-shot"], [data-chapter="energy"]) .lift-bay { visibility: hidden; }
+.native-tutorial:is([data-chapter="first-shot"], [data-chapter="energy"]) [data-station="white-upper"] :is(.weapon-system, .energy-system),
+.native-tutorial[data-chapter="energy"] [data-station="white-lower"] .energy-system,
+.native-tutorial[data-chapter="energy"] .lift-bay:has([data-inspect="lift-white"]) { visibility: visible; }
+.native-tutorial:is([data-chapter="first-shot"], [data-chapter="energy"]) .crew-pawn:not([data-crew="0"]):not([data-crew="2"]),
+.native-tutorial[data-chapter="first-shot"] .crew-pawn[data-crew="2"],
+.native-tutorial:is([data-chapter="first-shot"], [data-chapter="energy"]) .ship-key > span:last-child { display: none; }
+.native-tutorial[data-chapter="energy"] :is(#controls, #resources, #threats, #latest, #comms),
+.native-tutorial[data-chapter="energy"] .section-heading:has(#threat-title) { display: none; }
+.native-tutorial[data-chapter="energy"] #hand { grid-template-columns: repeat(2, 88px); }
 .controls {
   display: flex;
   gap: 6px;
@@ -424,6 +448,18 @@ h2 {
   background: var(--gold);
   color: #132430;
 }
+@media (hover: hover) {
+  .card button:not(:disabled):not(.selected):hover {
+    background: #34535f;
+    box-shadow: inset 0 0 0 2px #a2e3ef;
+  }
+}
+.card button:not(:disabled):focus-visible {
+  outline: 0;
+  box-shadow: inset 0 0 0 2px #a2e3ef;
+}
+.card button.selected:focus-visible { box-shadow: inset 0 0 0 2px #132430; }
+.card button:not(:disabled):active { filter: brightness(1.2); }
 .card .tiny {
   font-size: 10px;
   line-height: 1.2;
@@ -2532,6 +2568,11 @@ input:not([type="checkbox"]):not([type="range"]) {
 .lesson-target .section-heading { margin-bottom: 10px; }
 .pending-threat > .equipment-art { opacity: .35; }
 .lesson-target .hull-gauge { border-color: #74e8bd; }
+.lesson-shield-note { display: flex; align-items: center; gap: 8px; color: #a2e3ef; font-size: 13px; max-width: 65ch; }
+.lesson-shield-note .pictogram { flex: 0 0 22px; width: 22px; height: 22px; }
+.native-tutorial .lesson-shield-focus { outline: 1px solid #8eeaff; outline-offset: 2px; }
+.native-tutorial .lesson-lane { border-left-color: #e8c984; border-right-color: #e8c984; }
+.lesson-lane-label { position: absolute; left: calc(100% + 8px); top: 4px; width: 80px; color: #e8c984; font-size: 12px; text-align: left; line-height: 1.3; }
 /* Discovery introduces the target before exposing editable program controls. */
 .native-tutorial[data-chapter="first-shot"][data-tutorial-step="0"] #planning {
   display: block !important;

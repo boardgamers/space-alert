@@ -7,6 +7,14 @@ export function completedTurns(state) {
   const r = state.game.resolution;
   return r?.step === "damage" ? r.turn : Math.max(0, (r?.turn ?? 0) - 1);
 }
+export function energyObjective(state) {
+  const log = state.game.resolution?.log ?? [];
+  const shots = new Set(log.filter(e => e.type === 'fire' &&
+    e.station === 'white-upper' && e.turn >= 1 && e.turn <= 4).map(e => e.turn)).size;
+  const refilled = log.some(e => e.type === 'energy' &&
+    e.station === 'white-lower' && e.amount > 0 && e.turn <= 4);
+  return { shots, refilled, complete: shots === 4 && refilled };
+}
 
 // BGS owns checkpoints and saved action history. All moves still use our engine.
 export async function createLessonTutorial(
@@ -36,7 +44,7 @@ export async function createLessonTutorial(
   return createTutorial({
     game: "space-alert",
     id,
-    version: lesson.basics ? 4 : 2,
+    version: lesson.basics ? 4 : id === "energy" ? 3 : 2,
     storage,
     onProgress,
     initialState: () => createLesson(id, 1000, { timing: lesson.basics }),
@@ -213,7 +221,9 @@ export async function createLessonTutorial(
           {
             id: "execute",
             title: t("basics.run_the_turns"),
-            text: lesson.basics
+            text: (state) => id === 'energy' && completedTurns(state) >= 4 && !energyObjective(state).complete
+              ? t('lesson.energy.retry', { count: energyObjective(state).shots })
+              : lesson.basics
               ? t("timing.executing")
               : t(
                   "tutorial_controller.program_locked_crew_act_together_then_threats",
@@ -223,6 +233,8 @@ export async function createLessonTutorial(
                 ? completedTurns(state) >= 3 &&
                   state.game.resolution.ship.crew[0].station ===
                     state.tutorial.targetStation
+                : id === 'energy'
+                  ? completedTurns(state) >= 4 && energyObjective(state).complete
                 : id === "first-shot" && state.tutorial.stopAtTarget
                   ? state.game.resolution.threats.some(
                       (threat) =>

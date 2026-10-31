@@ -1,6 +1,7 @@
 import { createResolutionEffects } from "./resolution-effects.js";
 import { createSoundDesign } from "./sound.js";
 import { plannedRoute } from "./program-route.js";
+import { createProgramCursor } from "./program-cursor.js";
 import { translate, createLocaleSelection, lessonCopy } from "./i18n.js";
 import { basicsView } from "./basics.js";
 import { duration, practiceClockText } from "./clock.js";
@@ -49,7 +50,6 @@ export function mountConsole(root, host = null) {
     received = 0,
     key = "",
     selected = [],
-    placements = [],
     handFilter = "all",
     lessons = [],
     careerKey = "",
@@ -62,6 +62,7 @@ export function mountConsole(root, host = null) {
     basicsMarkup;
   let route = [],
     previewTurn = null;
+  const cursor = createProgramCursor();
   const audio = host?.cue ? null : createSoundDesign();
   const cue = (kind, pan) => host?.cue ? host.cue(kind, pan) : audio.cue(kind, pan);
   const unlockSound = () => audio?.enable(sound);
@@ -327,6 +328,7 @@ export function mountConsole(root, host = null) {
     const phaseLesson = !!view.tutorial?.phaseLesson;
     const simpleShip = basic || phaseLesson;
     const firstShot = host?.tutorial && view.tutorial?.id === "first-shot";
+    const energyLesson = host?.tutorial && view.tutorial?.id === "energy";
     const teachingActions = simpleShip
       ? ["red", "blue", "lift"]
       : firstShot
@@ -483,6 +485,27 @@ export function mountConsole(root, host = null) {
         )
         .join("") ||
       `<p class="empty">${t("app.awaiting_the_first_detections")}</p>`;
+    if (host?.tutorial) {
+      const focus = {
+        "first-shot": ["white-upper-A"],
+        energy: ["white-lower-B", "white-upper-A"],
+        repairs: ["blue-upper-B"],
+        battlebots: ["blue-upper-C", "red-upper-C"],
+        "double-actions": ["white-upper-A", "blue-upper-A"],
+        phasing: ["white-upper-A"],
+        specializations: ["blue-lower-C"],
+      }[view.tutorial?.id] ?? [];
+      for (const system of focus)
+        $(`[data-inspect="system-${system}"]`)?.classList.add("lesson-focus");
+    }
+    if (firstShot) {
+      for (const station of ["white-upper", "white-lower"])
+        $(`[data-station="${station}"]`)?.classList.add("lesson-lane");
+      $('[data-inspect="system-white-upper-B"]')?.classList.add("lesson-shield-focus");
+      $("#threats .threat-target")?.insertAdjacentHTML(
+        "beforeend", `<span class="lesson-lane-label">${t("lesson.first-shot.lane")}</span>`,
+      );
+    }
     const announcements = view.log.filter((x) => x.type === "announcement");
     $("#latest").textContent =
       view.stage === "resolution"
@@ -495,6 +518,7 @@ export function mountConsole(root, host = null) {
     $("#program-crew").innerHTML = Array.from(
       { length: view.crewSize },
       (_, i) =>
+        host?.tutorial && view.tutorial?.id === 'energy' && ![0, 2].includes(i) ? '' :
         `<option value="${i}" data-kind="${g?.solo || i >= view.players.length ? "android" : "crew"}" data-short-label="${g?.solo || i >= view.players.length ? i + 1 : playerName(i)}" data-specialization="${g?.specializations[i]?.name ?? ""}" ${crew === i ? "selected" : ""}>${g?.solo || i >= view.players.length ? `${t("app.android")} ${i + 1}` : playerName(i)}${g?.specializations[i] ? " · " + esc(specialName(g.specializations[i].name)) : ""}</option>`,
     ).join("");
     const planning = view.stage === "programming",
@@ -508,7 +532,7 @@ export function mountConsole(root, host = null) {
     $("#program").innerHTML = (g?.programs[crew] ?? [])
       .slice(
         0,
-        basic || firstShot ? 3 : view.mission.phaseEndsMs.length === 2 ? 7 : 12,
+        basic || firstShot ? 3 : energyLesson ? 4 : view.mission.phaseEndsMs.length === 2 ? 7 : 12,
       )
       .map((slot) => {
         const editable =
@@ -522,6 +546,7 @@ export function mountConsole(root, host = null) {
           (!host?.tutorial || view.tutorial.nativeStep === 1) &&
           planning &&
           canOwn &&
+          (g.solo || crew < view.players.length || !slot.cards.length) &&
           !own.finishedPlanning &&
           phaseFor(slot.turn) === ownPhase;
         const destination = route[slot.turn - 1];
@@ -532,7 +557,19 @@ export function mountConsole(root, host = null) {
         return `<button class="slot ${slot.cards.length ? "filled" : "empty"} ${slot.turn === activeTurn ? "current" : ""} ${phaseFor(slot.turn) < ownPhase ? "locked" : ""} ${phaseFor(slot.turn) > ownPhase ? "future" : ""}" data-turn="${slot.turn}" ${slot.turn === activeTurn ? 'aria-current="step"' : ""} ${editable ? "" : "disabled"} title="${esc(description + (routeDescription ? " · " + routeDescription : ""))}" aria-label="${esc(description + (routeDescription ? " · " + routeDescription : ""))}">${firstShot && slot.turn === 2 ? `<span class="slot-arrival" title="${t("app.target_arrives_before_this_shot")}">${pictogram("down")}${t("app.arrival")}</span>` : ""}<span class="turn">${slot.turn} ${phaseFor(slot.turn) < ownPhase ? pictogram("lock") : ""}</span><span class="action">${slot.cards.map((c) => (c.sides ? c.sides[c.side].map(icon).join(" ") : pictogram(c.category === "movement" ? "move" : "cards"))).join(" + ") || pictogram("wait")}</span>${slot.cards.length && destination ? `<span class="planned-location" aria-hidden="true">${shipLocator([destination])}</span>` : ""}</button>`;
       })
       .join("");
-    if (!basic && !firstShot) {
+    const editable = [...root.querySelectorAll('#program [data-turn]:not(:disabled)')]
+      .map(button => Number(button.dataset.turn));
+    // Do not erase a saved phase cursor just because its controls are hidden
+    // during an introduction or while reviewing resolution.
+    const insertionTurn = editable.length
+      ? cursor.sync(`${crew}/${ownPhase}`, editable)
+      : null;
+    for (const button of root.querySelectorAll('#program [data-turn]:not(:disabled)')) {
+      const active = Number(button.dataset.turn) === insertionTurn;
+      button.classList.toggle('insertion', active);
+      button.setAttribute('aria-pressed', String(active));
+    }
+    if (!basic && !firstShot && !energyLesson) {
       const lastTurn = resolution?.lastTurn ?? (view.mission.phaseEndsMs.length === 2 ? 7 : 12);
       const jumping = activeTurn > lastTurn;
       $("#program").insertAdjacentHTML("beforeend",
@@ -541,7 +578,7 @@ export function mountConsole(root, host = null) {
     showPlannedPosition(previewTurn);
     $("#program").setAttribute(
       "aria-keyshortcuts",
-      "ArrowLeft ArrowRight ArrowUp ArrowDown Backspace",
+      "ArrowLeft ArrowRight ArrowUp ArrowDown Backspace W",
     );
     $("#player-help").textContent = planning
       ? selected.length
@@ -589,6 +626,8 @@ export function mountConsole(root, host = null) {
     ];
     const grouped = [];
     for (const card of hand) {
+      if (energyLesson && !card.sides.every(side =>
+        side.length === 1 && ["A", "B", "lift"].includes(side[0]))) continue;
       if (
         teachingActions &&
         !card.sides.some(
@@ -620,14 +659,16 @@ export function mountConsole(root, host = null) {
       if (same) same.count++;
       else grouped.push({ ...card, count: 1 });
     }
-    $("#selection-tools").innerHTML =
-      planning &&
+    if (energyLesson) grouped.sort((a, b) => JSON.stringify(a.sides).localeCompare(JSON.stringify(b.sides)));
+    $("#selection-tools").innerHTML = (editable.length
+      ? `<div class="program-edit-tools"><button id="program-wait" class="quiet icon-label" aria-keyshortcuts="W" title="${t('program.wait')}" aria-label="${t('program.wait')}" ${insertionTurn === null ? 'disabled' : ''}>${pictogram('wait')}<kbd>W</kbd></button><button id="program-clear" class="quiet icon-label" aria-keyshortcuts="Backspace" title="${t('program.clear')}" aria-label="${t('program.clear')}" ${cursor.eraseTurn(g.programs[crew]) === null ? 'disabled' : ''}>${pictogram('erase')}<kbd>⌫</kbd></button><small>${insertionTurn === null ? t('program.choose_turn') : t('program.selected_turn', {turn: insertionTurn})}</small></div>`
+      : '') + (planning &&
       canOwn &&
       g.specializations.some(
         (s) => s && ["medic", "special-ops"].includes(s.name),
       )
         ? `<button id="combine" class="quiet icon-button" title="${t("app.combine_two_cards")}" aria-label="${t("app.combine_two_cards")}" aria-pressed="${combine}">${pictogram("combine")}</button>`
-        : "";
+        : "");
     $("#card-help").textContent = selected
       .map((choice) => {
         const card = hand.find((c) => c.id === choice.id);
@@ -1062,13 +1103,28 @@ export function mountConsole(root, host = null) {
       slotVersion: view.game.programs[owner][turn - 1].revision,
       cards,
     });
-    placements.push({
-      crew: owner,
-      turn,
-      ids: cards.map((c) => c.id).join(","),
-    });
+    cursor.advance(turn);
     selected = [];
     previewTurn = turn;
+    rerender();
+  }
+  async function clearTurn(turn) {
+    if (turn === null) return;
+    const slot = view.game.programs[crew][turn - 1];
+    if (slot.cards.length)
+      await command('remove', { crew, turn, slotVersion: slot.revision });
+    cursor.select(turn);
+    selected = [];
+  }
+  async function waitTurn() {
+    const turn = cursor.turn;
+    if (turn === null) return;
+    await clearTurn(turn);
+    cursor.advance(turn);
+    rerender();
+  }
+  async function eraseTurn() {
+    await clearTurn(cursor.eraseTurn(view.game.programs[crew]));
     rerender();
   }
   const handlePlanningKey = (event) => {
@@ -1080,11 +1136,13 @@ export function mountConsole(root, host = null) {
         "ArrowRight",
         "ArrowUp",
         "ArrowDown",
+        "w",
+        "W",
       ].includes(event.key) ||
       event.ctrlKey ||
       event.metaKey ||
       event.altKey ||
-      event.shiftKey
+      (event.shiftKey && event.key !== "W")
     )
       return;
     if (
@@ -1108,6 +1166,10 @@ export function mountConsole(root, host = null) {
     if (!editable.length) return;
     event.preventDefault();
     if (pending || event.repeat) return;
+    if (event.key.toLowerCase() === "w") {
+      perform(waitTurn);
+      return;
+    }
     if (event.key !== "Backspace") {
       const action = {
         ArrowLeft: "red",
@@ -1115,9 +1177,7 @@ export function mountConsole(root, host = null) {
         ArrowUp: "lift",
         ArrowDown: "lift",
       }[event.key];
-      const turn = editable.find(
-        (n) => !view.game.programs[crew][n - 1].cards.length,
-      );
+      const turn = cursor.turn;
       const hand = [
         ...(view.game.hand ?? []),
         ...(view.game.androidCards ?? []).filter((c) => c.owner === crew),
@@ -1125,7 +1185,7 @@ export function mountConsole(root, host = null) {
       const card = hand.find((c) =>
         c.sides.some((side) => side.length === 1 && side[0] === action),
       );
-      if (turn !== undefined && card) {
+      if (turn !== null && card) {
         const side = card.sides.findIndex(
           (side) => side.length === 1 && side[0] === action,
         );
@@ -1133,30 +1193,7 @@ export function mountConsole(root, host = null) {
       }
       return;
     }
-    const matches = placements.filter(
-      (p) =>
-        p.crew === crew &&
-        editable.includes(p.turn) &&
-        view.game.programs[crew][p.turn - 1].cards
-          .map((c) => c.id)
-          .join(",") === p.ids,
-    );
-    const turn =
-      matches.at(-1)?.turn ??
-      editable
-        .filter((n) => view.game.programs[crew][n - 1].cards.length)
-        .at(-1);
-    if (!turn) return;
-    event.preventDefault();
-    perform(async () => {
-      await command("remove", {
-        crew,
-        turn,
-        slotVersion: view.game.programs[crew][turn - 1].revision,
-      });
-      selected = [];
-      rerender();
-    });
+    perform(eraseTurn);
   };
   root.ownerDocument.addEventListener("keydown", handlePlanningKey);
   listenRoot("click", (e) => {
@@ -1164,6 +1201,10 @@ export function mountConsole(root, host = null) {
     if (host && ["ready-all", "next-event", "open-setup"].includes(el?.id))
       return;
     if (!el || pending) return;
+    if (el.id === 'program-wait' || el.id === 'program-clear') {
+      perform(el.id === 'program-wait' ? waitTurn : eraseTurn);
+      return;
+    }
     if (el.id === "open-setup") {
       navigation.openPanel("setup");
       return;
@@ -1398,10 +1439,8 @@ export function mountConsole(root, host = null) {
           choice,
         ].slice(-2);
       else {
-        const turn = editableTurns().find(
-          (n) => !view.game.programs[crew][n - 1].cards.length,
-        );
-        if (turn !== undefined) {
+        const turn = cursor.turn;
+        if (turn !== null && editableTurns().includes(turn)) {
           perform(() => placeCard(turn, [choice]));
           return;
         }
@@ -1415,15 +1454,10 @@ export function mountConsole(root, host = null) {
       return;
     }
     if (el.dataset.turn) {
-      const turn = Number(el.dataset.turn),
-        slot = view.game.programs[crew][turn - 1];
-      perform(async () => {
-        if (selected.length) await placeCard(turn, selected);
-        else if (slot.cards.length)
-          await command("remove", { crew, turn, slotVersion: slot.revision });
-        selected = [];
-        rerender();
-      });
+      const turn = Number(el.dataset.turn);
+      cursor.select(turn);
+      if (selected.length) perform(() => placeCard(turn, selected));
+      else { cue('select'); rerender(); }
       return;
     }
     if (el.dataset.command === "resolve-all") {
@@ -1634,7 +1668,7 @@ export function mountConsole(root, host = null) {
     isAnimating: () => effects.busy(),
     resetTutorial() {
       previewTurn = null;
-      placements.length = 0;
+      cursor.reset();
       $("#error").textContent = "";
       basicsPicked = false;
       basicsStarted = false;
@@ -1661,6 +1695,7 @@ export function mountConsole(root, host = null) {
       if (seat === nextSeat) return;
       seat = nextSeat;
       crew = Math.max(0, seat);
+      cursor.reset();
       previewTurn = null;
       selected = [];
       rerender();

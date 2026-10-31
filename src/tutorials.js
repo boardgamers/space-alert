@@ -137,6 +137,11 @@ export function createLesson(id, now, { timing = false } = {}) {
       structuredClone(TRACKS[6]),
     ]),
   );
+  // Teach ordinary refueling before introducing heroic overflow bonuses.
+  if (id === "energy")
+    s.game.androidCards = s.game.androidCards.filter(
+      id => s.game.cards[id].kind !== "heroic",
+    );
   // Public, editable teammate example, using physical cards from the shared solo deck.
   for (const turn of [1, 4]) {
     const id = s.game.hands[0].find((id) =>

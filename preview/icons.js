@@ -40,6 +40,7 @@ const paths = {
   destination: "M5 21V3m0 0h14l-3 4 3 4H5",
   check: "m4 12 5 5L20 6",
   close: "m5 5 14 14M5 19 19 5",
+  erase: "M8 5h13v14H8l-6-7 6-7Zm3 4 6 6m0-6-6 6",
   cards: "M7 7h13v15H7zM4 18H2V2h13v2",
   combine: "M2 6h7v12H2zM15 6h7v12h-7zM9 12h6m-3-3v6",
   speaker: "M3 9h4l5-5v16l-5-5H3V9Zm13-2a7 7 0 0 1 0 10m3-13a11 11 0 0 1 0 16",

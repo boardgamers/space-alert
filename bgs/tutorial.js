@@ -44,6 +44,7 @@ export async function mountLesson(
     ["threats", "computer", "appear"].includes(s.state.game.resolution.step);
   const canPlay = (s) =>
     !shotExerciseEnded(s) &&
+    !(chapter === 'energy' && completedTurns(s.state) >= 4) &&
     s.state.stage === "resolution" &&
     !s.completed &&
     !s.state.game.resolution?.outcome &&
@@ -209,7 +210,7 @@ export async function mountLesson(
       s.step === 2 &&
       completedTurns(s.state) >= 3 &&
       !s.completed;
-    programControls.innerHTML = `${chapter === "basics" && s.step === 3 ? `<button data-guide="timeout" class="primary icon-label" aria-keyshortcuts="Enter" title="${t("timing.next_scenario")} · ↵" ${s.busy ? "disabled" : ""}>${pictogram("clock")}<span>${t("timing.next_scenario")}</span><kbd aria-hidden="true">↵</kbd></button>` : ""}${canPlay(s) ? transport("playback", playing ? "pause" : "right", playing ? t("basics.pause") : t("tutorial.play_program")) : ""}${!LESSONS[index].basics && chapter !== "first-shot" && s.step === 1 && s.state.phase === 1 ? transport("phase", "step", t("app.phase_2"), s.busy) : ""}${!LESSONS[index].basics && s.step === 1 ? `<button data-guide="run" class="primary icon-button" aria-keyshortcuts="Enter" title="${t("basics.run_program")} · ↵" aria-label="${t("basics.run_program")}" ${(chapter === "first-shot" ? !readyToFire : !planned) || s.busy ? "disabled" : ""}>${pictogram("check")}<kbd>↵</kbd></button>` : ""}`;
+    programControls.innerHTML = `${chapter === "basics" && s.step === 3 ? `<button data-guide="timeout" class="primary icon-label" aria-keyshortcuts="Enter" title="${t("timing.next_scenario")} · ↵" ${s.busy ? "disabled" : ""}>${pictogram("clock")}<span>${t("timing.next_scenario")}</span><kbd aria-hidden="true">↵</kbd></button>` : ""}${canPlay(s) ? transport("playback", playing ? "pause" : "right", playing ? t("basics.pause") : t("tutorial.play_program")) : ""}${!LESSONS[index].basics && chapter !== "first-shot" && s.step === 1 && s.state.phase === 1 ? transport("phase", "lock", t("tutorial.lock_phase", { phase: 1 }), s.busy) : ""}${!LESSONS[index].basics && s.step === 1 && (chapter !== "energy" || s.state.phase === 2) ? `<button data-guide="run" class="primary icon-button" aria-keyshortcuts="Enter" title="${t("basics.run_program")} · ↵" aria-label="${t("basics.run_program")}" ${(chapter === "first-shot" ? !readyToFire : !planned) || s.busy ? "disabled" : ""}>${pictogram("check")}<kbd>↵</kbd></button>` : ""}`;
     if (phaseLesson && s.state.stage === "programming" && s.step > 0) {
       const ready =
         s.state.game.programs[0][(s.state.phase === 1 ? 1 : 4) - 1]?.cards
@@ -222,7 +223,7 @@ export async function mountLesson(
       programControls.innerHTML = `<div class="phase-lesson-controls">${s.state.phase === 1 ? transport("phase-deadline", "forward", t("phases.skip"), !ready || !s.state.game.threats.length || s.busy) : `<button data-guide="run" class="primary icon-button" aria-keyshortcuts="Enter" title="${t("phases.execute")} · ↵" aria-label="${t("phases.execute")}" ${!ready || s.busy ? "disabled" : ""}>${pictogram("check")}<kbd>↵</kbd></button>`}<div class="practice-clock"><div><strong data-practice-phase>${t("phases.deadline", { phase: s.state.phase, time: phaseTime })}</strong><small>${t("phases.total")} · <span data-practice-time>${practiceClockText(s.state, locale)}</span></small></div>${transport("phase-clock", s.state.tutorial.clockRunning ? "pause" : "clock", t(s.state.tutorial.clockRunning ? "basics.pause" : "basics.start_clock"))}</div></div>`;
     }
     guide.innerHTML = `<div class="native-guide-row"><nav class="basics-stages" aria-label="${t("tutorial.steps")}">${label.map((name, i) => `<button data-guide-step="${deadline ? i + 3 : i}" class="quiet ${stage === i ? "active" : ""}" ${i > stage || s.busy ? "disabled" : ""} ${stage === i ? 'aria-current="step"' : ""}><span class="step-number">${i + 1}</span><span>${name}</span></button>`).join("")}</nav><div class="native-guide-tools">${standalone ? `<a href="/">${t("tutorial.local_game")}</a>` : ""}${transport("sound", soundOn ? "speaker" : "muted", soundOn ? t("tutorial.mute_sounds") : t("tutorial.enable_sounds"))}</div></div>
-      <h1>${escape(s.title)}</h1>${s.step === 0 && (chapter === "basics" || phaseLesson) ? missionOverview() : ""}${chapter === "basics" || chapter === "first-shot" ? `<small class="lesson-scope">${t("timing.exercise", { turns: 3 })}${chapter === "basics" ? ` · ${deadline ? 2 : 1}/2` : ""}</small>` : ""}<p class="native-guide-text">${escape(missed ? t("tutorial.destination_missed_go_back_and_plan_another_route") : s.text)}</p>
+      <h1>${escape(s.title)}</h1>${s.step === 0 && (chapter === "basics" || phaseLesson) ? missionOverview() : ""}${["basics", "first-shot", "energy"].includes(chapter) ? `<small class="lesson-scope">${t("timing.exercise", { turns: chapter === "energy" ? 4 : 3 })}${chapter === "basics" ? ` · ${deadline ? 2 : 1}/2` : ""}</small>` : ""}<p class="native-guide-text">${escape(missed ? t("tutorial.destination_missed_go_back_and_plan_another_route") : s.text)}</p>${chapter === "first-shot" && s.step < 2 ? `<p class="lesson-shield-note">${pictogram("shield")}<span>${t("lesson.first-shot.shield")}</span></p>` : ""}
       <div class="native-guide-controls">${transport("restart", "rewind", t("tutorial.restart_exercise"), s.busy)}${transport("previous", "left", t("tutorial.previous_step"), s.step === 0 || s.busy)}${transport("replay", "restart", t("tutorial.replay_step"), s.busy || s.step === 0)}${s.canContinue ? `<button data-guide="continue" class="primary icon-button" title="${t("tutorial.start")}" aria-label="${t("tutorial.start")}">${pictogram("right")}</button>` : ""}${s.completed && (nextChapter || (standalone && LESSONS[index + 1])) ? `<button data-guide="next" class="primary icon-label"><span>${t("tutorial.next_exercise")}</span>${pictogram("right")}</button>` : ""}</div>
       ${s.error ? `<p role="alert">${escape(s.error)}</p>` : ""}`;
   }
@@ -275,20 +276,6 @@ export async function mountLesson(
     );
     target.dataset.tutorialStage = s.state.stage;
     ui.render(view);
-    const focus =
-      {
-        "first-shot": ["white-upper-A"],
-        energy: ["white-lower-B", "white-upper-A"],
-        repairs: ["blue-upper-B"],
-        battlebots: ["blue-upper-C", "red-upper-C"],
-        "double-actions": ["white-upper-A", "blue-upper-A"],
-        phasing: ["white-upper-A"],
-        specializations: ["blue-lower-C"],
-      }[chapter] ?? [];
-    for (const system of focus)
-      target
-        .querySelector(`[data-inspect="system-${system}"]`)
-        ?.classList.add("lesson-focus");
     renderGuide(s);
   });
   const onClick = async (event) => {
