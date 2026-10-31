@@ -1,3 +1,5 @@
+import { createResolutionEffects } from "./resolution-effects.js";
+import { createSoundDesign } from "./sound.js";
 import { plannedRoute } from "./program-route.js";
 import { translate, createLocaleSelection, lessonCopy } from "./i18n.js";
 import { basicsView } from "./basics.js";
@@ -53,7 +55,7 @@ export function mountConsole(root, host = null) {
     careerKey = "",
     crew = seat,
     replayFrame = null,
-    sound = false,
+    sound = true,
     combine = false,
     lastSpoken = 0,
     basicsStarted = false,
@@ -61,6 +63,13 @@ export function mountConsole(root, host = null) {
     basicsMarkup;
   let route = [],
     previewTurn = null;
+  const audio = host?.cue ? null : createSoundDesign();
+  const cue = (kind, pan) => host?.cue ? host.cue(kind, pan) : audio.cue(kind, pan);
+  const unlockSound = () => audio?.enable(sound);
+  root.ownerDocument.addEventListener("pointerdown", unlockSound, true);
+  root.ownerDocument.addEventListener("keydown", unlockSound, true);
+  const effects = createResolutionEffects(root, cue);
+  let autoResolve = false;
   const t = (key, params) => translate(locale, key, params);
   const actionWords = (text) =>
     text.replace(
@@ -175,7 +184,7 @@ export function mountConsole(root, host = null) {
   }
   function announcement(e) {
     if (e.type === "threat")
-      return `T${e.turn} · ${e.severity === "serious" ? t("app.serious_threat") : t("app.threat")} · ${e.position === "internal" ? t("app.internal") : zoneName(e.zone)}`;
+      return `${t("app.turn")} ${e.turn} · ${e.severity === "serious" ? t("app.serious_threat") : t("app.threat")} · ${e.position === "internal" ? t("app.internal") : zoneName(e.zone)}`;
     return (
       {
         "phase-start": t("app.phase_begins", { phase: e.phase }),
@@ -288,7 +297,7 @@ export function mountConsole(root, host = null) {
     });
     room.insertAdjacentHTML(
       "beforeend",
-      `<span class="planned-pawn" role="img" aria-label="${esc(description)}" title="${esc(description)}">${view.game.solo || crew >= view.players.length ? equipmentPicture("android") : pictogram("crew")}<b>${crew + 1}</b><small>T${turn}</small></span>`,
+      `<span class="planned-pawn" role="img" aria-label="${esc(description)}" title="${esc(description)}">${view.game.solo || crew >= view.players.length ? equipmentPicture("android") : pictogram("crew")}<b>${crew + 1}</b><small>${t("app.turn")} ${turn}</small></span>`,
     );
   }
   for (const type of ["pointerover", "focusin"])
@@ -310,6 +319,7 @@ export function mountConsole(root, host = null) {
     renderCareers(next);
     if (!force && key === newKey) return;
     key = newKey;
+    effects.beforeRender();
     if (!host && !view.players[seat]) seat = 0;
     if (crew >= view.crewSize) crew = seat;
     root.lang = locale;
@@ -458,7 +468,7 @@ export function mountConsole(root, host = null) {
       threats
         .map(
           (th) =>
-            `<article class="threat illustrated-threat" style="--zone:var(--${th.zone ?? "gold"})"><button class="threat-card" data-inspect="${th.instance}" data-inspect-title="${esc(th.name)} · T${th.turn}" aria-haspopup="dialog" aria-label="${esc(th.name)} · ${t("app.turn")} ${th.turn} · ${esc(th.position === "internal" ? th.stations.map((s) => stationLabel(s, locale)).join(", ") : zoneName(th.zone))} · ${t("app.details")}"><span class="threat-heading"><strong>${esc(th.name)}</strong><span class="threat-timing" title="${t("app.arrival_on_turn")} ${th.turn}">${t("app.arrival")} T${th.turn}</span></span>${threatPortrait(th)}<span class="threat-footer">${symbol("speed", `${th.speed} ${t("app.spaces_per_turn")}`, th.speed)}<span>${t("app.details")}</span></span></button>${(th.track ?? g.tracks[th.zone ?? "internal"]) ? trackHtml(th, g) : ""}<template>${threatPortrait(th)}<div class="threat-facts">${symbol("speed", `${th.speed} ${t("app.spaces_per_turn")}`, th.speed)}</div><p>${th.position === "internal" ? esc(th.stations.map((s) => stationLabel(s, locale)).join(", ")) + " · " + esc(label(th.repair)) : esc(zoneName(th.zone))}</p>${traitDescriptions(
+            `<article class="threat illustrated-threat" data-threat="${esc(th.instance)}" style="--zone:var(--${th.zone ?? "gold"})"><button class="threat-card" data-inspect="${th.instance}" data-inspect-title="${esc(th.name)} · ${t("app.turn")} ${th.turn}" aria-haspopup="dialog" aria-label="${esc(th.name)} · ${t("app.turn")} ${th.turn} · ${esc(th.position === "internal" ? th.stations.map((s) => stationLabel(s, locale)).join(", ") : zoneName(th.zone))} · ${t("app.details")}"><span class="threat-heading"><strong>${esc(th.name)}</strong><span class="threat-timing" title="${t("app.arrival_on_turn")} ${th.turn}">${t("app.arrival")} · ${t("app.turn")} ${th.turn}</span></span>${threatPortrait(th)}<span class="threat-footer">${symbol("speed", `${th.speed} ${t("app.spaces_per_turn")}`, th.speed)}<span>${t("app.details")}</span></span></button>${(th.track ?? g.tracks[th.zone ?? "internal"]) ? trackHtml(th, g) : ""}<template>${threatPortrait(th)}<div class="threat-facts">${symbol("speed", `${th.speed} ${t("app.spaces_per_turn")}`, th.speed)}</div><p>${th.position === "internal" ? esc(th.stations.map((s) => stationLabel(s, locale)).join(", ")) + " · " + esc(label(th.repair)) : esc(zoneName(th.zone))}</p>${traitDescriptions(
               th,
               locale,
             )
@@ -524,10 +534,16 @@ export function mountConsole(root, host = null) {
         const routeDescription = destination
           ? `${t("route.planned", { turn: slot.turn, room: stationLabel(destination, locale) })}. ${t("route.assumption")}`
           : "";
-        const description = `T${slot.turn} · ${slot.cards.map((c) => (c.sides ? c.sides[c.side].map(label).join(" → ") : c.category === "movement" ? t("app.movement") : t("app.action"))).join(" + ") || t("app.empty")}`;
-        return `<button class="slot ${slot.cards.length ? "filled" : "empty"} ${slot.turn === activeTurn ? "current" : ""} ${phaseFor(slot.turn) < ownPhase ? "locked" : ""} ${phaseFor(slot.turn) > ownPhase ? "future" : ""}" data-turn="${slot.turn}" ${slot.turn === activeTurn ? 'aria-current="step"' : ""} ${editable ? "" : "disabled"} title="${esc(description + (routeDescription ? " · " + routeDescription : ""))}" aria-label="${esc(description + (routeDescription ? " · " + routeDescription : ""))}">${firstShot && slot.turn === 2 ? `<span class="slot-arrival" title="${t("app.target_arrives_before_this_shot")}">${pictogram("down")}${t("app.arrival")}</span>` : ""}<span class="turn">T${slot.turn} ${phaseFor(slot.turn) < ownPhase ? pictogram("lock") : ""}</span><span class="action">${slot.cards.map((c) => (c.sides ? c.sides[c.side].map(icon).join(" ") : pictogram(c.category === "movement" ? "move" : "cards"))).join(" + ") || pictogram("wait")}</span>${slot.cards.length && destination ? `<span class="planned-location" aria-hidden="true">${shipLocator([destination])}</span>` : ""}</button>`;
+        const description = `${t("app.turn")} ${slot.turn} · ${slot.cards.map((c) => (c.sides ? c.sides[c.side].map(label).join(" → ") : c.category === "movement" ? t("app.movement") : t("app.action"))).join(" + ") || t("app.empty")}`;
+        return `<button class="slot ${slot.cards.length ? "filled" : "empty"} ${slot.turn === activeTurn ? "current" : ""} ${phaseFor(slot.turn) < ownPhase ? "locked" : ""} ${phaseFor(slot.turn) > ownPhase ? "future" : ""}" data-turn="${slot.turn}" ${slot.turn === activeTurn ? 'aria-current="step"' : ""} ${editable ? "" : "disabled"} title="${esc(description + (routeDescription ? " · " + routeDescription : ""))}" aria-label="${esc(description + (routeDescription ? " · " + routeDescription : ""))}">${firstShot && slot.turn === 2 ? `<span class="slot-arrival" title="${t("app.target_arrives_before_this_shot")}">${pictogram("down")}${t("app.arrival")}</span>` : ""}<span class="turn">${slot.turn} ${phaseFor(slot.turn) < ownPhase ? pictogram("lock") : ""}</span><span class="action">${slot.cards.map((c) => (c.sides ? c.sides[c.side].map(icon).join(" ") : pictogram(c.category === "movement" ? "move" : "cards"))).join(" + ") || pictogram("wait")}</span>${slot.cards.length && destination ? `<span class="planned-location" aria-hidden="true">${shipLocator([destination])}</span>` : ""}</button>`;
       })
       .join("");
+    if (!basic && !firstShot) {
+      const lastTurn = resolution?.lastTurn ?? (view.mission.phaseEndsMs.length === 2 ? 7 : 12);
+      const jumping = activeTurn > lastTurn;
+      $("#program").insertAdjacentHTML("beforeend",
+        `<div class="program-jump ${jumping ? "current" : ""}" ${jumping ? 'aria-current="step"' : ""} title="${t("app.jump_after_turn", { turn: lastTurn })}">${pictogram("ship")}<span>${t("app.jump")}</span>${resolution?.outcome?.survived ? pictogram("check") : ""}</div>`);
+    }
     showPlannedPosition(previewTurn);
     $("#program").setAttribute(
       "aria-keyshortcuts",
@@ -556,7 +572,7 @@ export function mountConsole(root, host = null) {
       : planning
         ? `${g?.solo ? "" : button("advance-phase", t("app.next_phase"), own.finishedPlanning || own.planningPhase >= view.mission.phaseEndsMs.length)}${button("finish-planning", t("app.lock_my_program"), own.finishedPlanning || view.phase < view.mission.phaseEndsMs.length)}${g.dataCredits ? button("draw", `${t("app.draw")} +${g.dataCredits}`) : ""}${g.androidDataCredits ? button("draw-android", t("app.android_card") + ` +${g.androidDataCredits}`, !g.canDrawAndroid) : ""}`
         : view.stage === "resolution"
-          ? `<button data-command="resolve" class="primary icon-button" title="${t("app.next_resolution_step")}" aria-label="${t("app.next_resolution_step")}" ${seat !== 0 || !!resolution?.outcome ? "disabled" : ""}>${pictogram("step")}</button><button data-command="resolve-all" class="quiet icon-button" title="${t("app.resolve_mission")}" aria-label="${t("app.resolve_mission")}" ${seat !== 0 || !!resolution?.outcome ? "disabled" : ""}>${pictogram("right")}${pictogram("right")}</button>`
+          ? `<button data-command="resolve" class="primary icon-button" title="${t("app.next_resolution_step")}" aria-label="${t("app.next_resolution_step")}" ${seat !== 0 || !!resolution?.outcome ? "disabled" : ""}>${pictogram("step")}</button><button data-command="resolve-all" class="quiet icon-button" title="${t(autoResolve ? "basics.pause" : "app.resolve_mission")}" aria-label="${t(autoResolve ? "basics.pause" : "app.resolve_mission")}" ${seat !== 0 || !!resolution?.outcome ? "disabled" : ""}>${pictogram(autoResolve ? "pause" : "right")}</button>`
           : view.stage === "cancelled"
             ? '<button id="open-setup">' + t("app.new_session") + "</button>"
             : "";
@@ -677,13 +693,13 @@ export function mountConsole(root, host = null) {
             .join("")
         : "";
     $("#replay").innerHTML = resolution
-      ? `<p>${resolution.outcome ? `${resolution.outcome.survived ? "✓" : "✕"} ${t("app.score")} : <b>${resolution.outcome.score}</b> · ${resolution.outcome.threatPoints} ${t("app.threats_87b951")} + ${resolution.outcome.visual} ${t("app.visual")} − ${resolution.outcome.penalties} ${t("app.penalties")}` : `T${resolution.turn} · ${esc({ appear: t("app.appearances"), crew: t("app.crew_actions"), damage: t("app.damage"), threats: t("app.threat_actions"), computer: t("app.computer") }[resolution.step])}`}</p><label>${t("app.review_a_step")} <input id="replay-slider" type="range" min="0" max="${resolution.frames.length - 1}" value="${replayFrame ?? resolution.frames.length - 1}"></label>${replayFrame !== null ? '<button id="live" class="quiet">' + t("app.back_to_live") + "</button>" : ""}`
+      ? `<p>${resolution.outcome ? `${resolution.outcome.survived ? "✓" : "✕"} ${t("app.score")} : <b>${resolution.outcome.score}</b> · ${resolution.outcome.threatPoints} ${t("app.threats_87b951")} + ${resolution.outcome.visual} ${t("app.visual")} − ${resolution.outcome.penalties} ${t("app.penalties")}` : resolution.turn > resolution.lastTurn ? t("app.final_threat_movement") : `${t("app.turn")} ${resolution.turn} · ${esc({ appear: t("app.appearances"), crew: t("app.crew_actions"), damage: t("app.damage"), threats: t("app.threat_actions"), computer: t("app.computer") }[resolution.step])}`}</p><label>${t("app.review_a_step")} <input id="replay-slider" type="range" min="0" max="${resolution.frames.length - 1}" value="${replayFrame ?? resolution.frames.length - 1}"></label>${replayFrame !== null ? '<button id="live" class="quiet">' + t("app.back_to_live") + "</button>" : ""}`
       : "";
     renderCampaign(g?.campaign);
     $("#announcements").innerHTML = resolution
       ? resolution.log
           .filter((_, i) => !frame || i < frame.logEnd)
-          .map((e) => `<li>T${e.turn} · ${esc(logText(e))}</li>`)
+          .map((e) => `<li>${e.turn > resolution.lastTurn ? t("app.jump") : `${t("app.turn")} ${e.turn}`} · ${esc(logText(e))}</li>`)
           .join("")
       : announcements
           .map(
@@ -716,6 +732,7 @@ export function mountConsole(root, host = null) {
       `<p>${t("app.left_center_and_right_correspond_to_red_white")}</p>` +
       t("app.plan_choose_a_card_then_a_turn_click");
     navigation.sync();
+    effects.afterRender(resolution, replayFrame ?? (resolution?.frames.length ?? 0) - 1);
   }
   function calledHtml(data) {
     if (!data) return "";
@@ -739,8 +756,14 @@ export function mountConsole(root, host = null) {
       (replayFrame !== null
         ? g.resolution?.frames[replayFrame]
         : g.resolution) ?? {};
+    const finalTurn = g.resolution?.finalTurn ?? (view.mission.phaseEndsMs.length === 2 ? 8 : 13);
+    const turnLabel = (turn) => turn === finalTurn
+      ? t("app.final_threat_movement")
+      : `${t("app.turn")} ${turn}`;
     const groups = forecastMovement(th, track, {
       ...context,
+      finalTurn,
+      outcome: replayFrame === null ? g.resolution?.outcome : null,
       threats:
         context.threats ?? g.threats.map((item) => ({ ...item, ...item.card })),
     });
@@ -759,13 +782,13 @@ export function mountConsole(root, host = null) {
           group.positions.includes(n),
         );
         const group = groups[groupIndex];
-        const description = `${mark ? effects.map((effect) => effectDescription(effect, locale)).join(" · ") || t("app.no_effect") : t("app.space") + " " + n}${group ? ` · T${group.turn} · ${projection}` : ""}`;
+        const description = `${mark ? effects.map((effect) => effectDescription(effect, locale)).join(" · ") || t("app.no_effect") : t("app.space") + " " + n}${group ? ` · ${turnLabel(group.turn)} · ${projection}` : ""}`;
         const current = !pending && th.positionOnTrack === n;
         return `<span title="${esc(description)}" aria-label="${esc(description)}" ${current ? 'aria-current="step"' : ""} ${group ? `data-forecast-turn="${group.turn}"` : ""} class="${current ? "current" : ""} ${pending && n === track.length ? "entry" : ""} ${appearance ? "mark effect-mark" : ""} ${group ? `forecast-cell forecast-tone-${groupIndex % 2} ${n === group.positions[0] ? "forecast-start" : ""} ${n === group.positions.at(-1) ? "forecast-end" : ""}` : ""}">${appearance ? `${pictogram(appearance.icon)}<b>${esc(appearance.value)}</b>` : current ? "●" : ""}</span>`;
       })
       .join(
         "",
-      )}</div>${groups.length ? `<div class="track-turns" aria-label="${esc(projection)}"><small title="${esc(projection)}">T</small>${groups.map((group, i) => `<span class="forecast-tone-${i % 2}" style="grid-column:${track.length - group.positions[0] + 1} / span ${group.positions.length}" title="${esc(`T${group.turn} · ${group.positions.length} ${t("app.spaces")} · ${projection}`)}" aria-label="${esc(`T${group.turn} · ${projection}`)}">${group.turn}</span>`).join("")}</div>` : ""}</div>${pictogram("ship")}</div>`;
+      )}</div>${groups.length ? `<div class="track-turns" aria-label="${esc(projection)}"><small title="${esc(projection)}">${t("app.turn")}</small>${groups.map((group, i) => `<span class="forecast-tone-${i % 2}" style="grid-column:${track.length - group.positions[0] + 1} / span ${group.positions.length}" title="${esc(`${turnLabel(group.turn)} · ${group.positions.length} ${t("app.spaces")} · ${projection}`)}" aria-label="${esc(`${turnLabel(group.turn)} · ${projection}`)}">${group.turn === finalTurn ? pictogram("ship") : group.turn}</span>`).join("")}</div>` : ""}</div>${pictogram("ship")}</div>`;
   }
   function logText(e) {
     return eventDescription(
@@ -986,8 +1009,8 @@ export function mountConsole(root, host = null) {
         sequence: view.nextSequence,
         ...extra,
       });
-      if (type === "program") host.cue?.("place");
-      if (type === "remove") host.cue?.("remove");
+      if (type === "program") cue("place");
+      if (type === "remove") cue("remove");
       return result;
     }
     const s =
@@ -1001,6 +1024,8 @@ export function mountConsole(root, host = null) {
     }).then((r) => r.json());
     if (target === seat) render(result.view);
     if (!result.accepted) throw Error(result.error);
+    if (type === "program") cue("place");
+    if (type === "remove") cue("remove");
   }
   async function perform(fn) {
     pending = true;
@@ -1025,6 +1050,17 @@ export function mountConsole(root, host = null) {
       $("#connection").textContent = t("app.reconnecting");
     }
   }
+  intervals.push(setInterval(() => {
+    if (!autoResolve || pending || effects.busy() || root.ownerDocument.hidden) return;
+    if (seat !== 0 || view?.stage !== "resolution" || view.game.resolution?.outcome || replayFrame !== null) {
+      autoResolve = false;
+      return;
+    }
+    void perform(async () => {
+      try { await command("resolve"); }
+      catch (error) { autoResolve = false; throw error; }
+    });
+  }, 450));
   function rerender() {
     if (view) render(view, true);
   }
@@ -1147,7 +1183,7 @@ export function mountConsole(root, host = null) {
       return;
     }
     if (el.id === "basics-start" || el.dataset.basicsPick) {
-      host?.cue?.("select");
+      cue("select");
       if (el.id === "basics-start") basicsStarted = true;
       else
         basicsPicked =
@@ -1217,7 +1253,7 @@ export function mountConsole(root, host = null) {
       perform(async () => {
         while (view.stage === "programming")
           await localPost("/api/lesson-next", {});
-        host?.cue?.("start");
+        cue("start");
         rerender();
       });
       return;
@@ -1368,7 +1404,7 @@ export function mountConsole(root, host = null) {
       return;
     }
     if (el.dataset.card) {
-      host?.cue?.("select");
+      cue("select");
       const choice = { id: el.dataset.card, side: Number(el.dataset.side) };
       if (e.shiftKey || combine)
         selected = [
@@ -1404,7 +1440,13 @@ export function mountConsole(root, host = null) {
       });
       return;
     }
+    if (el.dataset.command === "resolve-all") {
+      autoResolve = !autoResolve;
+      rerender();
+      return;
+    }
     if (el.dataset.command) {
+      if (el.dataset.command === "resolve") autoResolve = false;
       perform(async () => {
         const type = el.dataset.command;
         if (
@@ -1441,8 +1483,9 @@ export function mountConsole(root, host = null) {
     if (el.id === "sound") {
       sound = !sound;
       updateSound();
+      audio?.enable(sound);
       if (sound) speak(t("app.announcements_enabled"));
-      else speechSynthesis.cancel();
+      else if ("speechSynthesis" in window) speechSynthesis.cancel();
     }
     if (el.id === "ready-all")
       perform(async () => {
@@ -1603,6 +1646,7 @@ export function mountConsole(root, host = null) {
     })();
   }
   return {
+    isAnimating: () => effects.busy(),
     resetTutorial() {
       previewTurn = null;
       placements.length = 0;
@@ -1639,11 +1683,15 @@ export function mountConsole(root, host = null) {
     setPreferences(prefs) {
       appearance = prefs.bgs ?? {};
 
-      if (prefs.sound !== undefined) sound = !!prefs.sound;
+      if (prefs.sound !== undefined) { sound = !!prefs.sound; audio?.enable(sound); }
       if (prefs.locale) return language.set(prefs.locale);
       rerender();
     },
     destroy() {
+      effects.destroy();
+      audio?.destroy();
+      root.ownerDocument.removeEventListener("pointerdown", unlockSound, true);
+      root.ownerDocument.removeEventListener("keydown", unlockSound, true);
       language.destroy();
       root.ownerDocument.removeEventListener("keydown", handlePlanningKey);
       navigation.destroy();

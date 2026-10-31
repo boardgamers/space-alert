@@ -3,6 +3,33 @@ import test from "node:test";
 import { once } from "node:events";
 import { createPreviewServer } from "../preview/server.js";
 
+test("local console serves the full module graph including shared animation and sound", async () => {
+  const server = createPreviewServer();
+  server.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  const pending = [`http://127.0.0.1:${server.address().port}/local.js`];
+  const seen = new Set();
+  try {
+    while (pending.length) {
+      const url = pending.pop();
+      if (seen.has(url)) continue;
+      seen.add(url);
+      const response = await fetch(url);
+      assert.equal(response.status, 200, url);
+      assert.match(response.headers.get("content-type"), /javascript/, url);
+      const source = await response.text();
+      for (const match of source.matchAll(/(?:from\s+|import\s*)["'](\.[^"']+)["']/g))
+        pending.push(new URL(match[1], url).href);
+    }
+    assert.ok([...seen].some(url => url.endsWith("/resolution-effects.js")));
+    assert.ok([...seen].some(url => url.endsWith("/sound.js")));
+  } finally {
+    server.close();
+    server.closeAllConnections();
+    await once(server, "close");
+  }
+});
+
 test("local host shares state across seats and commits deadline changes on rejected requests", async () => {
   let now = 1_000_000;
   const server = createPreviewServer({ clock: () => now });

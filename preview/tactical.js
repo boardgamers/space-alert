@@ -125,7 +125,7 @@ export function createTacticalView({
             level === "upper"
               ? t("tactical.upper_deck")
               : t("tactical.lower_deck");
-          return `<section class="station ${occupants.some((p) => p.id === selectedCrew) ? "selected-station" : ""}" data-station="${station}" style="--zone:var(--${zone})" aria-label="${esc(zoneName(zone))} · ${deckName}"><div class="station-title">${level === "upper" && s.damage.length ? `<span class="damage">${symbol("warning", `${t("tactical.zone_damage")} : ${s.damage.length}/6`, `${s.damage.length}/6`)}</span>` : ""}</div>${stationControls({ station, zone, deck: level, ship, power, capacity, system, cIcon, c, canPlan })}<div class="occupants">${occupants.map((p) => `<span style="${playerColor(p.id) ? `--player-color:${playerColor(p.id)};--player-stroke:#c4d4e0` : ""}" class="crew-pawn ${p.id === selectedCrew ? "selected" : ""} ${p.knockedOut ? "out" : ""}" role="img" title="${esc(crewLabel(p.id))}${p.knockedOut ? " · " + t("tactical.knocked_out") : ""}${p.bots !== null ? " · " + t("app.battlebots") : ""}" aria-label="${esc(crewLabel(p.id))}${p.knockedOut ? " · " + t("tactical.knocked_out") : ""}${p.bots !== null ? " · " + t("app.battlebots") : ""}">${isAndroid(p.id) ? equipmentPicture("android") : pictogram("crew")}<b>${p.id + 1}</b>${p.bots !== null ? `<i>${pictogram("bots")}</i>` : ""}</span>`).join("")}</div></section>`;
+          return `<section class="station ${occupants.some((p) => p.id === selectedCrew) ? "selected-station" : ""}" data-station="${station}" style="--zone:var(--${zone})" aria-label="${esc(zoneName(zone))} · ${deckName}"><div class="station-title">${level === "upper" && s.damage.length ? `<span class="damage">${symbol("warning", `${t("tactical.zone_damage")} : ${s.damage.length}/6`, `${s.damage.length}/6`)}</span>` : ""}</div>${stationControls({ station, zone, deck: level, ship, power, capacity, system, cIcon, c, canPlan })}<div class="occupants">${occupants.map((p) => `<span style="${playerColor(p.id) ? `--player-color:${playerColor(p.id)};--player-stroke:#c4d4e0` : ""}" data-crew="${p.id}" class="crew-pawn ${p.id === selectedCrew ? "selected" : ""} ${p.knockedOut ? "out" : ""}" role="img" title="${esc(crewLabel(p.id))}${p.knockedOut ? " · " + t("tactical.knocked_out") : ""}${p.bots !== null ? " · " + t("app.battlebots") : ""}" aria-label="${esc(crewLabel(p.id))}${p.knockedOut ? " · " + t("tactical.knocked_out") : ""}${p.bots !== null ? " · " + t("app.battlebots") : ""}">${isAndroid(p.id) ? equipmentPicture("android") : pictogram("crew")}<b>${p.id + 1}</b>${p.bots !== null ? `<i>${pictogram("bots")}</i>` : ""}</span>`).join("")}</div></section>`;
         })
         .join(
           "",
@@ -137,11 +137,15 @@ export function createTacticalView({
     const hp = Math.max(0, th.hp - (th.damage ?? 0));
     const pending = ["pending", "announced", "waiting"].includes(th.status);
     const gone = ["destroyed", "survived", "discarded"].includes(th.status);
+    const impacted = th.positionOnTrack === 1 && th.effects?.Z?.some(
+      (effect) => effect.type === "attack" &&
+        ["hp", "double-hp", "triple-hp"].includes(effect.amount),
+    );
     const status =
       th.status === "destroyed"
         ? t("tactical.destroyed")
         : th.status === "survived"
-          ? t("tactical.escaped")
+          ? t(impacted ? "tactical.impact" : "tactical.escaped")
           : th.status === "discarded"
             ? t("tactical.discarded")
             : null;

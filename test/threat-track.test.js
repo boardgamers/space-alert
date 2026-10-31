@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { forecastMovement, checkpointAppearance } from "../preview/threat-track.js";
 import { THREATS, TRACKS } from "../src/game/catalog.js";
 import { beginResolution, stepResolution } from "../src/game/resolution.js";
+import { createTacticalView } from "../preview/tactical.js";
+import { loadLocale, translate } from "../preview/i18n.js";
 
 function scenario(id) {
   return beginResolution({ crewSize: 4, seed: "track-forecast", programs: Array.from({ length: 4 }, () => Array(12).fill(null)),
@@ -68,4 +70,29 @@ test("meteoroid empty checkpoints have no symbols and impact follows remaining h
   assert.deepEqual(checkpointAppearance(meteor, meteor.effects.Z), { icon: "impact", value: 5 });
   meteor.damage = 3;
   assert.deepEqual(checkpointAppearance(meteor, meteor.effects.Z), { icon: "impact", value: 2 });
+});
+
+test("a seven-turn mission includes the final threat movement, reports impact, and forecasts no later turns", async () => {
+  let r = beginResolution({
+    crewSize: 1, seed: "final-movement", turns: 7,
+    programs: [Array(7).fill(null)],
+    threats: [{ cardId: "E1-10", turn: 6, zone: "white" }],
+    tracks: Object.fromEntries(["red", "white", "blue", "internal"].map(zone => [zone, TRACKS[6]])),
+  });
+  assert.deepEqual(forecastMovement(r.threats[0], TRACKS[6], r).map(g => g.turn), [6, 7, 8]);
+  const lateFighter = { ...THREATS.find(t => t.id === "E1-07"), turn: 8 };
+  assert.deepEqual(forecastMovement(lateFighter, TRACKS[6], r).map(g => g.turn), [8]);
+  while (!r.outcome) r = stepResolution(r);
+  const hit = r.log.find(e => e.type === "attack");
+  assert.equal(hit.turn, 8);
+  assert.equal(hit.absorbed, 1);
+  assert.equal(hit.damage, 4);
+  assert.deepEqual(forecastMovement(r.threats[0], TRACKS[6], r), []);
+  await loadLocale("en");
+  const { threatPortrait } = createTacticalView({
+    t: (key) => translate("en", key), esc: String, symbol: () => "", zoneName: String,
+  });
+  const portrait = threatPortrait(r.threats[0]);
+  assert.match(portrait, /class="threat-outcome">Impact</);
+  assert.doesNotMatch(portrait, /Escaped/);
 });

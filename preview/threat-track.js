@@ -1,6 +1,7 @@
 // Display-only forecast from public threat state. No planned crew actions are read.
 // Preserve the real distance spaces: each group is one upcoming movement step.
 export function forecastMovement(threat, track, context = {}) {
+  if (context.outcome) return [];
   const pending = !threat.status || ["pending", "announced", "waiting"].includes(threat.status);
   if (!pending && threat.status !== "active") return [];
   if (!Number.isFinite(threat.speed) || threat.speed <= 0) return [];
@@ -18,7 +19,7 @@ export function forecastMovement(threat, track, context = {}) {
   t.damage ??= 0;
   let position = pending ? track.length : t.positionOnTrack;
   const groups = [];
-  for (; position > 1 && groups.length < 24; turn++) {
+  for (; position > 1 && groups.length < 24 && turn <= (context.finalTurn ?? Infinity); turn++) {
     // Changes crossed this turn affect the NEXT movement, just as in the resolver.
     const speed = Math.max(0, t.speed);
     if (!speed) break;

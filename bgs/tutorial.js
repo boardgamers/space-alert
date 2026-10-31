@@ -258,10 +258,7 @@ export async function mountLesson(
       const actions = action
         ? s.state.game.cards[action.id]?.sides[action.side]
         : [];
-      sound.cue(
-        actions?.length ? "turn" : "wait",
-        actions?.includes("red") ? -0.5 : actions?.includes("blue") ? 0.5 : 0,
-      );
+      if (!actions?.length) sound.cue("wait");
     }
     lastTurn = turn;
     const view = snapshot(s.state, 0);
@@ -370,6 +367,8 @@ export async function mountLesson(
       !playing ||
       disposed ||
       playbackBusy ||
+      ui.isAnimating() ||
+      target.ownerDocument.hidden ||
       tutorial.snapshot.busy ||
       !canPlay(tutorial.snapshot)
     )

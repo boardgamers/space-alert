@@ -265,11 +265,13 @@ export async function createLessonTutorial(
       title: t("tutorial_controller.exercise_complete"),
       text: lesson.basics
         ? t("timing.complete")
-        : id === "first-shot"
-          ? t("tutorial_controller.target_destroyed")
-          : t(
-              "tutorial_controller.replay_to_compare_another_program_or_move_on",
-            ),
+        : lesson.phaseLesson
+          ? t("phases.complete")
+          : id === "first-shot"
+            ? t("tutorial_controller.target_destroyed")
+            : t(
+                "tutorial_controller.replay_to_compare_another_program_or_move_on",
+              ),
     },
   });
 }

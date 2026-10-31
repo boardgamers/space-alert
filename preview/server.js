@@ -478,6 +478,8 @@ export function createPreviewServer({ clock = Date.now, storagePath } = {}) {
         "/tactical.js": "tactical.js",
         "/threat-track.js": "threat-track.js",
         "/program-route.js": "program-route.js",
+        "/resolution-effects.js": "resolution-effects.js",
+        "/sound.js": "sound.js",
         "/i18n.js": "i18n.js",
         "/locales/en.json": "locales/en.json",
         "/locales/fr.json": "locales/fr.json",
