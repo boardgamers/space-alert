@@ -23,6 +23,7 @@ export async function mountLesson(target, { chapter = "basics", locale = "en", o
   style.textContent = css;
   target.prepend(style);
   target.classList.add("native-tutorial");
+  target.dataset.chapter = chapter;
   const guide = document.createElement("section");
   guide.className = "native-guide";
   target.querySelector("#basics-guide").before(guide);
@@ -63,11 +64,13 @@ export async function mountLesson(target, { chapter = "basics", locale = "en", o
   const label = [t("Découvrir", "Discover"), t("Préparer", "Plan"), t("Exécuter", "Execute")];
   const transport = (action, icon, title, disabled = false) => `<button data-guide="${action}" class="quiet icon-button" title="${title}" aria-label="${title}" ${disabled ? 'disabled' : ''}>${pictogram(icon)}</button>`;
   function renderGuide(s) {
+    const planned = s.state.game.programs[0].some(slot => slot?.cards?.length);
+    const readyToFire = chapter === "first-shot" && [1, 2].every(i => s.state.game.programs[0][i]?.cards?.length);
     const missed = LESSONS[index].basics && s.step === 2 && completedTurns(s.state) >= 3 && !s.completed;
-    guide.innerHTML = `<div class="native-guide-top"><span>${escape(LESSONS[index].title[locale === "fr" ? 0 : 1])}</span><div class="native-guide-tools">${standalone ? `<a href="/">${t("Partie locale", "Local game")}</a>` : ''}${transport("sound", soundOn ? "speaker" : "muted", soundOn ? t("Couper les sons", "Mute sounds") : t("Activer les sons", "Enable sounds"))}</div></div>
+    guide.innerHTML = `<div class="native-guide-top"><div class="native-guide-tools">${standalone ? `<a href="/">${t("Partie locale", "Local game")}</a>` : ''}${transport("sound", soundOn ? "speaker" : "muted", soundOn ? t("Couper les sons", "Mute sounds") : t("Activer les sons", "Enable sounds"))}</div></div>
       <nav class="basics-stages" aria-label="${t("Étapes", "Steps")}">${label.map((name, i) => `<button data-guide-step="${i}" class="quiet ${Math.min(s.step, 2) === i ? 'active' : ''}" ${i > s.step || s.busy ? 'disabled' : ''} ${s.step === i ? 'aria-current="step"' : ''}><span class="step-number">${i + 1}</span><span>${name}</span></button>`).join('')}</nav>
       <h1>${escape(s.title)}</h1><p class="native-guide-text">${escape(missed ? t("Destination manquée. Revenez préparer un autre trajet.", "Destination missed. Go back and plan another route.") : s.text)}</p>
-      <div class="native-guide-controls">${canPlay(s) ? transport("playback", playing ? "pause" : "right", playing ? t("Pause", "Pause") : t("Lire le programme", "Play program")) : ""}${transport("restart", "rewind", t("Recommencer l’exercice", "Restart exercise"), s.busy)}${transport("previous", "left", t("Étape précédente", "Previous step"), s.step === 0 || s.busy)}${transport("replay", "restart", t("Rejouer cette étape", "Replay step"), s.busy || s.step === 0)}${s.canContinue ? `<button data-guide="continue" class="primary icon-button" title="${t("Commencer", "Start")}" aria-label="${t("Commencer", "Start")}">${pictogram("right")}</button>` : ''}${s.completed && (nextChapter || standalone && LESSONS[index + 1]) ? `<button data-guide="next" class="primary icon-label"><span>${t("Exercice suivant", "Next exercise")}</span>${pictogram("right")}</button>` : ''}</div>
+      <div class="native-guide-controls">${canPlay(s) ? transport("playback", playing ? "pause" : "right", playing ? t("Pause", "Pause") : t("Lire le programme", "Play program")) : ""}${transport("restart", "rewind", t("Recommencer l’exercice", "Restart exercise"), s.busy)}${transport("previous", "left", t("Étape précédente", "Previous step"), s.step === 0 || s.busy)}${transport("replay", "restart", t("Rejouer cette étape", "Replay step"), s.busy || s.step === 0)}${!LESSONS[index].basics && chapter !== "first-shot" && s.step === 1 && s.state.phase === 1 ? transport("phase", "step", t("Phase 2", "Phase 2"), s.busy) : ""}${!LESSONS[index].basics && s.step === 1 ? transport("run", "step", t("Exécuter le programme · ↵", "Run program · ↵"), (chapter === "first-shot" ? !readyToFire : !planned) || s.busy) : ""}${s.canContinue ? `<button data-guide="continue" class="primary icon-button" title="${t("Commencer", "Start")}" aria-label="${t("Commencer", "Start")}">${pictogram("right")}</button>` : ''}${s.completed && (nextChapter || standalone && LESSONS[index + 1]) ? `<button data-guide="next" class="primary icon-label"><span>${t("Exercice suivant", "Next exercise")}</span>${pictogram("right")}</button>` : ''}</div>
       ${s.error ? `<p role="alert">${escape(s.error)}</p>` : ''}`;
   }
   const unsubscribe = tutorial.subscribe(s => {
@@ -95,6 +98,13 @@ export async function mountLesson(target, { chapter = "basics", locale = "en", o
     target.dataset.tutorialStep = String(s.step);
     target.dataset.tutorialStage = s.state.stage;
     ui.render(view);
+    const focus = {
+      "first-shot": ["white-upper-A"], energy: ["white-lower-B", "white-upper-A"],
+      repairs: ["blue-upper-B"], battlebots: ["blue-upper-C", "red-upper-C"],
+      "double-actions": ["white-upper-A", "blue-upper-A"], phasing: ["white-upper-A"],
+      specializations: ["blue-lower-C"],
+    }[chapter] ?? [];
+    for (const system of focus) target.querySelector(`[data-inspect="system-${system}"]`)?.classList.add("lesson-focus");
     renderGuide(s);
   });
   const onClick = async event => {
@@ -103,6 +113,11 @@ export async function mountLesson(target, { chapter = "basics", locale = "en", o
     const action = button.dataset.guide;
     if (action === "sound") {
       soundOn = !soundOn; sound.enable(soundOn); sound.cue("select"); renderGuide(tutorial.snapshot); return;
+    }
+    if (action === "phase") { await play({ type: "practice-phase" }); return; }
+    if (action === "run") {
+      while (tutorial.snapshot.state.stage === "programming") await play({ type: "practice-phase" });
+      return;
     }
     if (action === "playback") {
       playing = !playing; renderGuide(tutorial.snapshot); return;
@@ -117,7 +132,7 @@ export async function mountLesson(target, { chapter = "basics", locale = "en", o
       while (tutorial.snapshot.step > step) await tutorial.previousStep();
     } else if (action === "continue") await tutorial.continue();
     else if (action === "previous") await tutorial.previousStep();
-    else if (action === "replay") { await tutorial.restartStep(); playing = canPlay(tutorial.snapshot); renderGuide(tutorial.snapshot); }
+    else if (action === "replay") { if (tutorial.snapshot.completed) await tutorial.previousStep(); else await tutorial.restartStep(); playing = canPlay(tutorial.snapshot); renderGuide(tutorial.snapshot); }
     else if (action === "restart") await tutorial.restart();
     else if (action === "next") {
       if (nextChapter) nextChapter.open();

@@ -37,9 +37,9 @@ export function createLessonTutorial(id, { locale = "en", storage, onProgress } 
     },
     steps: [
       { id: "discover", title: lesson.title[locale === "fr" ? 0 : 1],
-        text: lesson.basics ? t("Préparez vos actions, puis regardez-les s’exécuter. Commençons sans menace, avec un seul androïde.", "Plan your actions, then watch them execute. Start without threats, with one android.") : lesson.instructions.map(p => p[locale === "fr" ? 0 : 1]).join("\n\n") },
+        text: lesson.basics ? t("Préparez vos actions, puis regardez-les s’exécuter. Commençons sans menace, avec un seul androïde.", "Plan your actions, then watch them execute. Start without threats, with one android.") : lesson.instructions[0]?.[locale === "fr" ? 0 : 1] ?? "" },
       { id: "plan", title: t("Préparer le programme", "Plan the program"),
-        text: lesson.basics ? t("Rejoignez la salle marquée en deux actions. La troisième case reste vide : attendre.", "Reach the marked room in two actions. Leave the third slot empty: wait.") : t("Programmez les cartes sur le vaisseau, puis terminez la programmation. Le chrono est facultatif ici.", "Program cards on the ship, then finish planning. The clock is optional here."),
+        text: id === "first-shot" ? t("Placez un tir dans chaque case surlignée, puis ↵.", "Place a shot in each highlighted slot, then ↵.") : lesson.basics ? t("Rejoignez la salle marquée en deux actions. La troisième case reste vide : attendre.", "Reach the marked room in two actions. Leave the third slot empty: wait.") : lesson.instructions[1]?.[locale === "fr" ? 0 : 1] ?? lesson.instructions[0]?.[locale === "fr" ? 0 : 1] ?? "",
         complete: state => state.stage === "resolution" },
       { id: "execute", title: t("Exécuter les tours", "Run the turns"),
         text: t("Programme verrouillé. Les équipiers agissent ensemble, puis les menaces.", "Program locked. Crew act together, then threats."),

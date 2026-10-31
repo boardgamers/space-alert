@@ -95,14 +95,14 @@ export function mountConsole(root, host = null) {
   const specialName = (n) => names[n]?.[locale === "fr" ? 0 : 1] ?? n;
   const label = (a) =>
     ({
-      A: t("Armes · Tirer ou réparer (A)", "Weapons · Fire or repair (A)"),
+      A: t("Armes · Tirer ou réparer", "Weapons · Fire or repair"),
       B: t(
-        "Énergie · Transférer ou réparer (B)",
-        "Energy · Transfer or repair (B)",
+        "Énergie · Transférer ou réparer",
+        "Energy · Transfer or repair",
       ),
       C: t(
-        "Systèmes · Utiliser ou réparer (C)",
-        "Systems · Operate or repair (C)",
+        "Systèmes · Utiliser ou réparer",
+        "Systems · Operate or repair",
       ),
       bots: t("Robot de combat · Attaquer", "Battlebot · Attack"),
       red: t("Aller à gauche", "Move left"),
@@ -300,6 +300,8 @@ export function mountConsole(root, host = null) {
     root.lang = locale;
     localizeSetup();
     const basic = !!view.tutorial?.basics;
+    const firstShot = host?.tutorial && view.tutorial?.id === "first-shot";
+    const teachingActions = basic ? ["red", "blue", "lift"] : firstShot ? ["A"] : null;
     root.classList.toggle("learning-basics", basic);
     $("#basics-guide").hidden = !basic;
     if (basic)
@@ -382,7 +384,7 @@ export function mountConsole(root, host = null) {
         ship: basic ? { ...ship, crew: [ship.crew[0]] } : ship,
         selectedCrew: crew,
         canPlan:
-          !basic && view.stage === "programming" &&
+          !basic && (!host?.tutorial || view.tutorial.nativeStep === 1) && view.stage === "programming" &&
           seat >= 0 &&
           (g?.solo || crew === seat || crew >= view.players.length) &&
           !own.finishedPlanning,
@@ -470,10 +472,10 @@ export function mountConsole(root, host = null) {
       ownPhase =
         g?.solo || crew >= view.players.length ? view.phase : own.planningPhase;
     $("#program").innerHTML = (g?.programs[crew] ?? [])
-      .slice(0, basic ? 3 : view.mission.phaseEndsMs.length === 2 ? 7 : 12)
+      .slice(0, basic || firstShot ? 3 : view.mission.phaseEndsMs.length === 2 ? 7 : 12)
       .map((slot) => {
         const editable =
-          (!basic || slot.turn < 3) && planning &&
+          (!basic || slot.turn < 3) && (!firstShot || slot.turn === 2 || slot.turn === 3) && (!host?.tutorial || view.tutorial.nativeStep === 1) && planning &&
           canOwn &&
           !own.finishedPlanning &&
           phaseFor(slot.turn) === ownPhase;
@@ -542,12 +544,12 @@ export function mountConsole(root, host = null) {
     ];
     const grouped = [];
     for (const card of hand) {
-      if (basic && !card.sides.some(side => side.length === 1 && ["red", "blue", "lift"].includes(side[0]))) continue;
+      if (teachingActions && !card.sides.some(side => side.length === 1 && teachingActions.includes(side[0]))) continue;
       const same = grouped.find(
         (c) =>
           c.kind === "normal" &&
           card.kind === "normal" &&
-          JSON.stringify(basic ? c.sides.filter(side => side.length === 1 && ["red", "blue", "lift"].includes(side[0])) : c.sides) === JSON.stringify(basic ? card.sides.filter(side => side.length === 1 && ["red", "blue", "lift"].includes(side[0])) : card.sides),
+          JSON.stringify(teachingActions ? c.sides.filter(side => side.length === 1 && teachingActions.includes(side[0])) : c.sides) === JSON.stringify(teachingActions ? card.sides.filter(side => side.length === 1 && teachingActions.includes(side[0])) : card.sides),
       );
       if (same) same.count++;
       else grouped.push({ ...card, count: 1 });
@@ -590,7 +592,7 @@ export function mountConsole(root, host = null) {
             )
             .map(
               (c) =>
-                `<div class="card ${c.kind}">${c.count > 1 ? `<span class="copies">×${c.count}</span>` : ""}${c.sides.map((side, index) => basic && !(side.length === 1 && ["red", "blue", "lift"].includes(side[0])) ? "" : `<button data-card="${esc(c.id)}" data-side="${index}" class="${selected.some((s) => s.id === c.id && s.side === index) ? "selected" : ""}" aria-pressed="${selected.some((s) => s.id === c.id && s.side === index)}" title="${esc(side.map(label).join(" → "))}" aria-label="${esc(side.map(label).join(" → "))}">${side.map(icon).join(" · ")}</button>`).join("")}</div>`,
+                `<div class="card ${c.kind}">${c.count > 1 ? `<span class="copies">×${c.count}</span>` : ""}${c.sides.map((side, index) => teachingActions && !(side.length === 1 && teachingActions.includes(side[0])) ? "" : `<button data-card="${esc(c.id)}" data-side="${index}" class="${selected.some((s) => s.id === c.id && s.side === index) ? "selected" : ""}" aria-pressed="${selected.some((s) => s.id === c.id && s.side === index)}" title="${esc(side.map(label).join(" → "))}" aria-label="${esc(side.map(label).join(" → "))}">${side.map(icon).join(" · ")}</button>`).join("")}</div>`,
             )
             .join("")
         : "";
@@ -962,7 +964,7 @@ export function mountConsole(root, host = null) {
     if (event.target.closest?.("input, textarea, select, [contenteditable]:not([contenteditable=false]), dialog")) return;
     if (root.querySelector("dialog[open]")) return;
     if (event.key === "Enter") {
-      const run = $("#basics-run");
+      const run = $("#basics-run") ?? $('[data-guide="run"]');
       if (!run || !run.getClientRects().length) return;
       event.preventDefault();
       if (!run.disabled && !pending && !event.repeat) run.click();
@@ -1442,7 +1444,7 @@ export function mountConsole(root, host = null) {
     })();
   }
   return {
-    resetTutorial() { basicsPicked = false; basicsStarted = false; selected = []; replayFrame = null; key = ""; },
+    resetTutorial() { $("#error").textContent = ""; basicsPicked = false; basicsStarted = false; selected = []; replayFrame = null; key = ""; },
     render(next) {
       if (host && next.bgs?.settings) {
         $("#mission").value = next.bgs.settings.mission ?? next.mission.id;

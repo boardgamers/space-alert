@@ -2449,3 +2449,30 @@ input:not([type="checkbox"]):not([type="range"]) {
 
 .native-tutorial[data-tutorial-stage="resolution"] #controls,
 .native-tutorial.learning-basics[data-tutorial-stage="resolution"] #controls { display: none !important; }
+
+.native-tutorial .native-guide-top { justify-content: flex-end; }
+.native-tutorial[data-tutorial-step="0"] #lesson-guide,
+.native-tutorial[data-tutorial-step="0"] #basics-guide,
+.native-tutorial[data-chapter="first-shot"] #lesson-guide,
+.native-tutorial[data-chapter="first-shot"] #program-crew,
+.native-tutorial[data-chapter="first-shot"] .crew-tabs,
+.native-tutorial[data-chapter="first-shot"] #controls,
+.native-tutorial[data-chapter="first-shot"] #hand-filter,
+.native-tutorial[data-chapter="first-shot"] #player-help,
+.native-tutorial[data-chapter="first-shot"] #resources { display: none !important; }
+.native-tutorial[data-chapter="first-shot"] .flight-layout { grid-template-columns: minmax(0, 600px) minmax(280px, 340px); gap: 28px; justify-content: start; }
+.native-tutorial[data-chapter="first-shot"] [data-inspect="system-white-upper-A"],
+.native-tutorial[data-chapter="first-shot"] #program .slot.empty:not(:disabled),
+.native-tutorial[data-chapter="first-shot"] #threats > :first-child { outline: 2px dashed #e8c984; outline-offset: 3px; }
+.native-tutorial[data-chapter="first-shot"] #program { display: flex; gap: 10px; }
+.native-tutorial[data-chapter="first-shot"] #program .slot { width: 88px; min-height: 104px; }
+.native-tutorial[data-chapter="first-shot"] #hand { grid-template-columns: 88px; margin-top: 16px; }
+.native-tutorial[data-chapter="first-shot"] #hand .card > button { min-height: 76px; display: flex; align-items: center; justify-content: center; }
+@media (max-width: 800px) { .native-tutorial[data-chapter="first-shot"] .flight-layout { grid-template-columns: 1fr; } }
+
+.native-tutorial #lesson-guide { display: none !important; }
+.native-tutorial .lesson-focus { outline: 2px dashed #e8c984; outline-offset: 3px; }
+.native-tutorial .flight-layout { grid-template-columns: minmax(0, 600px) minmax(280px, 480px); gap: 28px; justify-content: start; }
+@media (max-width: 800px) { .native-tutorial .flight-layout { grid-template-columns: 1fr; } }
+/* BGS already supplies the game name and chapter header. */
+.native-tutorial > header { display: none; }

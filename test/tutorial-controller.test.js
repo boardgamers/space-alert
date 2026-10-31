@@ -89,3 +89,27 @@ test("BGS chapter metadata accepts the progress version emitted by every tutoria
     tutorial.destroy();
   }
 });
+
+test("every chapter can plan, execute, complete, and replay through native controls", async () => {
+  const { LESSONS } = await import("../src/tutorials.js");
+  for (const lesson of LESSONS) {
+    const tutorial = await createLessonTutorial(lesson.id);
+    await tutorial.continue();
+    if (lesson.basics) {
+      await place(tutorial, 1, "blue");
+      await place(tutorial, 2, "lift");
+    } else if (lesson.id === "first-shot") {
+      await place(tutorial, 2, "A");
+      await place(tutorial, 3, "A");
+    }
+    while (tutorial.snapshot.state.stage === "programming")
+      assert.equal(await tutorial.play({ type: "practice-phase" }), true, lesson.id);
+    for (let i = 0; i < 200 && !tutorial.snapshot.completed; i++)
+      assert.equal(await tutorial.play({ type: "resolve" }), true, lesson.id);
+    assert.equal(tutorial.snapshot.completed, true, lesson.id);
+    await tutorial.previousStep();
+    assert.equal(tutorial.snapshot.completed, false, lesson.id);
+    assert.equal(completedTurns(tutorial.snapshot.state), 0, lesson.id);
+    tutorial.destroy();
+  }
+});
