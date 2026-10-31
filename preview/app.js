@@ -175,7 +175,7 @@ export function mountConsole(root, host = null) {
   }
   function announcement(e) {
     if (e.type === "threat")
-      return `T+${e.turn} · ${e.severity === "serious" ? t("app.serious_threat") : t("app.threat")} · ${e.position === "internal" ? t("app.internal") : zoneName(e.zone)}`;
+      return `T${e.turn} · ${e.severity === "serious" ? t("app.serious_threat") : t("app.threat")} · ${e.position === "internal" ? t("app.internal") : zoneName(e.zone)}`;
     return (
       {
         "phase-start": t("app.phase_begins", { phase: e.phase }),
@@ -288,7 +288,7 @@ export function mountConsole(root, host = null) {
     });
     room.insertAdjacentHTML(
       "beforeend",
-      `<span class="planned-pawn" role="img" aria-label="${esc(description)}" title="${esc(description)}">${view.game.solo || crew >= view.players.length ? equipmentPicture("android") : pictogram("crew")}<b>${crew + 1}</b><small>T+${turn}</small></span>`,
+      `<span class="planned-pawn" role="img" aria-label="${esc(description)}" title="${esc(description)}">${view.game.solo || crew >= view.players.length ? equipmentPicture("android") : pictogram("crew")}<b>${crew + 1}</b><small>T${turn}</small></span>`,
     );
   }
   for (const type of ["pointerover", "focusin"])
@@ -458,7 +458,7 @@ export function mountConsole(root, host = null) {
       threats
         .map(
           (th) =>
-            `<article class="threat illustrated-threat" style="--zone:var(--${th.zone ?? "gold"})"><button class="threat-card" data-inspect="${th.instance}" data-inspect-title="${esc(th.name)} · T+${th.turn}" aria-haspopup="dialog" aria-label="${esc(th.name)} · ${t("app.turn")} ${th.turn} · ${esc(th.position === "internal" ? th.stations.map((s) => stationLabel(s, locale)).join(", ") : zoneName(th.zone))} · ${t("app.details")}"><span class="threat-heading"><strong>${esc(th.name)}</strong><span class="threat-timing" title="${t("app.arrival_on_turn")} ${th.turn}">${t("app.arrival")} T+${th.turn}</span></span>${threatPortrait(th)}<span class="threat-footer">${symbol("speed", `${th.speed} ${t("app.spaces_per_turn")}`, th.speed)}<span>${t("app.details")}</span></span></button>${(th.track ?? g.tracks[th.zone ?? "internal"]) ? trackHtml(th, g) : ""}<template>${threatPortrait(th)}<div class="threat-facts">${symbol("speed", `${th.speed} ${t("app.spaces_per_turn")}`, th.speed)}</div><p>${th.position === "internal" ? esc(th.stations.map((s) => stationLabel(s, locale)).join(", ")) + " · " + esc(label(th.repair)) : esc(zoneName(th.zone))}</p>${traitDescriptions(
+            `<article class="threat illustrated-threat" style="--zone:var(--${th.zone ?? "gold"})"><button class="threat-card" data-inspect="${th.instance}" data-inspect-title="${esc(th.name)} · T${th.turn}" aria-haspopup="dialog" aria-label="${esc(th.name)} · ${t("app.turn")} ${th.turn} · ${esc(th.position === "internal" ? th.stations.map((s) => stationLabel(s, locale)).join(", ") : zoneName(th.zone))} · ${t("app.details")}"><span class="threat-heading"><strong>${esc(th.name)}</strong><span class="threat-timing" title="${t("app.arrival_on_turn")} ${th.turn}">${t("app.arrival")} T${th.turn}</span></span>${threatPortrait(th)}<span class="threat-footer">${symbol("speed", `${th.speed} ${t("app.spaces_per_turn")}`, th.speed)}<span>${t("app.details")}</span></span></button>${(th.track ?? g.tracks[th.zone ?? "internal"]) ? trackHtml(th, g) : ""}<template>${threatPortrait(th)}<div class="threat-facts">${symbol("speed", `${th.speed} ${t("app.spaces_per_turn")}`, th.speed)}</div><p>${th.position === "internal" ? esc(th.stations.map((s) => stationLabel(s, locale)).join(", ")) + " · " + esc(label(th.repair)) : esc(zoneName(th.zone))}</p>${traitDescriptions(
               th,
               locale,
             )
@@ -524,8 +524,8 @@ export function mountConsole(root, host = null) {
         const routeDescription = destination
           ? `${t("route.planned", { turn: slot.turn, room: stationLabel(destination, locale) })}. ${t("route.assumption")}`
           : "";
-        const description = `T+${slot.turn} · ${slot.cards.map((c) => (c.sides ? c.sides[c.side].map(label).join(" → ") : c.category === "movement" ? t("app.movement") : t("app.action"))).join(" + ") || t("app.empty")}`;
-        return `<button class="slot ${slot.cards.length ? "filled" : "empty"} ${slot.turn === activeTurn ? "current" : ""} ${phaseFor(slot.turn) < ownPhase ? "locked" : ""} ${phaseFor(slot.turn) > ownPhase ? "future" : ""}" data-turn="${slot.turn}" ${slot.turn === activeTurn ? 'aria-current="step"' : ""} ${editable ? "" : "disabled"} title="${esc(description + (routeDescription ? " · " + routeDescription : ""))}" aria-label="${esc(description + (routeDescription ? " · " + routeDescription : ""))}">${firstShot && slot.turn === 2 ? `<span class="slot-arrival" title="${t("app.target_arrives_before_this_shot")}">${pictogram("down")}${t("app.arrival")}</span>` : ""}<span class="turn">T+${slot.turn} ${phaseFor(slot.turn) < ownPhase ? pictogram("lock") : ""}</span><span class="action">${slot.cards.map((c) => (c.sides ? c.sides[c.side].map(icon).join(" ") : pictogram(c.category === "movement" ? "move" : "cards"))).join(" + ") || pictogram("wait")}</span>${slot.cards.length && destination ? `<span class="planned-location" aria-hidden="true">${shipLocator([destination])}</span>` : ""}</button>`;
+        const description = `T${slot.turn} · ${slot.cards.map((c) => (c.sides ? c.sides[c.side].map(label).join(" → ") : c.category === "movement" ? t("app.movement") : t("app.action"))).join(" + ") || t("app.empty")}`;
+        return `<button class="slot ${slot.cards.length ? "filled" : "empty"} ${slot.turn === activeTurn ? "current" : ""} ${phaseFor(slot.turn) < ownPhase ? "locked" : ""} ${phaseFor(slot.turn) > ownPhase ? "future" : ""}" data-turn="${slot.turn}" ${slot.turn === activeTurn ? 'aria-current="step"' : ""} ${editable ? "" : "disabled"} title="${esc(description + (routeDescription ? " · " + routeDescription : ""))}" aria-label="${esc(description + (routeDescription ? " · " + routeDescription : ""))}">${firstShot && slot.turn === 2 ? `<span class="slot-arrival" title="${t("app.target_arrives_before_this_shot")}">${pictogram("down")}${t("app.arrival")}</span>` : ""}<span class="turn">T${slot.turn} ${phaseFor(slot.turn) < ownPhase ? pictogram("lock") : ""}</span><span class="action">${slot.cards.map((c) => (c.sides ? c.sides[c.side].map(icon).join(" ") : pictogram(c.category === "movement" ? "move" : "cards"))).join(" + ") || pictogram("wait")}</span>${slot.cards.length && destination ? `<span class="planned-location" aria-hidden="true">${shipLocator([destination])}</span>` : ""}</button>`;
       })
       .join("");
     showPlannedPosition(previewTurn);
@@ -677,13 +677,13 @@ export function mountConsole(root, host = null) {
             .join("")
         : "";
     $("#replay").innerHTML = resolution
-      ? `<p>${resolution.outcome ? `${resolution.outcome.survived ? "✓" : "✕"} ${t("app.score")} : <b>${resolution.outcome.score}</b> · ${resolution.outcome.threatPoints} ${t("app.threats_87b951")} + ${resolution.outcome.visual} ${t("app.visual")} − ${resolution.outcome.penalties} ${t("app.penalties")}` : `T+${resolution.turn} · ${esc({ appear: t("app.appearances"), crew: t("app.crew_actions"), damage: t("app.damage"), threats: t("app.threat_actions"), computer: t("app.computer") }[resolution.step])}`}</p><label>${t("app.review_a_step")} <input id="replay-slider" type="range" min="0" max="${resolution.frames.length - 1}" value="${replayFrame ?? resolution.frames.length - 1}"></label>${replayFrame !== null ? '<button id="live" class="quiet">' + t("app.back_to_live") + "</button>" : ""}`
+      ? `<p>${resolution.outcome ? `${resolution.outcome.survived ? "✓" : "✕"} ${t("app.score")} : <b>${resolution.outcome.score}</b> · ${resolution.outcome.threatPoints} ${t("app.threats_87b951")} + ${resolution.outcome.visual} ${t("app.visual")} − ${resolution.outcome.penalties} ${t("app.penalties")}` : `T${resolution.turn} · ${esc({ appear: t("app.appearances"), crew: t("app.crew_actions"), damage: t("app.damage"), threats: t("app.threat_actions"), computer: t("app.computer") }[resolution.step])}`}</p><label>${t("app.review_a_step")} <input id="replay-slider" type="range" min="0" max="${resolution.frames.length - 1}" value="${replayFrame ?? resolution.frames.length - 1}"></label>${replayFrame !== null ? '<button id="live" class="quiet">' + t("app.back_to_live") + "</button>" : ""}`
       : "";
     renderCampaign(g?.campaign);
     $("#announcements").innerHTML = resolution
       ? resolution.log
           .filter((_, i) => !frame || i < frame.logEnd)
-          .map((e) => `<li>T+${e.turn} · ${esc(logText(e))}</li>`)
+          .map((e) => `<li>T${e.turn} · ${esc(logText(e))}</li>`)
           .join("")
       : announcements
           .map(
@@ -759,13 +759,13 @@ export function mountConsole(root, host = null) {
           group.positions.includes(n),
         );
         const group = groups[groupIndex];
-        const description = `${mark ? effects.map((effect) => effectDescription(effect, locale)).join(" · ") || t("app.no_effect") : t("app.space") + " " + n}${group ? ` · T+${group.turn} · ${projection}` : ""}`;
+        const description = `${mark ? effects.map((effect) => effectDescription(effect, locale)).join(" · ") || t("app.no_effect") : t("app.space") + " " + n}${group ? ` · T${group.turn} · ${projection}` : ""}`;
         const current = !pending && th.positionOnTrack === n;
         return `<span title="${esc(description)}" aria-label="${esc(description)}" ${current ? 'aria-current="step"' : ""} ${group ? `data-forecast-turn="${group.turn}"` : ""} class="${current ? "current" : ""} ${pending && n === track.length ? "entry" : ""} ${appearance ? "mark effect-mark" : ""} ${group ? `forecast-cell forecast-tone-${groupIndex % 2} ${n === group.positions[0] ? "forecast-start" : ""} ${n === group.positions.at(-1) ? "forecast-end" : ""}` : ""}">${appearance ? `${pictogram(appearance.icon)}<b>${esc(appearance.value)}</b>` : current ? "●" : ""}</span>`;
       })
       .join(
         "",
-      )}</div>${groups.length ? `<div class="track-turns" aria-label="${esc(projection)}"><small title="${esc(projection)}">T+</small>${groups.map((group, i) => `<span class="forecast-tone-${i % 2}" style="grid-column:${track.length - group.positions[0] + 1} / span ${group.positions.length}" title="${esc(`T+${group.turn} · ${group.positions.length} ${t("app.spaces")} · ${projection}`)}" aria-label="${esc(`T+${group.turn} · ${projection}`)}">${group.turn}</span>`).join("")}</div>` : ""}</div>${pictogram("ship")}</div>`;
+      )}</div>${groups.length ? `<div class="track-turns" aria-label="${esc(projection)}"><small title="${esc(projection)}">T</small>${groups.map((group, i) => `<span class="forecast-tone-${i % 2}" style="grid-column:${track.length - group.positions[0] + 1} / span ${group.positions.length}" title="${esc(`T${group.turn} · ${group.positions.length} ${t("app.spaces")} · ${projection}`)}" aria-label="${esc(`T${group.turn} · ${projection}`)}">${group.turn}</span>`).join("")}</div>` : ""}</div>${pictogram("ship")}</div>`;
   }
   function logText(e) {
     return eventDescription(
@@ -1540,7 +1540,8 @@ export function mountConsole(root, host = null) {
     setInterval(() => {
       if (!view) return;
       const paused = view.tutorial && !view.tutorial.clockRunning;
-      const now = view.serverNow + (paused ? 0 : performance.now() - received);
+      const elapsed = performance.now() - received;
+      const now = view.serverNow + (paused ? 0 : elapsed);
       const end =
         view.stage === "presence"
           ? view.players[seat]?.readyUntil
@@ -1551,12 +1552,18 @@ export function mountConsole(root, host = null) {
               : now;
       const practiceTime = $("[data-practice-time]");
       if (practiceTime) {
-        const text = practiceClockText(
-          view,
-          locale,
-          performance.now() - received,
-        );
+        const text = practiceClockText(view, locale, elapsed);
         if (practiceTime.textContent !== text) practiceTime.textContent = text;
+      }
+      const phaseTime = $("[data-practice-phase]");
+      if (phaseTime && view.stage === "programming") {
+        const text = t("phases.deadline", {
+          phase: view.phase,
+          time: duration(
+            view.missionStartAt + view.mission.phaseEndsMs[view.phase - 1] - now,
+          ),
+        });
+        if (phaseTime.textContent !== text) phaseTime.textContent = text;
       }
       $("#clock").textContent = paused
         ? t("app.paused_afa0b8")
