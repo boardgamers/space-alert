@@ -475,12 +475,18 @@ export function createPreviewServer({ clock = Date.now, storagePath } = {}) {
         "/icons.js": "icons.js",
         "/art.js": "art.js",
         "/tactical.js": "tactical.js",
+        "/threat-track.js": "threat-track.js",
+        "/program-route.js": "program-route.js",
+        "/i18n.js": "i18n.js",
+        "/locales/en.json": "locales/en.json",
+        "/locales/fr.json": "locales/fr.json",
         "/style.css": "style.css",
       }[url.pathname];
       if (req.method === "GET" && file) {
         res.writeHead(200, {
           "Content-Type": file.endsWith(".html")
             ? "text/html"
+            : file.endsWith(".json") ? "application/json"
             : file.endsWith(".css")
               ? "text/css"
               : "text/javascript",

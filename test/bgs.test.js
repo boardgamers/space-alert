@@ -1,3 +1,5 @@
+import { loadLocale } from "../preview/i18n.js";
+await Promise.all([loadLocale("en"), loadLocale("fr")]);
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import * as e from "../bgs/engine.js";

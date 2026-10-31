@@ -1,25 +1,49 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { snapshot } from "../src/view.js";
-import { createLessonTutorial, completedTurns } from "../src/tutorial-controller.js";
+import {
+  createLessonTutorial,
+  completedTurns,
+} from "../src/tutorial-controller.js";
 
 async function place(tutorial, turn, direction) {
   const s = tutorial.snapshot.state;
-  const id = s.game.hands[0].find(id => s.game.cards[id].sides.some(side => side.length === 1 && side[0] === direction));
-  const side = s.game.cards[id].sides.findIndex(side => side.length === 1 && side[0] === direction);
-  assert.equal(await tutorial.play({ type: "program", crew: 0, turn,
-    slotVersion: s.game.slotVersions[0][turn - 1], cards: [{ id, side }] }), true, tutorial.snapshot.error);
+  const id = s.game.hands[0].find((id) =>
+    s.game.cards[id].sides.some(
+      (side) => side.length === 1 && side[0] === direction,
+    ),
+  );
+  const side = s.game.cards[id].sides.findIndex(
+    (side) => side.length === 1 && side[0] === direction,
+  );
+  assert.equal(
+    await tutorial.play({
+      type: "program",
+      crew: 0,
+      turn,
+      slotVersion: s.game.slotVersions[0][turn - 1],
+      cards: [{ id, side }],
+    }),
+    true,
+    tutorial.snapshot.error,
+  );
 }
 
 test("BGS tutorial validates moves, saves progress, and restores native checkpoints", async () => {
   const data = new Map();
-  const storage = { getItem: key => data.get(key), setItem: (key, value) => data.set(key, value) };
+  const storage = {
+    getItem: (key) => data.get(key),
+    setItem: (key, value) => data.set(key, value),
+  };
   const t = await createLessonTutorial("basics", { storage });
   assert.equal(t.snapshot.step, 0);
   await t.continue();
   await place(t, 1, "blue");
   await place(t, 2, "red");
-  assert.equal(snapshot(t.snapshot.state, 0).game.ship.crew[0].station, "white-upper");
+  assert.equal(
+    snapshot(t.snapshot.state, 0).game.ship.crew[0].station,
+    "white-upper",
+  );
   assert.equal(t.snapshot.step, 1);
   await t.play({ type: "practice-phase" });
   await t.play({ type: "practice-phase" });
@@ -27,7 +51,10 @@ test("BGS tutorial validates moves, saves progress, and restores native checkpoi
   assert.equal(completedTurns(t.snapshot.state), 0);
   for (let i = 0; i < 10 && completedTurns(t.snapshot.state) < 1; i++)
     assert.equal(await t.play({ type: "resolve" }), true);
-  assert.equal(t.snapshot.state.game.resolution.ship.crew[0].station, "blue-upper");
+  assert.equal(
+    t.snapshot.state.game.resolution.ship.crew[0].station,
+    "blue-upper",
+  );
   const restored = await createLessonTutorial("basics", { storage });
   assert.deepEqual(restored.snapshot.state, t.snapshot.state);
   await restored.restartStep();
@@ -39,7 +66,8 @@ test("BGS tutorial validates moves, saves progress, and restores native checkpoi
   assert.equal(restored.snapshot.state.stage, "programming");
   assert.equal(restored.snapshot.state.game.programs[0][0], null);
   await place(restored, 1, "red");
-  restored.destroy(); t.destroy();
+  restored.destroy();
+  t.destroy();
 });
 
 test("practice clock advances planning only; resolution remains untimed", async () => {
@@ -54,7 +82,12 @@ test("practice clock advances planning only; resolution remains untimed", async 
   t.destroy();
 });
 
-for (const route of [["blue", "lift"], ["lift", "blue"], ["blue", "red"], ["red", "lift"]]) {
+for (const route of [
+  ["blue", "lift"],
+  ["lift", "blue"],
+  ["blue", "red"],
+  ["red", "lift"],
+]) {
   test(`navigation lesson checks the resolved destination: ${route.join(", ")}`, async () => {
     const t = await createLessonTutorial("basics");
     await t.continue();
@@ -66,8 +99,12 @@ for (const route of [["blue", "lift"], ["lift", "blue"], ["blue", "red"], ["red"
     for (let i = 0; i < 30 && completedTurns(t.snapshot.state) < 3; i++)
       assert.equal(await t.play({ type: "resolve" }), true, t.snapshot.error);
     const succeeds = route.includes("blue") && route.includes("lift");
-    assert.equal(t.snapshot.completed, succeeds);
-    assert.equal(t.snapshot.state.game.resolution.ship.crew[0].station === "blue-lower", succeeds);
+    assert.equal(t.snapshot.step === 3, succeeds);
+    assert.equal(t.snapshot.completed, false);
+    assert.equal(
+      t.snapshot.state.game.resolution.ship.crew[0].station === "blue-lower",
+      succeeds,
+    );
     if (!succeeds) {
       await t.previousStep();
       assert.equal(t.snapshot.state.stage, "programming");
@@ -79,10 +116,16 @@ for (const route of [["blue", "lift"], ["lift", "blue"], ["blue", "red"], ["red"
 
 test("BGS chapter metadata accepts the progress version emitted by every tutorial", async () => {
   const { readFile } = await import("node:fs/promises");
-  const info = JSON.parse(await readFile(new URL("../bgs/gameinfo.json", import.meta.url)));
+  const info = JSON.parse(
+    await readFile(new URL("../bgs/gameinfo.json", import.meta.url)),
+  );
   for (const chapter of info.version.tutorial.chapters) {
     let progress;
-    const tutorial = await createLessonTutorial(chapter.id, { onProgress: value => { progress = value; } });
+    const tutorial = await createLessonTutorial(chapter.id, {
+      onProgress: (value) => {
+        progress = value;
+      },
+    });
     await tutorial.continue();
     assert.equal(progress.id, chapter.id);
     assert.equal(progress.version, chapter.version);
@@ -103,9 +146,20 @@ test("every chapter can plan, execute, complete, and replay through native contr
       await place(tutorial, 3, "A");
     }
     while (tutorial.snapshot.state.stage === "programming")
-      assert.equal(await tutorial.play({ type: "practice-phase" }), true, lesson.id);
-    for (let i = 0; i < 200 && !tutorial.snapshot.completed; i++)
-      assert.equal(await tutorial.play({ type: "resolve" }), true, lesson.id);
+      assert.equal(
+        await tutorial.play({ type: "practice-phase" }),
+        true,
+        lesson.id,
+      );
+    for (let i = 0; i < 200 && !tutorial.snapshot.completed; i++) {
+      if (lesson.basics && tutorial.snapshot.step === 3) {
+        assert.equal(await tutorial.play({ type: "practice-timeout" }), true);
+        await place(tutorial, 1, "blue");
+        await tutorial.play({ type: "practice-clock", running: true });
+        await tutorial.play({ type: "practice-tick", ms: 5000 });
+      } else
+        assert.equal(await tutorial.play({ type: "resolve" }), true, lesson.id);
+    }
     assert.equal(tutorial.snapshot.completed, true, lesson.id);
     await tutorial.previousStep();
     assert.equal(tutorial.snapshot.completed, false, lesson.id);
@@ -117,13 +171,18 @@ test("every chapter can plan, execute, complete, and replay through native contr
 test("first shot stops on target destruction at turn 3, and preserves new and legacy saves", async () => {
   for (const objective of [true, false]) {
     const data = new Map();
-    const storage = { getItem: key => data.get(key), setItem: (key, value) => data.set(key, value) };
+    const storage = {
+      getItem: (key) => data.get(key),
+      setItem: (key, value) => data.set(key, value),
+    };
     const tutorial = await createLessonTutorial("first-shot", { storage });
     await tutorial.continue();
     await place(tutorial, 2, "A");
     await place(tutorial, 3, "A");
     if (objective) await tutorial.play({ type: "practice-run" });
-    else while (tutorial.snapshot.state.stage === "programming") await tutorial.play({ type: "practice-phase" });
+    else
+      while (tutorial.snapshot.state.stage === "programming")
+        await tutorial.play({ type: "practice-phase" });
     for (let i = 0; i < 100 && !tutorial.snapshot.completed; i++)
       assert.equal(await tutorial.play({ type: "resolve" }), true);
     assert.equal(tutorial.snapshot.completed, true);
@@ -137,7 +196,8 @@ test("first shot stops on target destruction at turn 3, and preserves new and le
     const restored = await createLessonTutorial("first-shot", { storage });
     assert.equal(restored.snapshot.completed, true);
     assert.deepEqual(restored.snapshot.state, tutorial.snapshot.state);
-    restored.destroy(); tutorial.destroy();
+    restored.destroy();
+    tutorial.destroy();
   }
 });
 
@@ -148,12 +208,99 @@ test("the clock demonstration waits until the actual planning deadline before re
   await place(tutorial, 2, "lift");
   await tutorial.play({ type: "practice-deadline" });
   assert.equal(tutorial.snapshot.state.stage, "programming");
-  assert.equal(snapshot(tutorial.snapshot.state, 0).game.ship.crew[0].station, "white-upper");
+  assert.equal(
+    snapshot(tutorial.snapshot.state, 0).game.ship.crew[0].station,
+    "white-upper",
+  );
   assert.equal(completedTurns(tutorial.snapshot.state), 0);
   await tutorial.play({ type: "practice-tick", ms: 4999 });
   assert.equal(tutorial.snapshot.state.stage, "programming");
   await tutorial.play({ type: "practice-tick", ms: 1 });
   assert.equal(tutorial.snapshot.state.stage, "resolution");
   assert.equal(completedTurns(tutorial.snapshot.state), 0);
+  tutorial.destroy();
+});
+
+test("first lesson freezes the early-finish clock, then executes an incomplete plan at the deadline", async () => {
+  const tutorial = await createLessonTutorial("basics");
+  await tutorial.continue();
+  assert.equal(tutorial.snapshot.state.tutorial.clockRunning, false);
+  await tutorial.play({ type: "practice-clock", running: true });
+  await tutorial.play({ type: "practice-tick", ms: 2000 });
+  await place(tutorial, 1, "blue");
+  await place(tutorial, 2, "lift");
+  const time = tutorial.snapshot.state.observedAt;
+  await tutorial.play({ type: "practice-run" });
+  assert.equal(tutorial.snapshot.state.observedAt, time);
+  assert.equal(tutorial.snapshot.state.tutorial.clockRunning, false);
+  assert.equal(tutorial.snapshot.state.tutorial.remainingMs, 598000);
+  assert.equal(tutorial.snapshot.state.log.at(-1).early, true);
+  while (tutorial.snapshot.step === 2) await tutorial.play({ type: "resolve" });
+  assert.equal(tutorial.snapshot.completed, false);
+  await tutorial.play({ type: "practice-timeout" });
+  await place(tutorial, 1, "blue");
+  await tutorial.play({ type: "practice-clock", running: true });
+  await tutorial.play({ type: "practice-tick", ms: 4999 });
+  assert.equal(tutorial.snapshot.state.stage, "programming");
+  assert.equal(
+    snapshot(tutorial.snapshot.state, 0).game.ship.crew[0].station,
+    "white-upper",
+  );
+  await tutorial.play({ type: "practice-tick", ms: 1 });
+  assert.equal(tutorial.snapshot.state.stage, "resolution");
+  assert.equal(tutorial.snapshot.state.tutorial.clockRunning, false);
+  assert.equal(tutorial.snapshot.state.tutorial.remainingMs, 0);
+  while (!tutorial.snapshot.completed) await tutorial.play({ type: "resolve" });
+  assert.equal(
+    tutorial.snapshot.state.game.resolution.ship.crew[0].station,
+    "blue-upper",
+  );
+  assert.equal(completedTurns(tutorial.snapshot.state), 3);
+  tutorial.destroy();
+});
+
+test("phase lesson reveals a threat before execution and locks only earlier slots at the phase deadline", async () => {
+  const tutorial = await createLessonTutorial("planning-phases");
+  await tutorial.continue();
+  assert.equal(tutorial.snapshot.state.game.threats.length, 0);
+  await tutorial.play({ type: "practice-clock", running: true });
+  await place(tutorial, 1, "blue");
+  await tutorial.play({ type: "practice-tick", ms: 2000 });
+  assert.equal(tutorial.snapshot.state.game.threats[0].turn, 6);
+  assert.equal(
+    snapshot(tutorial.snapshot.state, 0).game.ship.crew[0].station,
+    "white-upper",
+  );
+  await tutorial.play({ type: "practice-phase-deadline" });
+  await tutorial.play({ type: "practice-tick", ms: 4999 });
+  assert.equal(tutorial.snapshot.state.phase, 1);
+  await tutorial.play({ type: "practice-tick", ms: 1 });
+  assert.equal(tutorial.snapshot.state.phase, 2);
+  assert.equal(tutorial.snapshot.state.stage, "programming");
+  assert.equal(
+    snapshot(tutorial.snapshot.state, 0).game.ship.crew[0].station,
+    "white-upper",
+  );
+  assert.equal(
+    await tutorial.play({
+      type: "remove",
+      crew: 0,
+      turn: 1,
+      slotVersion: tutorial.snapshot.state.game.slotVersions[0][0],
+    }),
+    false,
+  );
+  await place(tutorial, 4, "lift");
+  await tutorial.play({ type: "practice-run" });
+  assert.equal(tutorial.snapshot.state.log.at(-1).early, true);
+  assert.equal(tutorial.snapshot.state.tutorial.clockRunning, false);
+  for (let i = 0; i < 150 && !tutorial.snapshot.completed; i++)
+    await tutorial.play({ type: "resolve" });
+  assert.equal(tutorial.snapshot.completed, true);
+  assert.equal(
+    tutorial.snapshot.state.game.resolution.ship.crew[0].station,
+    "blue-lower",
+  );
+  assert.equal(tutorial.snapshot.state.game.resolution.lastTurn, 7);
   tutorial.destroy();
 });

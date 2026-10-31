@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -12,12 +12,12 @@
         >✦ <span>SPACE ALERT<small>SITTING DUCK</small></span></a
       >
       <div class="header-tools">
-        <select id="seat" aria-label="Joueur"></select
+        <select id="seat" aria-label=""></select
         ><button
           id="sound"
           class="quiet"
           aria-pressed="false"
-          title="Annonces vocales"
+          title=""
         >
           ♫
         </button>
@@ -61,7 +61,7 @@
           <div class="section-heading">
             <h2 id="program-title"></h2>
           </div>
-          <select id="program-crew" aria-label="Équipier à programmer"></select>
+          <select id="program-crew" aria-label=""></select>
           <div id="program" class="program"></div>
           <p id="player-help"></p>
           <div id="controls" class="controls"></div>
@@ -83,7 +83,7 @@
     >
       <div class="dialog-header">
         <h2 id="menu-title"></h2>
-        <button type="button" data-close-dialog aria-label="Fermer">×</button>
+        <button type="button" data-close-dialog aria-label="">×</button>
       </div>
       <div class="dialog-body">
         <section id="journal" data-panel-content hidden>
@@ -95,91 +95,88 @@
         <section id="setup" data-panel-content hidden>
           <form id="new-session">
             <label id="players-label"
-              >Joueurs
-              <select id="players">
-                <option value="1">Solo · 4 androïdes</option>
-                <option value="2">2 + 2 androïdes</option>
-                <option value="3">3 + 1 androïde</option>
-                <option value="4" selected>4</option>
-                <option value="5">5</option>
+              > <select id="players">
+                <option value="1"></option>
+                <option value="2"></option>
+                <option value="3"></option>
+                <option value="4" selected></option>
+                <option value="5"></option>
               </select></label
             ><label
-              >Équipage<select id="crew-size">
-                <option value="0">Standard</option>
-                <option value="5">5 équipiers (androïde supplémentaire)</option>
-                <option value="3">3 joueurs sans androïde</option>
+              > <select id="crew-size">
+                <option value="0"></option>
+                <option value="5"></option>
+                <option value="3"></option>
               </select></label
             ><label
-              >Mission
-              <select id="mission"></select></label
+              > <select id="mission"></select></label
             ><label id="special-label"
-              >Spécialisations
-              <select id="specialization">
-                <option value="">Aucune</option>
-                <option value="1">Niveau 1</option>
-                <option value="2">Niveau 2</option>
-                <option value="3">Niveau 3</option>
+              > <select id="specialization">
+                <option value=""></option>
+                <option value="1"></option>
+                <option value="2"></option>
+                <option value="3"></option>
               </select></label
             ><label
-              >Menaces<select id="threat-expansion">
-                <option value="0">Jeu de base</option>
-                <option value="1">+ The New Frontier</option>
+              > <select id="threat-expansion">
+                <option value="0"></option>
+                <option value="1"></option>
               </select></label
             >
             <label
-              >Menaces communes<select id="difficulty">
-                <option value="1">Niveau 1</option>
-                <option value="1,2">Niveaux 1 + 2</option>
-                <option value="2">Niveau 2</option>
-                <option value="1,2,3">Tous les niveaux</option>
-                <option value="2,3">Niveaux 2 + 3</option>
-                <option value="3">Niveau 3</option>
+              > <select id="difficulty">
+                <option value="1"></option>
+                <option value="1,2"></option>
+                <option value="2"></option>
+                <option value="1,2,3"></option>
+                <option value="2,3"></option>
+                <option value="3"></option>
               </select></label
             >
             <label
-              >Menaces sérieuses<select id="serious-difficulty">
-                <option value="1">Niveau 1</option>
-                <option value="1,2">Niveaux 1 + 2</option>
-                <option value="2">Niveau 2</option>
-                <option value="1,2,3">Tous les niveaux</option>
-                <option value="2,3">Niveaux 2 + 3</option>
-                <option value="3">Niveau 3</option>
+              > <select id="serious-difficulty">
+                <option value="1"></option>
+                <option value="1,2"></option>
+                <option value="2"></option>
+                <option value="1,2,3"></option>
+                <option value="2,3"></option>
+                <option value="3"></option>
               </select></label
             >
             <label
-              >Format<select id="campaign-limit">
-                <option value="0">Mission unique</option>
-                <option value="3">Campagne · 3 missions</option>
-                <option value="5">Campagne · 5 missions</option>
+              > <select id="campaign-limit">
+                <option value="0"></option>
+                <option value="3"></option>
+                <option value="5"></option>
               </select></label
             >
             <label
-              >Expérience<select id="careers-enabled">
-                <option value="0">Partie libre</option>
-                <option value="1">Carrières enregistrées</option>
+              > <select id="careers-enabled">
+                <option value="0"></option>
+                <option value="1"></option>
               </select></label
             >
             <div id="career-seats" class="token-controls"></div>
             <div id="specialists" class="token-controls"></div>
-            <button type="submit" id="new-button">Préparer la mission</button>
+            <button type="submit" id="new-button"></button>
           </form>
-          <button id="ready-all" class="quiet">Tout l’équipage est prêt</button
-          ><button id="next-event" class="quiet">Prochaine annonce</button>
+          <button id="ready-all" class="quiet"></button
+          ><button id="next-event" class="quiet"></button>
         </section>
         <section id="career-manager" data-panel-content hidden>
           <form id="create-explorer">
             <label
-              >Nom<input
+              > <input
                 id="explorer-name"
                 required
                 maxlength="80"
                 autocomplete="off" /></label
             ><label
-              >Clonage<select id="explorer-cloning">
-                <option value="1">Autorisé</option>
-                <option value="0">Hardcore · mort définitive</option>
+              > <select id="explorer-cloning">
+                <option value="1"></option>
+                <option value="0"></option>
               </select></label
-            ><button id="create-explorer-button">Créer un explorateur</button>
+            ><button id="create-explorer-button"></button>
           </form>
           <div id="explorers"></div>
         </section>
@@ -196,7 +193,7 @@
     >
       <div class="dialog-header">
         <h2 id="choice-title"></h2>
-        <button type="button" data-close-dialog aria-label="Fermer">×</button>
+        <button type="button" data-close-dialog aria-label="">×</button>
       </div>
       <div id="choice-list" class="dialog-body choice-list"></div>
     </dialog>

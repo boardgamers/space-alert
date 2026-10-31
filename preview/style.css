@@ -2557,3 +2557,42 @@ input:not([type="checkbox"]):not([type="range"]) {
 .track-turns > span { padding: 2px 0; border-radius: 2px; border-bottom: 2px solid; }
 .track-turns .forecast-tone-0 { color: #acf0e5; border-color: #72c9bb; background: #264d5580; }
 .track-turns .forecast-tone-1 { color: #c0d5fa; border-color: #87a9e1; background: #30405c80; }
+
+/* Mission overview uses the same pictograms and numbered program slots. */
+.mission-overview { max-width: 950px; margin: 16px 0; }
+.mission-flow { display: flex; align-items: center; gap: 12px; }
+.mission-concept { flex: 1; min-width: 0; display: grid; grid-template-columns: 30px 1fr; gap: 6px 10px; padding: 12px; background: #122632; border-radius: 8px; }
+.mission-concept > svg { grid-row: span 2; width: 26px; height: 26px; color: var(--cyan); }
+.mission-concept small { color: var(--muted); line-height: 1.45; }
+.flow-arrow svg { width: 20px; height: 20px; color: var(--muted); }
+.mission-timeline, .mission-groups { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.mission-timeline { margin-top: 14px; font-size: 12px; color: var(--muted); }
+.mission-timeline > svg { width: 22px; height: 22px; }
+.mission-group { display: flex; gap: 4px; padding-bottom: 5px; border-bottom: 2px solid var(--cyan); }
+.mission-group.later { opacity: .5; }
+.mission-group span { display: grid; place-items: center; width: 23px; height: 28px; border: 1px solid #527181; border-radius: 4px; }
+.lesson-scope { display: block; color: var(--muted); margin: -8px 0 10px; }
+.practice-clock.stopped > svg { width: 22px; height: 22px; color: var(--cyan); }
+.phase-lesson-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.phase-lesson-controls .practice-clock { margin: 0; min-width: 225px; }
+.native-tutorial[data-chapter="planning-phases"] #threats { display: block !important; }
+.native-tutorial[data-chapter="planning-phases"] .tactical .section-heading:has(#threat-title) { display: flex !important; }
+.native-tutorial[data-chapter="planning-phases"] #program { display: grid; grid-template-columns: repeat(4, minmax(0, 70px)); gap: 14px 10px; }
+.native-tutorial[data-chapter="planning-phases"] #program .slot { flex: 0 0 70px; }
+.native-tutorial[data-chapter="planning-phases"] #program .slot:nth-child(4) { grid-column: 1; }
+.native-tutorial[data-chapter="planning-phases"] .basics-stages { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 650px) {
+  .mission-flow { flex-direction: column; align-items: stretch; gap: 6px; }
+  .flow-arrow { align-self: center; transform: rotate(90deg); }
+  .mission-group span { width: 18px; }
+}
+
+.planned-location { display: flex; justify-content: center; padding-top: 3px; opacity: .75; }
+.planned-location .ship-locator { width: 34px; height: 19px; }
+.slot:has(.planned-location) { flex-direction: column; gap: 5px !important; padding-bottom: 10px; }
+.slot.previewed-turn { outline: 2px dashed var(--cyan); outline-offset: 3px; }
+.station.planned-room { outline: 2px dashed var(--cyan); outline-offset: -5px; }
+.planned-pawn { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 3px; color: var(--cyan); pointer-events: none; opacity: .55; }
+.planned-pawn > svg { width: 32px; height: 32px; }
+.planned-pawn b, .planned-pawn small { font-size: 10px; }
+.planned-pawn small { padding: 2px 3px; border: 1px dashed currentColor; border-radius: 3px; }

@@ -9,104 +9,54 @@ const lesson = (id, title, instructions, options = {}) => ({
   ...options,
 });
 export const LESSONS = [
+  lesson("basics", "lesson.basics.title", [], { basics: true }),
   lesson(
-    "basics",
-    ["Commencer ici : programmer les tours", "Start here: planning turns"],
-    [],
-    { basics: true },
+    "planning-phases",
+    "lesson.planning-phases.title",
+    ["lesson.planning-phases.instruction.0"],
+    { phaseLesson: true, threat: "E1-10", turn: 6 },
   ),
   lesson(
     "first-shot",
-    ["Votre premier tir", "Your first shot"],
-    [["Détruisez la cible avec le laser surligné.",
-      "Destroy the target with the highlighted laser."]],
+    "lesson.first-shot.title",
+    ["lesson.first-shot.instruction.0"],
     { threat: "E1-07", turn: 2 },
   ),
-  lesson(
-    "energy",
-    ["Énergie et coordination", "Energy and coordination"],
-    [
-      [
-        "Alimentez le laser central pour tirer quatre fois.",
-        "Power the central laser for four shots."
-      ],
-      [
-        "Androïde 1 : armes aux tours 1–4. Androïde 3 : ascenseur, puis énergie pour ravitailler le réacteur.",
-        "Android 1: weapons on turns 1–4. Android 3: lift, then energy to refill the reactor."
-      ]
-    ],
-  ),
+  lesson("energy", "lesson.energy.title", [
+    "lesson.energy.instruction.0",
+    "lesson.energy.instruction.1",
+  ]),
   lesson(
     "repairs",
-    ["Réparer une panne", "Repairing a malfunction"],
-    [
-      [
-        "Réparez la panne surlignée.",
-        "Repair the highlighted malfunction."
-      ],
-      [
-        "→ au tour 1, puis énergie aux tours 2–4.",
-        "→ on turn 1, then energy on turns 2–4."
-      ]
-    ],
+    "lesson.repairs.title",
+    ["lesson.repairs.instruction.0", "lesson.repairs.instruction.1"],
     { threat: "I1-05", turn: 2 },
   ),
-  lesson(
-    "battlebots",
-    ["Robots et intercepteurs", "Battlebots and interceptors"],
-    [
-      [
-        "Prenez les robots, puis rejoignez les intercepteurs.",
-        "Collect the battlebots, then reach the interceptors."
-      ],
-      [
-        "→ · systèmes · ← · ← · systèmes. En vol, jouez robots pour tirer ; laissez vide pour rentrer.",
-        "→ · systems · ← · ← · systems. In flight, play battlebots to fire; leave a slot empty to return."
-      ]
-    ],
-  ),
+  lesson("battlebots", "lesson.battlebots.title", [
+    "lesson.battlebots.instruction.0",
+    "lesson.battlebots.instruction.1",
+  ]),
   lesson(
     "double-actions",
-    ["Deux actions, dans l’ordre", "Two actions, in order"],
+    "lesson.double-actions.title",
     [
-      [
-        "Déplacez-vous et tirez avec une seule carte.",
-        "Move and fire with one card."
-      ],
-      [
-        "Comparez → + armes et armes + → : l’ordre choisit le laser utilisé.",
-        "Compare → + weapons with weapons + →: the order determines which laser fires."
-      ]
+      "lesson.double-actions.instruction.0",
+      "lesson.double-actions.instruction.1",
     ],
     { doubleActions: true },
   ),
   lesson(
     "phasing",
-    ["Menaces de l’extension", "Expansion threats"],
-    [
-      [
-        "Touchez le chasseur lorsqu’il est visible.",
-        "Hit the fighter while it is visible."
-      ],
-      [
-        "Armes aux tours 1–3. Observez le tir ignoré pendant son déphasage.",
-        "Weapons on turns 1–3. Watch the missed shot while it is phased out."
-      ]
-    ],
+    "lesson.phasing.title",
+    ["lesson.phasing.instruction.0", "lesson.phasing.instruction.1"],
     { threat: "E2-102", turn: 1 },
   ),
   lesson(
     "specializations",
-    ["Spécialisations", "Specializations"],
+    "lesson.specializations.title",
     [
-      [
-        "Lancez une roquette à distance avec l’Artilleur.",
-        "Launch a rocket remotely with the Rocketeer."
-      ],
-      [
-        "Programmez sa capacité basique au tour 1. La roquette frappe au tour suivant.",
-        "Program the basic ability on turn 1. The rocket hits next turn."
-      ]
+      "lesson.specializations.instruction.0",
+      "lesson.specializations.instruction.1",
     ],
     {
       specializations: [
@@ -118,18 +68,18 @@ export const LESSONS = [
     },
   ),
 ];
-export function createLesson(id, now) {
+export function createLesson(id, now, { timing = false } = {}) {
   const l = LESSONS.find((l) => l.id === id);
   if (!l) throw Error("Unknown lesson");
   const mission = {
     id: `lesson-${id}`,
-    title: l.title[1],
+    title: l.title,
     doubleActions: !!l.doubleActions,
     phaseEndsMs: [300000, 600000],
     events: l.threat
       ? [
           {
-            atMs: 0,
+            atMs: l.phaseLesson ? 2000 : 0,
             type: "threat",
             confirmed: true,
             turn: l.turn,
@@ -154,6 +104,16 @@ export function createLesson(id, now) {
     },
     now,
   );
+  if (timing && l.basics) {
+    // A deliberately shortened tutorial fixture: one planning phase, three
+    // executed turns. Normal mission validation still requires two or three phases.
+    s.mission.phaseEndsMs = [600000];
+    s.timeline = [
+      { atMs: 0, type: "phase-start", phase: 1 },
+      { atMs: 595000, type: "phase-warning", phase: 1, seconds: 5 },
+      { atMs: 600000, type: "mission-complete", phase: 2 },
+    ];
+  }
   s = submit(s, 0, { type: "ready", sequence: 1 }, now).state;
   s = advanceClock(s, now + 3000);
   s.tutorial = {
@@ -161,8 +121,15 @@ export function createLesson(id, now) {
     title: l.title,
     instructions: l.instructions,
     basics: !!l.basics,
+    phaseLesson: !!l.phaseLesson,
     targetStation: l.basics ? "blue-lower" : undefined,
     clockRunning: false,
+    ...(timing && l.basics
+      ? { timing: true, scenario: "early", clockStarted: false }
+      : {}),
+    ...(l.phaseLesson
+      ? { timing: true, clockStarted: false, targetStation: "blue-lower" }
+      : {}),
   };
   s.game.tracks = Object.fromEntries(
     ["red", "white", "blue", "internal"].map((z) => [
@@ -184,11 +151,13 @@ export function createLesson(id, now) {
     s.game.programs[1][turn - 1] = { cards: [{ id, side }] };
     s.game.slotVersions[1][turn - 1]++;
   }
-  if (l.basics) {
+  if (l.basics || l.phaseLesson) {
     // A small physical hand makes spending and reusing actions visible.
     const remaining = { red: 2, blue: 2, lift: 2 };
-    s.game.hands[0] = s.game.hands[0].filter(id => {
-      const action = s.game.cards[id].sides.find(side => side.length === 1 && remaining[side[0]] > 0)?.[0];
+    s.game.hands[0] = s.game.hands[0].filter((id) => {
+      const action = s.game.cards[id].sides.find(
+        (side) => side.length === 1 && remaining[side[0]] > 0,
+      )?.[0];
       if (!action) return false;
       remaining[action]--;
       return true;

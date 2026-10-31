@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="256" height="256">
+  <title>Space Alert</title>
+  <!-- Original ship symbol; transparent canvas cropped to the hull and exhaust. -->
+  <path fill="#9ce5ed" d="M27 110h10v18H27zm32 0h10v18H59zm32 0h10v18H91z"/>
+  <path fill="#344f5d" stroke="#a0b7c1" stroke-width="3" stroke-linejoin="round" d="M2 42 27 16 48 12 56 2h16l8 10 21 4 25 26v62l-14 12H16L2 104Z"/>
+  <path fill="#7bced5" d="m40 24 8-8h32l8 8-9 10H49Z"/>
+  <path fill="#142b39" d="M12 44h30v30H12zm37 0h30v30H49zm37 0h30v30H86zM12 82h30v22H12zm37 0h30v22H49zm37 0h30v22H86z"/>
+  <path fill="none" stroke="#d8ba72" stroke-width="4" d="M49 42h30"/>
+  <path fill="none" stroke="#df8c7c" stroke-width="4" d="M12 42h30"/>
+  <path fill="none" stroke="#87b8e8" stroke-width="4" d="M86 42h30"/>
+  <path fill="#ffdc85" d="m67 49-11 14h8l-3 10 12-15h-8Z"/>
+</svg>

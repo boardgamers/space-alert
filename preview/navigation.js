@@ -1,3 +1,4 @@
+import { translate } from "./i18n.js";
 import { pictogram, specializationIcons, equipmentPicture } from "./icons.js";
 
 const navIcons = {
@@ -8,15 +9,15 @@ const navIcons = {
   guide: "guide",
 };
 const labels = {
-  journal: ["Journal", "Log"],
-  lessons: ["Entraînement", "Training"],
-  setup: ["Missions", "Missions"],
-  "career-manager": ["Équipage", "Crew"],
-  guide: ["Guide", "Guide"],
+  journal: "navigation.log",
+  lessons: "navigation.training",
+  setup: "navigation.missions",
+  "career-manager": "app.crew",
+  guide: "navigation.guide",
 };
 export function mountNavigation(root, { locale, hosted }) {
   const $ = (s) => root.querySelector(s);
-  const t = (fr, en) => (locale() === "fr" ? fr : en);
+  const t = (key, params) => translate(locale(), key, params);
   const menu = $("#console-menu");
   const picker = $("#choice-menu");
   const error = $("#error");
@@ -32,7 +33,7 @@ export function mountNavigation(root, { locale, hosted }) {
     activePanel = id;
     for (const panel of root.querySelectorAll("[data-panel-content]"))
       panel.hidden = panel.id !== id;
-    $("#menu-title").textContent = title ?? t(...labels[id]);
+    $("#menu-title").textContent = title ?? t(labels[id]);
     for (const button of root.querySelectorAll("[data-panel]"))
       button.setAttribute("aria-expanded", String(button.dataset.panel === id));
     menu.querySelector(".dialog-header").after(error);
@@ -179,13 +180,13 @@ export function mountNavigation(root, { locale, hosted }) {
         .filter(([id]) => !hosted || !["setup", "lessons"].includes(id))
         .map(
           ([id, words]) =>
-            `<button type="button" data-panel="${id}" aria-haspopup="dialog" aria-expanded="${menu.open && activePanel === id}">${pictogram(navIcons[id])}<span>${t(...words)}</span></button>`,
+            `<button type="button" data-panel="${id}" aria-haspopup="dialog" aria-expanded="${menu.open && activePanel === id}">${pictogram(navIcons[id])}<span>${t(words)}</span></button>`,
         )
         .join("");
       for (const close of root.querySelectorAll("[data-close-dialog]"))
-        close.setAttribute("aria-label", t("Fermer", "Close"));
+        close.setAttribute("aria-label", t("navigation.close"));
       if (activePanel && activePanel !== "inspection")
-        $("#menu-title").textContent = t(...labels[activePanel]);
+        $("#menu-title").textContent = t(labels[activePanel]);
     }
     syncChoices();
     if (hosted)

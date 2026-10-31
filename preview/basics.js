@@ -1,17 +1,23 @@
+import { translate } from "./i18n.js";
 import { pictogram } from "./icons.js";
 // A focused view over the real lesson state, not a separate game simulation.
 export function basicsView(view, locale, { started, picked, shipMarkup }) {
-  const t = (fr, en) => (locale === "fr" ? fr : en);
+  const t = (key, params) => translate(locale, key, params);
   const slots = view.game.programs[0];
   const placed = slots.slice(0, 2).filter((s) => s.cards.length).length;
   const r = view.game.resolution;
   const turn = r?.step === "damage" ? r.turn : Math.max(0, (r?.turn ?? 0) - 1);
   const playing = view.stage === "resolution";
   if (view.tutorial.nativeStep !== undefined) {
-    const control = (id, glyph, description, disabled = false) => `<button id="${id}" class="primary icon-button" ${id === "basics-run" ? 'aria-keyshortcuts="Enter"' : ""} title="${description}${id === "basics-run" ? " · ↵" : ""}" aria-label="${description}" ${disabled ? "disabled" : ""}>${pictogram(glyph)}${id === "lesson-deadline" ? "<small>5 s</small>" : ""}</button>`;
+    const control = (id, glyph, description, disabled = false) =>
+      `<button id="${id}" class="primary icon-button" ${id === "basics-run" ? 'aria-keyshortcuts="Enter"' : ""} title="${description}${id === "basics-run" ? " · ↵" : ""}" aria-label="${description}" ${disabled ? "disabled" : ""}>${pictogram(glyph)}${id === "lesson-deadline" ? "<small>5 s</small>" : ""}</button>`;
     if (view.tutorial.nativeStep === 0) return "";
-    if (playing) return "";
-    return `<div class="planning-shortcuts" title="${t("Flèches : déplacement · ↑/↓ : changer de pont · Retour arrière : annuler · Entrée : exécuter", "Arrows: move · ↑/↓: change deck · Backspace: undo · Enter: run")}" aria-label="${t("Raccourcis : flèches pour se déplacer ; retour arrière pour annuler ; entrée pour exécuter", "Shortcuts: arrow keys to move; Backspace to undo; Enter to run")}"><kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd><kbd>⌫</kbd><kbd>↵</kbd></div><div class="practice-readiness" role="status" aria-label="${placed}/2 ${t("actions placées", "actions placed")}"><span>${pictogram("cards")} ${placed}/2</span><span class="ready-dots" aria-hidden="true">${[0,1].map(i => `<i class="${i < placed ? "filled" : ""}"></i>`).join("")}</span>${control("basics-run", "step", t("Exécuter le programme", "Run program"), placed !== 2)}</div><div class="practice-clock"><div><strong data-practice-time></strong><small>${t("Temps pour programmer", "Time to plan")}</small></div>${control("lesson-deadline", "forward", t("Aller à 5 s de la fin du chrono", "Jump to 5 seconds before the deadline"), placed !== 2)}${control("lesson-clock", view.tutorial.clockRunning ? "pause" : "clock", view.tutorial.clockRunning ? t("Pause", "Pause") : t("Lancer le chrono", "Start clock"))}</div>`;
+    if (playing)
+      return view.tutorial.timing
+        ? `<div class="practice-clock stopped"><div><strong data-practice-time></strong><small>${t(view.tutorial.remainingMs > 0 ? "timing.stopped" : "timing.expired")}</small></div>${pictogram(view.tutorial.remainingMs > 0 ? "clock" : "lock")}</div>`
+        : "";
+    const deadline = view.tutorial.scenario === "deadline";
+    return `<div class="planning-shortcuts" title="${t(deadline ? "timing.deadline_shortcuts" : "basics.arrows_move_change_deck_backspace_undo_enter_run")}" aria-label="${t(deadline ? "timing.deadline_shortcuts" : "basics.shortcuts_arrow_keys_to_move_backspace_to_undo")}"><kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd><kbd>⌫</kbd>${deadline ? "" : "<kbd>↵</kbd>"}</div>${deadline ? "" : `<div class="practice-readiness" role="status" aria-label="${placed}/2 ${t("basics.actions_placed")}"><span>${pictogram("cards")} ${placed}/2</span><span class="ready-dots" aria-hidden="true">${[0, 1].map((i) => `<i class="${i < placed ? "filled" : ""}"></i>`).join("")}</span>${control("basics-run", "step", t("basics.run_program"), placed !== 2)}</div>`}<div class="practice-clock"><div><strong data-practice-time></strong><small>${t(deadline ? "timing.last_seconds" : "basics.time_to_plan")}</small></div>${control("lesson-clock", view.tutorial.clockRunning ? "pause" : "clock", view.tutorial.clockRunning ? t("basics.pause") : t("basics.start_clock"), deadline && placed !== 1)}</div>`;
   }
   const intro = !started && !placed && !playing;
   const ready = placed === 2;
@@ -21,77 +27,49 @@ export function basicsView(view, locale, { started, picked, shipMarkup }) {
   };
   const actionLabel = (a) =>
     a === "blue"
-      ? t("À droite", "Move right")
+      ? t("basics.move_right")
       : a === "red"
-        ? t("À gauche", "Move left")
-        : t("Attendre", "Wait");
+        ? t("basics.move_left")
+        : t("basics.wait");
   const heading = intro
-    ? t(
-        "Vous décidez d’abord. Vous agissez ensuite.",
-        "Plan first. Act afterward.",
-      )
+    ? t("basics.plan_first_act_afterward")
     : playing
       ? turn >= 3
-        ? t("Vous venez de jouer trois tours.", "You just played three turns.")
-        : turn === 0 ? t("Lecture du programme", "Playing the program") : t(`Tour ${turn} exécuté`, `Turn ${turn} carried out`)
+        ? t("basics.you_just_played_three_turns")
+        : turn === 0
+          ? t("basics.playing_the_program")
+          : t("basics.turn_carried_out", { turn: turn })
       : ready && !picked
-        ? t("Essayez le chrono.", "Try the clock.")
+        ? t("basics.try_the_clock")
         : placed === 0
-          ? t("Choisissez où aller.", "Choose where to go.")
-          : t(
-              "Choisissez votre deuxième action.",
-              "Choose your second action.",
-            );
+          ? t("basics.choose_where_to_go")
+          : t("basics.choose_your_second_action");
   const explanation = intro
-    ? t(
-        "Dans Space Alert, tout le monde prépare ses actions en même temps. Puis le vaisseau exécute les programmes, tour après tour. Ici, commençons avec un seul équipier, sans menace.",
-        "In Space Alert, everyone plans their actions at the same time. Then the ship carries out those plans, turn by turn. Start here with one crew member and no threats.",
-      )
+    ? t("basics.in_space_alert_everyone_plans_their_actions_at")
     : playing
       ? [
-          t("La préparation est terminée. Les actions vont maintenant se jouer dans l’ordre.", "Planning is finished. Actions now play in order."),
-          t(
-            "La première carte est exécutée. Regardez votre nouvelle position ; la deuxième carte attend son tour.",
-            "The first card has played. Look at your position; the second card is still waiting.",
-          ),
-          t(
-            "La deuxième carte est exécutée. Une flèche vers le bord du vaisseau vous laisse sur place. Chaque case est un tour, pas une seconde.",
-            "The second card has played. Moving beyond the edge of the ship leaves you in place. Each slot is a turn, not a second.",
-          ),
-          t(
-            "La case 3 est vide : vous restez sur place. En mission, tous les équipiers exécutent leur case 1, puis leur case 2, etc.",
-            "Slot 3 is empty: you stay put. In a mission, every crew member carries out slot 1, then slot 2, and so on.",
-          ),
+          t("basics.planning_is_finished_actions_now_play_in_order"),
+          t("basics.the_first_card_has_played_look_at_your"),
+          t("basics.the_second_card_has_played_moving_beyond_the"),
+          t("basics.slot_3_is_empty_you_stay_put_in"),
         ][Math.min(turn, 3)]
       : ready && !picked
-        ? t(
-            "Le chrono limite le temps pour préparer les cartes. Il ne déplace pas l’équipier. Vous pouvez le lancer et le mettre en pause ici ; en mission, il continue pour tout le monde.",
-            "The clock limits how long you have to arrange cards. It does not move your crew member. Here you can start and pause it; in a mission it keeps running for everyone.",
-          )
+        ? t("basics.the_clock_limits_how_long_you_have_to")
         : picked
-          ? t(
-              "Choisissez le tour 1 ou 2. Vous pouvez aussi remplacer une carte déjà posée.",
-              "Choose turn 1 or 2. You can also replace a card already there.",
-            )
-          : t(
-              "Choisissez une flèche, puis un tour. Vous pouvez remplacer ou retirer vos cartes.",
-              "Choose an arrow, then a turn. You can replace or remove your cards.",
-            );
+          ? t("basics.choose_turn_1_or_2_you_can_also")
+          : t("basics.choose_an_arrow_then_a_turn_you_can");
   const btn = (id, text) =>
     `<button id="${id}" class="primary">${text}</button>`;
-  return `<div class="basics-top"><span>${t("PREMIERS PAS · SANS MENACE", "FIRST STEPS · NO THREATS")}</span><button data-lesson="basics" class="quiet">${t("Recommencer", "Restart")}</button></div>
-    <nav class="basics-stages" aria-label="${t("Étapes de l’exercice", "Lesson steps")}"><button id="basics-plan" class="quiet ${!playing ? "active" : ""}" ${!playing ? 'aria-current="step"' : ''} ${playing && !view.tutorial.canReturnToPlanning ? 'disabled' : ''}><span class="step-number">1</span><span>${t("Préparer", "Plan")}</span></button><button id="basics-execute" class="quiet ${playing ? "active" : ""}" ${playing ? 'aria-current="step"' : ''} ${!playing && !ready ? 'disabled' : ''}><span class="step-number">2</span><span>${t("Exécuter les tours", "Run the turns")}</span></button></nav>
+  return `<div class="basics-top"><span>${t("basics.first_steps_no_threats")}</span><button data-lesson="basics" class="quiet">${t("app.restart")}</button></div>
+    <nav class="basics-stages" aria-label="${t("basics.lesson_steps")}"><button id="basics-plan" class="quiet ${!playing ? "active" : ""}" ${!playing ? 'aria-current="step"' : ""} ${playing && !view.tutorial.canReturnToPlanning ? "disabled" : ""}><span class="step-number">1</span><span>${t("basics.plan")}</span></button><button id="basics-execute" class="quiet ${playing ? "active" : ""}" ${playing ? 'aria-current="step"' : ""} ${!playing && !ready ? "disabled" : ""}><span class="step-number">2</span><span>${t("basics.run_the_turns")}</span></button></nav>
     <h1>${heading}</h1><p class="basics-explanation" role="status">${explanation}</p>
-    <div class="training-ship ship cutaway" aria-label="${t("Le vaisseau · position réelle de l’androïde 1", "The ship · android 1’s actual position")}">${shipMarkup}</div>
+    <div class="training-ship ship cutaway" aria-label="${t("basics.the_ship_android_1_s_actual_position")}">${shipMarkup}</div>
     ${
       intro
-        ? btn(
-            "basics-start",
-            t("Essayer avec deux cartes", "Try with two cards"),
-          )
-        : `<div class="basics-program-heading">${pictogram("cards")}<span>${t("Programme", "Program")}</span>${pictogram("right")}</div><div class="basics-program program">${[1, 2, 3].map((n) => `<button title="${t("Tour", "Turn")} ${n} · ${actionLabel(direction(n))}" aria-label="${t("Tour", "Turn")} ${n} · ${actionLabel(direction(n))}" data-basics-turn="${n}" ${playing || (!picked && !slots[n - 1].cards.length) || n === 3 ? "disabled" : ""} class="slot ${playing && n === turn ? "current" : ""}"><span class="turn">T+${n}</span><strong class="action">${pictogram(direction(n) === "blue" ? "right" : direction(n) === "red" ? "left" : "wait")}</strong></button>`).join("")}</div>
-    ${!playing ? `<div class="practice-readiness" role="status"><progress value="${placed}" max="2"></progress><span title="${t("Actions de l’exercice placées", "Practice actions placed")}" aria-label="${placed}/2 ${t("actions de l’exercice placées", "practice actions placed")}">${pictogram("cards")} ${placed}/2</span></div><div class="basics-card-area"><div class="basics-card-choices">${["red", "blue"].map((action) => `<button title="${actionLabel(action)}" aria-label="${actionLabel(action)}" data-basics-pick="${action}" aria-pressed="${picked === action}" class="basics-card ${picked === action ? "selected" : ""}"><strong>${pictogram(action === "blue" ? "right" : "left")}</strong></button>`).join("")}</div></div>` : ""}
-    ${!playing && ready ? `<div class="practice-clock"><div><strong data-practice-time></strong><small>${t("pour préparer · exercice sans danger", "to plan · safe practice")}</small></div><button id="lesson-clock" class="icon-button" title="${view.tutorial.clockRunning ? t("Mettre en pause", "Pause clock") : t("Lancer le chrono", "Start clock")}" aria-label="${view.tutorial.clockRunning ? t("Mettre en pause", "Pause clock") : t("Lancer le chrono", "Start clock")}">${pictogram(view.tutorial.clockRunning ? "pause" : "clock")}</button></div><button id="basics-run" class="primary icon-button" title="${t("Exécuter le programme", "Run program")}" aria-label="${t("Exécuter le programme", "Run program")}">${pictogram("step")}</button>` : ""}
-    ${playing ? (turn < 3 ? `<button data-command="resolve" class="primary icon-button" title="${t("Étape de résolution suivante", "Next resolution step")}" aria-label="${t("Étape de résolution suivante", "Next resolution step")}">${pictogram("step")}</button>` : `<div class="basics-complete"><p>${t("Préparer sous un chrono et exécuter les tours sont deux moments différents. Ensuite, vous apprendrez à utiliser une arme.", "Planning against a clock and carrying out turns are two different parts of the game. Next, learn to use a weapon.")}</p><button data-lesson="first-shot" class="primary">${t("Suite : votre premier tir", "Next: your first shot")}</button></div>`) : ""}`
+        ? btn("basics-start", t("basics.try_with_two_cards"))
+        : `<div class="basics-program-heading">${pictogram("cards")}<span>${t("basics.program")}</span>${pictogram("right")}</div><div class="basics-program program">${[1, 2, 3].map((n) => `<button title="${t("app.turn")} ${n} · ${actionLabel(direction(n))}" aria-label="${t("app.turn")} ${n} · ${actionLabel(direction(n))}" data-basics-turn="${n}" ${playing || (!picked && !slots[n - 1].cards.length) || n === 3 ? "disabled" : ""} class="slot ${playing && n === turn ? "current" : ""}"><span class="turn">T+${n}</span><strong class="action">${pictogram(direction(n) === "blue" ? "right" : direction(n) === "red" ? "left" : "wait")}</strong></button>`).join("")}</div>
+    ${!playing ? `<div class="practice-readiness" role="status"><progress value="${placed}" max="2"></progress><span title="${t("basics.practice_actions_placed")}" aria-label="${placed}/2 ${t("basics.practice_actions_placed_2d48e9")}">${pictogram("cards")} ${placed}/2</span></div><div class="basics-card-area"><div class="basics-card-choices">${["red", "blue"].map((action) => `<button title="${actionLabel(action)}" aria-label="${actionLabel(action)}" data-basics-pick="${action}" aria-pressed="${picked === action}" class="basics-card ${picked === action ? "selected" : ""}"><strong>${pictogram(action === "blue" ? "right" : "left")}</strong></button>`).join("")}</div></div>` : ""}
+    ${!playing && ready ? `<div class="practice-clock"><div><strong data-practice-time></strong><small>${t("basics.to_plan_safe_practice")}</small></div><button id="lesson-clock" class="icon-button" title="${view.tutorial.clockRunning ? t("basics.pause_clock") : t("basics.start_clock")}" aria-label="${view.tutorial.clockRunning ? t("basics.pause_clock") : t("basics.start_clock")}">${pictogram(view.tutorial.clockRunning ? "pause" : "clock")}</button></div><button id="basics-run" class="primary icon-button" title="${t("basics.run_program")}" aria-label="${t("basics.run_program")}">${pictogram("step")}</button>` : ""}
+    ${playing ? (turn < 3 ? `<button data-command="resolve" class="primary icon-button" title="${t("app.next_resolution_step")}" aria-label="${t("app.next_resolution_step")}">${pictogram("step")}</button>` : `<div class="basics-complete"><p>${t("basics.planning_against_a_clock_and_carrying_out_turns")}</p><button data-lesson="first-shot" class="primary">${t("basics.next_your_first_shot")}</button></div>`) : ""}`
     }`;
 }

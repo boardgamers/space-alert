@@ -1,6 +1,13 @@
+import { plannedRoute } from "./program-route.js";
+import { translate, createLocaleSelection, lessonCopy } from "./i18n.js";
 import { basicsView } from "./basics.js";
 import { mountNavigation } from "./navigation.js";
-import { pictogram, shipLocator, specializationIcons } from "./icons.js";
+import {
+  pictogram,
+  shipLocator,
+  equipmentPicture,
+  specializationIcons,
+} from "./icons.js";
 import { createTacticalView } from "./tactical.js";
 import { forecastMovement, checkpointAppearance } from "./threat-track.js";
 import { illustration } from "./art.js";
@@ -32,7 +39,7 @@ export function mountConsole(root, host = null) {
           "'": "&#39;",
         })[c],
     );
-  let locale = new URL(location.href).searchParams.get("locale") ?? "fr",
+  let locale = host?.locale ?? root.lang ?? "en",
     seat = Number(new URL(location.href).searchParams.get("seat") ?? 0),
     view,
     pending = false,
@@ -50,15 +57,17 @@ export function mountConsole(root, host = null) {
     lastSpoken = 0,
     basicsStarted = false,
     basicsPicked = false;
-  const t = (fr, en) => (locale === "fr" ? fr : en);
+  let route = [],
+    previewTurn = null;
+  const t = (key, params) => translate(locale, key, params);
   const actionWords = (text) =>
     text.replace(
       /\b[ABC]\b/g,
       (key) =>
         ({
-          A: t("Armes", "Weapons"),
-          B: t("Énergie", "Energy"),
-          C: t("Systèmes", "Systems"),
+          A: t("app.weapons"),
+          B: t("app.energy"),
+          C: t("app.systems"),
         })[key],
     );
   const navigation = mountNavigation(root, {
@@ -68,9 +77,16 @@ export function mountConsole(root, host = null) {
   if (host && !host.tutorial) {
     const header = $("header");
     header.classList.add("compact-console-header");
-    header.insertBefore($("#console-nav"), header.querySelector(".header-tools"));
+    header.insertBefore(
+      $("#console-nav"),
+      header.querySelector(".header-tools"),
+    );
   }
   let appearance = {};
+  const language = createLocaleSelection((next) => {
+    locale = next;
+    rerender();
+  });
   const playerColor = (i) => {
     const color = appearance.playerColors?.[i];
     return typeof color === "string" && /^#[a-f0-9]{6}$/i.test(color)
@@ -84,44 +100,37 @@ export function mountConsole(root, host = null) {
       : "";
   };
   const playerName = (i) =>
-    esc(view?.players[i]?.name ?? `${t("Joueur", "Player")} ${i + 1}`);
+    esc(view?.players[i]?.name ?? `${t("app.player")} ${i + 1}`);
   const zoneName = (z) => zoneLabel(z, locale);
   const names = {
-    rocketeer: ["Artilleur", "Rocketeer"],
-    "data-analyst": ["Analyste", "Data Analyst"],
-    "energy-technician": ["Énergéticien", "Energy Technician"],
-    "pulse-gunner": ["Canonnier", "Pulse Gunner"],
-    medic: ["Médecin", "Medic"],
-    teleporter: ["Téléporteur", "Teleporter"],
-    hypernavigator: ["Hypernavigateur", "Hypernavigator"],
-    "special-ops": ["Agent spécial", "Special Ops"],
-    "squad-leader": ["Chef d’escouade", "Squad Leader"],
-    mechanic: ["Mécanicien", "Mechanic"],
+    rocketeer: "app.rocketeer",
+    "data-analyst": "app.data_analyst",
+    "energy-technician": "app.energy_technician",
+    "pulse-gunner": "app.pulse_gunner",
+    medic: "app.medic",
+    teleporter: "app.teleporter",
+    hypernavigator: "app.hypernavigator",
+    "special-ops": "app.special_ops",
+    "squad-leader": "app.squad_leader",
+    mechanic: "app.mechanic",
   };
-  const specialName = (n) => names[n]?.[locale === "fr" ? 0 : 1] ?? n;
+  const specialName = (n) => (names[n] ? t(names[n]) : n);
   const label = (a) =>
     ({
-      A: t("Armes · Tirer ou réparer", "Weapons · Fire or repair"),
-      B: t(
-        "Énergie · Transférer ou réparer",
-        "Energy · Transfer or repair",
-      ),
-      C: t(
-        "Systèmes · Utiliser ou réparer",
-        "Systems · Operate or repair",
-      ),
-      bots: t("Robot de combat · Attaquer", "Battlebot · Attack"),
-      red: t("Aller à gauche", "Move left"),
-      blue: t("Aller à droite", "Move right"),
-      lift: t("Changer de pont", "Change deck"),
+      A: t("app.weapons_fire_or_repair"),
+      B: t("app.energy_transfer_or_repair"),
+      C: t("app.systems_operate_or_repair"),
+      bots: t("app.battlebot_attack"),
+      red: t("app.move_left"),
+      blue: t("app.move_right"),
+      lift: t("app.change_deck"),
     })[a] ??
     (a.startsWith("special:")
-      ? `${specialName(a.split(":")[1])} · ${a.endsWith("advanced") ? t("avancé", "advanced") : t("basique", "basic")}`
+      ? `${specialName(a.split(":")[1])} · ${a.endsWith("advanced") ? t("app.advanced") : t("app.basic")}`
       : a.startsWith("teleport:")
-        ? t("Déplacement héroïque · ", "Heroic move · ") +
-          stationLabel(a.slice(9), locale)
+        ? t("app.heroic_move") + stationLabel(a.slice(9), locale)
         : a.startsWith("hero:")
-          ? t("Héroïque · ", "Heroic · ") + label(a.slice(5))
+          ? t("app.heroic") + label(a.slice(5))
           : a);
   function icon(a) {
     if (a === "bots")
@@ -155,8 +164,8 @@ export function mountConsole(root, host = null) {
   function updateSound() {
     const button = $("#sound");
     const description = sound
-      ? t("Désactiver les annonces vocales", "Mute voice announcements")
-      : t("Activer les annonces vocales", "Enable voice announcements");
+      ? t("app.mute_voice_announcements")
+      : t("app.enable_voice_announcements");
     button.title = description;
     button.setAttribute("aria-label", description);
     button.setAttribute("aria-pressed", String(sound));
@@ -168,34 +177,19 @@ export function mountConsole(root, host = null) {
   };
   function announcement(e) {
     if (e.type === "threat")
-      return `T+${e.turn} · ${e.severity === "serious" ? t("Menace sérieuse", "Serious threat") : t("Menace", "Threat")} · ${e.position === "internal" ? t("interne", "internal") : zoneName(e.zone)}`;
+      return `T+${e.turn} · ${e.severity === "serious" ? t("app.serious_threat") : t("app.threat")} · ${e.position === "internal" ? t("app.internal") : zoneName(e.zone)}`;
     return (
       {
-        "phase-start": t(
-          `Début de phase ${e.phase}`,
-          `Phase ${e.phase} begins`,
-        ),
-        "phase-warning": t(
-          `Phase ${e.phase} : encore ${e.seconds} secondes`,
-          `Phase ${e.phase} ends in ${e.seconds} seconds`,
-        ),
-        "incoming-data": t(
-          "Données reçues · piochez une carte",
-          "Incoming data · draw a card",
-        ),
-        "data-transfer": t(
-          "Transfert de données ouvert",
-          "Data transfer opens",
-        ),
-        "data-transfer-end": t("Transfert terminé", "Data transfer complete"),
-        "communications-down": t(
-          "Communications interrompues · silence",
-          "Communications down · silence",
-        ),
-        "communications-restored": t(
-          "Communications rétablies",
-          "Communications restored",
-        ),
+        "phase-start": t("app.phase_begins", { phase: e.phase }),
+        "phase-warning": t("app.phase_ends_in_seconds", {
+          phase: e.phase,
+          seconds: e.seconds,
+        }),
+        "incoming-data": t("app.incoming_data_draw_a_card"),
+        "data-transfer": t("app.data_transfer_opens"),
+        "data-transfer-end": t("app.data_transfer_complete"),
+        "communications-down": t("app.communications_down_silence"),
+        "communications-restored": t("app.communications_restored"),
       }[e.type] ?? e.type
     );
   }
@@ -217,83 +211,100 @@ export function mountConsole(root, host = null) {
   }
   function localizeSetup() {
     updateSound();
-    $("#seat").setAttribute("aria-label", t("Point de vue", "Viewpoint"));
-    $("#program-crew").setAttribute(
-      "aria-label",
-      t("Équipier à programmer", "Crew to program"),
-    );
+    $("#seat").setAttribute("aria-label", t("app.viewpoint"));
+    $("#program-crew").setAttribute("aria-label", t("app.crew_to_program"));
     const fields = {
-      players: ["Joueurs", "Players"],
-      "crew-size": ["Équipage", "Crew"],
-      mission: ["Mission", "Mission"],
-      specialization: ["Spécialisations", "Specializations"],
-      "threat-expansion": ["Menaces", "Threats"],
-      difficulty: ["Menaces communes", "Common threats"],
-      "serious-difficulty": ["Menaces sérieuses", "Serious threats"],
-      "campaign-limit": ["Format", "Format"],
-      "careers-enabled": ["Expérience", "Experience"],
-      "explorer-name": ["Nom", "Name"],
-      "explorer-cloning": ["Clonage", "Cloning"],
+      players: "app.players",
+      "crew-size": "app.crew",
+      mission: "app.mission",
+      specialization: "lesson.specializations.title",
+      "threat-expansion": "app.threats",
+      difficulty: "app.common_threats",
+      "serious-difficulty": "app.serious_threats",
+      "campaign-limit": "app.format",
+      "careers-enabled": "app.experience",
+      "explorer-name": "app.name",
+      "explorer-cloning": "app.cloning",
     };
     for (const [id, words] of Object.entries(fields))
-      $("#" + id).parentElement.firstChild.textContent = t(...words) + " ";
+      $("#" + id).parentElement.firstChild.textContent = t(words) + " ";
     const options = {
       players: [
-        ["Solo · 4 androïdes", "Solo · 4 androids"],
-        ["2 + 2 androïdes", "2 + 2 androids"],
-        ["3 + 1 androïde", "3 + 1 android"],
-        ["4", "4"],
-        ["5", "5"],
+        "app.solo_4_androids",
+        "app.2_2_androids",
+        "app.3_1_android",
+        "app.4",
+        "app.5",
       ],
       "crew-size": [
-        ["Standard", "Standard"],
-        ["5 équipiers (androïde supplémentaire)", "5 crew (extra android)"],
-        ["3 joueurs sans androïde", "3 players without android"],
+        "app.standard",
+        "app.5_crew_extra_android",
+        "app.3_players_without_android",
       ],
-      specialization: [
-        ["Aucune", "None"],
-        ["Niveau 1", "Level 1"],
-        ["Niveau 2", "Level 2"],
-        ["Niveau 3", "Level 3"],
-      ],
-      "threat-expansion": [
-        ["Jeu de base", "Base game"],
-        ["+ The New Frontier", "+ The New Frontier"],
-      ],
+      specialization: ["app.none", "app.level_1", "app.level_2", "app.level_3"],
+      "threat-expansion": ["app.base_game", "app.the_new_frontier"],
       "campaign-limit": [
-        ["Mission unique", "Single mission"],
-        ["Campagne · 3 missions", "Campaign · 3 missions"],
-        ["Campagne · 5 missions", "Campaign · 5 missions"],
+        "app.single_mission",
+        "app.campaign_3_missions",
+        "app.campaign_5_missions",
       ],
-      "careers-enabled": [
-        ["Partie libre", "Free play"],
-        ["Carrières enregistrées", "Saved careers"],
-      ],
-      "explorer-cloning": [
-        ["Autorisé", "Allowed"],
-        ["Hardcore · mort définitive", "Hardcore · permanent death"],
-      ],
+      "careers-enabled": ["app.free_play", "app.saved_careers"],
+      "explorer-cloning": ["app.allowed", "app.hardcore_permanent_death"],
     };
     options.difficulty = options["serious-difficulty"] = [
-      ["Niveau 1", "Level 1"],
-      ["Niveaux 1 + 2", "Levels 1 + 2"],
-      ["Niveau 2", "Level 2"],
-      ["Tous les niveaux", "All levels"],
-      ["Niveaux 2 + 3", "Levels 2 + 3"],
-      ["Niveau 3", "Level 3"],
+      "app.level_1",
+      "app.levels_1_2",
+      "app.level_2",
+      "app.all_levels",
+      "app.levels_2_3",
+      "app.level_3",
     ];
     for (const [id, values] of Object.entries(options))
       [...$("#" + id).options].forEach(
-        (o, i) => (o.textContent = t(...values[i])),
+        (o, i) => (o.textContent = t(values[i])),
       );
     for (const [id, words] of Object.entries({
-      "new-button": ["Préparer la mission", "Prepare mission"],
-      "ready-all": ["Tout l’équipage est prêt", "Ready all crew"],
-      "next-event": ["Prochaine annonce", "Next announcement"],
-      "create-explorer-button": ["Créer un explorateur", "Create explorer"],
+      "new-button": "app.prepare_mission",
+      "ready-all": "app.ready_all_crew",
+      "next-event": "app.next_announcement",
+      "create-explorer-button": "app.create_explorer",
     }))
-      $("#" + id).textContent = t(...words);
+      $("#" + id).textContent = t(words);
   }
+  function showPlannedPosition(turn) {
+    previewTurn = turn;
+    for (const node of root.querySelectorAll(".planned-pawn")) node.remove();
+    for (const node of root.querySelectorAll(".planned-room, .previewed-turn"))
+      node.classList.remove("planned-room", "previewed-turn");
+    if (view?.stage !== "programming" || !turn || !route[turn - 1]) return;
+    const room = $("#ship").querySelector(
+      `[data-station="${route[turn - 1]}"]`,
+    );
+    const slot = $("#program").querySelector(`[data-turn="${turn}"]`);
+    if (!room || !slot) return;
+    room.classList.add("planned-room");
+    slot.classList.add("previewed-turn");
+    const description = t("route.planned", {
+      turn,
+      room: stationLabel(route[turn - 1], locale),
+    });
+    room.insertAdjacentHTML(
+      "beforeend",
+      `<span class="planned-pawn" role="img" aria-label="${esc(description)}" title="${esc(description)}">${view.game.solo || crew >= view.players.length ? equipmentPicture("android") : pictogram("crew")}<b>${crew + 1}</b><small>T+${turn}</small></span>`,
+    );
+  }
+  for (const type of ["pointerover", "focusin"])
+    listenRoot(type, (event) => {
+      const slot = event.target.closest?.("#program [data-turn]");
+      if (slot) showPlannedPosition(Number(slot.dataset.turn));
+    });
+  for (const type of ["pointerout", "focusout"])
+    listenRoot(type, (event) => {
+      const slot = event.target.closest?.("#program [data-turn]");
+      if (!slot || slot.contains(event.relatedTarget)) return;
+      const next = event.relatedTarget?.closest?.("#program [data-turn]");
+      showPlannedPosition(next ? Number(next.dataset.turn) : null);
+    });
   function render(next, force = false) {
     view = next;
     received = performance.now();
@@ -306,9 +317,15 @@ export function mountConsole(root, host = null) {
     root.lang = locale;
     localizeSetup();
     const basic = !!view.tutorial?.basics;
+    const phaseLesson = !!view.tutorial?.phaseLesson;
+    const simpleShip = basic || phaseLesson;
     const firstShot = host?.tutorial && view.tutorial?.id === "first-shot";
-    const teachingActions = basic ? ["red", "blue", "lift"] : firstShot ? ["A"] : null;
-    root.classList.toggle("learning-basics", basic);
+    const teachingActions = simpleShip
+      ? ["red", "blue", "lift"]
+      : firstShot
+        ? ["A"]
+        : null;
+    root.classList.toggle("learning-basics", simpleShip);
     $("#basics-guide").hidden = !basic;
     if (basic)
       $("#basics-guide").innerHTML = basicsView(view, locale, {
@@ -319,7 +336,7 @@ export function mountConsole(root, host = null) {
           selectedCrew: 0,
           canPlan: false,
           isAndroid: () => true,
-          crewLabel: () => t("Androïde 1", "Android 1"),
+          crewLabel: () => t("app.android_1"),
         }),
       });
     const g = view.game,
@@ -339,82 +356,91 @@ export function mountConsole(root, host = null) {
       )
       .join("");
     $("#status").textContent = {
-      presence: t("Équipage, au rapport", "Crew, report in"),
-      countdown: t("Départ imminent", "Stand by for launch"),
-      programming:
-        view.tutorial?.title[locale === "fr" ? 0 : 1] ?? view.mission.title,
+      presence: t("app.crew_report_in"),
+      countdown: t("app.stand_by_for_launch"),
+      programming: view.tutorial
+        ? lessonCopy(view.tutorial.id, locale).title
+        : view.mission.title,
       resolution: resolution?.outcome
         ? resolution.outcome.survived
-          ? t("Retour à la base", "Back to base")
-          : t("Vaisseau perdu", "Ship lost")
-        : t("Résolution de la mission", "Mission resolution"),
-      cancelled: t("Départ annulé", "Launch cancelled"),
+          ? t("app.back_to_base")
+          : t("app.ship_lost")
+        : t("app.mission_resolution"),
+      cancelled: t("app.launch_cancelled"),
     }[view.stage];
     $("#crew").innerHTML = view.players
       .map(
         (p) =>
-          `<span style="${playerColor(p.seat) ? `--player-color:${playerColor(p.seat)}` : ""}" class="crew-member ${p.ready ? "ready" : ""} ${p.seat === seat ? "own" : ""}">${playerName(p.seat)}${playerBadge(p.seat)} · ${p.planningPhase ? `${p.finishedPlanning ? "🔒" : t("Phase", "Phase")} ${p.planningPhase}` : p.ready ? t("présent", "ready") : t("attente", "waiting")}</span>`,
+          `<span style="${playerColor(p.seat) ? `--player-color:${playerColor(p.seat)}` : ""}" class="crew-member ${p.ready ? "ready" : ""} ${p.seat === seat ? "own" : ""}">${playerName(p.seat)}${playerBadge(p.seat)} · ${p.planningPhase ? `${p.finishedPlanning ? "🔒" : t("app.phase")} ${p.planningPhase}` : p.ready ? t("app.ready") : t("app.waiting")}</span>`,
       )
       .join("");
-    $("#ship-title").textContent = t("Le vaisseau", "The ship");
-    $("#threat-title").textContent = t("Menaces détectées", "Detected threats");
-    $("#program-title").textContent = t("Programme de vol", "Flight program");
+    $("#ship-title").textContent = t("app.the_ship");
+    $("#threat-title").textContent = t("app.detected_threats");
+    $("#program-title").textContent = t("app.flight_program");
     $("#lesson-list").innerHTML = lessons
       .map(
         (l) =>
-          `<button data-lesson="${l.id}">${esc(l.title[locale === "fr" ? 0 : 1])}</button>`,
+          `<button data-lesson="${l.id}">${esc(lessonCopy(l.id, locale).title)}</button>`,
       )
       .join(" ");
     $("#lesson-guide").hidden = !view.tutorial;
     $("#lesson-guide").innerHTML =
       view.tutorial && !basic
-        ? `<ol>${view.tutorial.instructions.map((p) => `<li>${esc(actionWords(p[locale === "fr" ? 0 : 1]))}</li>`).join("")}</ol><div class="lesson-actions">${view.stage === "programming" ? `<button id="lesson-clock" class="icon-label">${pictogram(view.tutorial.clockRunning ? "pause" : "clock")}<span>${view.tutorial.clockRunning ? t("Mettre le chrono en pause", "Pause clock") : t("Lancer le chrono d’entraînement", "Start practice clock")}</span></button><button id="lesson-next" class="icon-label">${pictogram(view.phase === 1 ? "step" : "lock")}<span>${view.phase === 1 ? t("Phase 2", "Phase 2") : t("Terminer la programmation", "Finish programming")}</span></button>` : ""} <button data-lesson="${view.tutorial.id}" class="quiet icon-button" title="${t("Recommencer", "Restart")}" aria-label="${t("Recommencer", "Restart")}">${pictogram("restart")}</button></div>`
+        ? `<ol>${lessonCopy(view.tutorial.id, locale)
+            .instructions.map((p) => `<li>${esc(actionWords(p))}</li>`)
+            .join(
+              "",
+            )}</ol><div class="lesson-actions">${view.stage === "programming" ? `<button id="lesson-clock" class="icon-label">${pictogram(view.tutorial.clockRunning ? "pause" : "clock")}<span>${view.tutorial.clockRunning ? t("app.pause_clock") : t("app.start_practice_clock")}</span></button><button id="lesson-next" class="icon-label">${pictogram(view.phase === 1 ? "step" : "lock")}<span>${view.phase === 1 ? t("app.phase_2") : t("app.finish_programming")}</span></button>` : ""} <button data-lesson="${view.tutorial.id}" class="quiet icon-button" title="${t("app.restart")}" aria-label="${t("app.restart")}">${pictogram("restart")}</button></div>`
         : "";
     $("#comms").innerHTML = symbol(
       view.communicationsAvailable ? "comms" : "muted",
       view.communicationsAvailable
-        ? t("Communications disponibles", "Communications online")
-        : t(
-            "Communications interrompues : gardez le silence",
-            "Communications down: stay silent",
-          ),
-      view.communicationsAvailable
-        ? ""
-        : `<span>${t("Silence", "Silence")}</span>`,
+        ? t("app.communications_online")
+        : t("app.communications_down_stay_silent"),
+      view.communicationsAvailable ? "" : `<span>${t("app.silence")}</span>`,
     );
     $("#comms").classList.toggle("offline", !view.communicationsAvailable);
     $("#phase").textContent = view.phase
-      ? `${t("PHASE", "PHASE")} ${view.phase}`
+      ? `${t("app.phase_ed3301")} ${view.phase}`
       : "";
     if (ship) {
       $("#ship").innerHTML = shipCutaway({
-        ship: basic ? { ...ship, crew: [ship.crew[0]] } : ship,
+        ship: simpleShip ? { ...ship, crew: [ship.crew[0]] } : ship,
         selectedCrew: crew,
         canPlan:
-          !basic && (!host?.tutorial || view.tutorial.nativeStep === 1) && view.stage === "programming" &&
+          !simpleShip &&
+          (!host?.tutorial || view.tutorial.nativeStep === 1) &&
+          view.stage === "programming" &&
           seat >= 0 &&
           (g?.solo || crew === seat || crew >= view.players.length) &&
           !own.finishedPlanning,
         isAndroid: (id) => g.solo || id >= view.players.length,
         crewLabel: (id) =>
-          view.players[id]?.name ?? `${t("Androïde", "Android")} ${id + 1}`,
+          view.players[id]?.name ?? `${t("app.android")} ${id + 1}`,
       });
-      if (basic && view.tutorial.targetStation) {
-        const goal = $("#ship").querySelector(`[data-station="${view.tutorial.targetStation}"]`);
+      if (simpleShip && view.tutorial.targetStation) {
+        const goal = $("#ship").querySelector(
+          `[data-station="${view.tutorial.targetStation}"]`,
+        );
         if (goal) {
-          const reached = view.stage === "resolution" && ship.crew[0].station === view.tutorial.targetStation;
+          const reached =
+            view.stage === "resolution" &&
+            ship.crew[0].station === view.tutorial.targetStation;
           goal.classList.add("tutorial-destination");
           goal.classList.toggle("destination-reached", reached);
-          goal.insertAdjacentHTML("beforeend", `<span class="destination-marker" role="img" aria-label="${t("Destination", "Destination")}" title="${t("Destination", "Destination")}">${pictogram(reached ? "check" : "destination")}</span>`);
+          goal.insertAdjacentHTML(
+            "beforeend",
+            `<span class="destination-marker" role="img" aria-label="${t("app.destination")}" title="${t("app.destination")}">${pictogram(reached ? "check" : "destination")}</span>`,
+          );
         }
       }
       $("#resources").innerHTML =
-        `${symbol("fuel", `${t("Combustible", "Fuel")} : ${ship.fuel}`, `<b>${ship.fuel}</b>`)}${symbol("rocket", `${t("Roquettes", "Rockets")} : ${ship.rockets}`, `<b>${ship.rockets}</b>`)}${symbol("computer", t("Ordinateur", "Computer") + " · " + ship.computer.map((x, i) => `${t("Phase", "Phase")} ${i + 1} : ${x ? t("entretenu", "maintained") : t("à entretenir", "not maintained")}`).join(" · "), ship.computer.map((x, i) => `<span class="computer-phase ${x ? "maintained" : ""}">${i + 1}</span>`).join(""))}${symbol("bots", `${t("Robots de combat · Escouades disponibles", "Battlebots · Available squads")} : ${ship.bots.filter((b) => b.owner === null && b.station && !b.disabled).length}`, `<b>${ship.bots.filter((b) => b.owner === null && b.station && !b.disabled).length}</b><small>${t("escouades", "squads")}</small>`)}${ship.crew
+        `${symbol("fuel", `${t("app.fuel")} : ${ship.fuel}`, `<b>${ship.fuel}</b>`)}${symbol("rocket", `${t("app.rockets")} : ${ship.rockets}`, `<b>${ship.rockets}</b>`)}${symbol("computer", t("app.computer") + " · " + ship.computer.map((x, i) => `${t("app.phase")} ${i + 1} : ${x ? t("app.maintained") : t("app.not_maintained")}`).join(" · "), ship.computer.map((x, i) => `<span class="computer-phase ${x ? "maintained" : ""}">${i + 1}</span>`).join(""))}${symbol("bots", `${t("app.battlebots_available_squads")} : ${ship.bots.filter((b) => b.owner === null && b.station && !b.disabled).length}`, `<b>${ship.bots.filter((b) => b.owner === null && b.station && !b.disabled).length}</b><small>${t("app.squads")}</small>`)}${ship.crew
           .filter((p) => p.space)
           .map((p) =>
             symbol(
               "interceptor",
-              `${t("Équipier", "Crew")} ${p.id + 1} · ${t("portée", "range")} ${p.space}${p.knockedOut ? " · " + t("hors combat", "knocked out") : ""}`,
+              `${t("app.crew_49685c")} ${p.id + 1} · ${t("app.range")} ${p.space}${p.knockedOut ? " · " + t("app.knocked_out") : ""}`,
               `<b>${p.id + 1}</b> · ${p.space}${p.knockedOut ? " †" : ""}`,
             ),
           )
@@ -429,7 +455,7 @@ export function mountConsole(root, host = null) {
       threats
         .map(
           (th) =>
-            `<article class="threat illustrated-threat" style="--zone:var(--${th.zone ?? "gold"})"><button class="threat-card" data-inspect="${th.instance}" data-inspect-title="${esc(th.name)} · T+${th.turn}" aria-haspopup="dialog" aria-label="${esc(th.name)} · ${t("Tour", "Turn")} ${th.turn} · ${esc(th.position === "internal" ? th.stations.map((s) => stationLabel(s, locale)).join(", ") : zoneName(th.zone))} · ${t("Détails", "Details")}"><span class="threat-heading"><strong>${esc(th.name)}</strong><span class="threat-timing" title="${t("Arrivée au tour", "Arrival on turn")} ${th.turn}">${t("Arrivée", "Arrival")} T+${th.turn}</span></span>${threatPortrait(th)}<span class="threat-footer">${symbol("speed", `${th.speed} ${t("cases par tour", "spaces per turn")}`, th.speed)}<span>${t("Détails", "Details")}</span></span></button>${(th.track ?? g.tracks[th.zone ?? "internal"]) ? trackHtml(th, g) : ""}<template>${threatPortrait(th)}<div class="threat-facts">${symbol("speed", `${th.speed} ${t("cases par tour", "spaces per turn")}`, th.speed)}</div><p>${th.position === "internal" ? esc(th.stations.map((s) => stationLabel(s, locale)).join(", ")) + " · " + esc(label(th.repair)) : esc(zoneName(th.zone))}</p>${traitDescriptions(
+            `<article class="threat illustrated-threat" style="--zone:var(--${th.zone ?? "gold"})"><button class="threat-card" data-inspect="${th.instance}" data-inspect-title="${esc(th.name)} · T+${th.turn}" aria-haspopup="dialog" aria-label="${esc(th.name)} · ${t("app.turn")} ${th.turn} · ${esc(th.position === "internal" ? th.stations.map((s) => stationLabel(s, locale)).join(", ") : zoneName(th.zone))} · ${t("app.details")}"><span class="threat-heading"><strong>${esc(th.name)}</strong><span class="threat-timing" title="${t("app.arrival_on_turn")} ${th.turn}">${t("app.arrival")} T+${th.turn}</span></span>${threatPortrait(th)}<span class="threat-footer">${symbol("speed", `${th.speed} ${t("app.spaces_per_turn")}`, th.speed)}<span>${t("app.details")}</span></span></button>${(th.track ?? g.tracks[th.zone ?? "internal"]) ? trackHtml(th, g) : ""}<template>${threatPortrait(th)}<div class="threat-facts">${symbol("speed", `${th.speed} ${t("app.spaces_per_turn")}`, th.speed)}</div><p>${th.position === "internal" ? esc(th.stations.map((s) => stationLabel(s, locale)).join(", ")) + " · " + esc(label(th.repair)) : esc(zoneName(th.zone))}</p>${traitDescriptions(
               th,
               locale,
             )
@@ -444,25 +470,16 @@ export function mountConsole(root, host = null) {
               )}${calledHtml(th.calledCard)}${(th.track ?? g.tracks[th.zone ?? "internal"]) ? trackHtml(th, g) : ""}</template></article>`,
         )
         .join("") ||
-      `<p class="empty">${t("En attente des premières détections.", "Awaiting the first detections.")}</p>`;
+      `<p class="empty">${t("app.awaiting_the_first_detections")}</p>`;
     const announcements = view.log.filter((x) => x.type === "announcement");
     $("#latest").textContent =
       view.stage === "resolution"
-        ? t(
-            "Programmation terminée · résolution des actions",
-            "Programming complete · resolving actions",
-          )
+        ? t("app.programming_complete_resolving_actions")
         : view.stage === "cancelled"
-          ? t(
-              "Départ annulé : toutes les présences n’ont pas été confirmées sous deux minutes. Créez une nouvelle session pour réessayer.",
-              "Launch cancelled: not everyone confirmed within two minutes. Create a new session to try again.",
-            )
+          ? t("app.launch_cancelled_not_everyone_confirmed_within_two_minutes")
           : announcements.length
             ? announcement(announcements.at(-1).event)
-            : t(
-                "Tout le monde confirme sa présence avant le départ.",
-                "Everyone confirms their presence before launch.",
-              );
+            : t("app.everyone_confirms_their_presence_before_launch");
     if (sound)
       for (const item of announcements.filter((x) => x.id > lastSpoken)) {
         if (item === announcements.at(-1)) speak(announcement(item.event));
@@ -471,66 +488,74 @@ export function mountConsole(root, host = null) {
     $("#program-crew").innerHTML = Array.from(
       { length: view.crewSize },
       (_, i) =>
-        `<option value="${i}" data-kind="${g?.solo || i >= view.players.length ? "android" : "crew"}" data-short-label="${g?.solo || i >= view.players.length ? i + 1 : playerName(i)}" data-specialization="${g?.specializations[i]?.name ?? ""}" ${crew === i ? "selected" : ""}>${g?.solo || i >= view.players.length ? `${t("Androïde", "Android")} ${i + 1}` : playerName(i)}${g?.specializations[i] ? " · " + esc(specialName(g.specializations[i].name)) : ""}</option>`,
+        `<option value="${i}" data-kind="${g?.solo || i >= view.players.length ? "android" : "crew"}" data-short-label="${g?.solo || i >= view.players.length ? i + 1 : playerName(i)}" data-specialization="${g?.specializations[i]?.name ?? ""}" ${crew === i ? "selected" : ""}>${g?.solo || i >= view.players.length ? `${t("app.android")} ${i + 1}` : playerName(i)}${g?.specializations[i] ? " · " + esc(specialName(g.specializations[i].name)) : ""}</option>`,
     ).join("");
     const planning = view.stage === "programming",
       canOwn =
         seat >= 0 && (g?.solo || crew === seat || crew >= view.players.length),
       ownPhase =
         g?.solo || crew >= view.players.length ? view.phase : own.planningPhase;
+    route = planning
+      ? plannedRoute(g?.programs[crew] ?? [], g?.ship.crew[crew]?.station)
+      : [];
     $("#program").innerHTML = (g?.programs[crew] ?? [])
-      .slice(0, basic || firstShot ? 3 : view.mission.phaseEndsMs.length === 2 ? 7 : 12)
+      .slice(
+        0,
+        basic || firstShot ? 3 : view.mission.phaseEndsMs.length === 2 ? 7 : 12,
+      )
       .map((slot) => {
         const editable =
-          (!basic || slot.turn < 3) && (!firstShot || slot.turn === 2 || slot.turn === 3) && (!host?.tutorial || view.tutorial.nativeStep === 1) && planning &&
+          (!phaseLesson || slot.turn === 1 || slot.turn === 4) &&
+          (!basic ||
+            slot.turn < (view.tutorial.scenario === "deadline" ? 2 : 3)) &&
+          (!view.tutorial?.timing ||
+            view.tutorial.scenario === "deadline" ||
+            view.tutorial.clockStarted) &&
+          (!firstShot || slot.turn === 2 || slot.turn === 3) &&
+          (!host?.tutorial || view.tutorial.nativeStep === 1) &&
+          planning &&
           canOwn &&
           !own.finishedPlanning &&
           phaseFor(slot.turn) === ownPhase;
-        const description = `T+${slot.turn} · ${slot.cards.map((c) => (c.sides ? c.sides[c.side].map(label).join(" → ") : c.category === "movement" ? t("Déplacement", "Movement") : t("Action", "Action"))).join(" + ") || t("Vide", "Empty")}`;
-        return `<button class="slot ${slot.cards.length ? "filled" : "empty"} ${slot.turn === activeTurn ? "current" : ""} ${phaseFor(slot.turn) < ownPhase ? "locked" : ""} ${phaseFor(slot.turn) > ownPhase ? "future" : ""}" data-turn="${slot.turn}" ${slot.turn === activeTurn ? 'aria-current="step"' : ""} ${editable ? "" : "disabled"} title="${esc(description)}" aria-label="${esc(description)}">${firstShot && slot.turn === 2 ? `<span class="slot-arrival" title="${t("La cible arrive avant ce tir", "Target arrives before this shot")}">${pictogram("down")}${t("Arrivée", "Arrival")}</span>` : ""}<span class="turn">T+${slot.turn} ${phaseFor(slot.turn) < ownPhase ? pictogram("lock") : ""}</span><span class="action">${slot.cards.map((c) => (c.sides ? c.sides[c.side].map(icon).join(" ") : pictogram(c.category === "movement" ? "move" : "cards"))).join(" + ") || pictogram("wait")}</span></button>`;
+        const destination = route[slot.turn - 1];
+        const routeDescription = destination
+          ? `${t("route.planned", { turn: slot.turn, room: stationLabel(destination, locale) })}. ${t("route.assumption")}`
+          : "";
+        const description = `T+${slot.turn} · ${slot.cards.map((c) => (c.sides ? c.sides[c.side].map(label).join(" → ") : c.category === "movement" ? t("app.movement") : t("app.action"))).join(" + ") || t("app.empty")}`;
+        return `<button class="slot ${slot.cards.length ? "filled" : "empty"} ${slot.turn === activeTurn ? "current" : ""} ${phaseFor(slot.turn) < ownPhase ? "locked" : ""} ${phaseFor(slot.turn) > ownPhase ? "future" : ""}" data-turn="${slot.turn}" ${slot.turn === activeTurn ? 'aria-current="step"' : ""} ${editable ? "" : "disabled"} title="${esc(description + (routeDescription ? " · " + routeDescription : ""))}" aria-label="${esc(description + (routeDescription ? " · " + routeDescription : ""))}">${firstShot && slot.turn === 2 ? `<span class="slot-arrival" title="${t("app.target_arrives_before_this_shot")}">${pictogram("down")}${t("app.arrival")}</span>` : ""}<span class="turn">T+${slot.turn} ${phaseFor(slot.turn) < ownPhase ? pictogram("lock") : ""}</span><span class="action">${slot.cards.map((c) => (c.sides ? c.sides[c.side].map(icon).join(" ") : pictogram(c.category === "movement" ? "move" : "cards"))).join(" + ") || pictogram("wait")}</span>${slot.cards.length && destination ? `<span class="planned-location" aria-hidden="true">${shipLocator([destination])}</span>` : ""}</button>`;
       })
       .join("");
-    $("#program").setAttribute("aria-keyshortcuts", "ArrowLeft ArrowRight ArrowUp ArrowDown Backspace");
+    showPlannedPosition(previewTurn);
+    $("#program").setAttribute(
+      "aria-keyshortcuts",
+      "ArrowLeft ArrowRight ArrowUp ArrowDown Backspace",
+    );
     $("#player-help").textContent = planning
       ? selected.length
-        ? t(
-            "Choisissez un tour pour cette carte.",
-            "Choose a turn for this card.",
-          )
-        : t(
-            "Cliquez une carte pour remplir le prochain tour. Cliquez un tour rempli pour l’effacer ; Retour arrière annule le dernier ajout.",
-            "Click a card to fill the next turn. Click a filled turn to clear it; Backspace undoes the last placement.",
-          )
+        ? t("app.choose_a_turn_for_this_card")
+        : t("app.click_a_card_to_fill_the_next_turn")
       : view.stage === "presence"
-        ? t(
-            "Prêt pendant deux minutes. Nous attendons que tout le monde soit prêt.",
-            "Ready lasts two minutes. We wait until everyone is ready together.",
-          )
+        ? t("app.ready_lasts_two_minutes_we_wait_until_everyone")
         : view.stage === "resolution"
-          ? t(
-              "Les programmes sont verrouillés. Avancez la résolution ou revoyez les étapes.",
-              "Programs are locked. Advance resolution or review its steps.",
-            )
+          ? t("app.programs_are_locked_advance_resolution_or_review_its")
           : "";
     $("#controls").innerHTML = ["presence", "countdown"].includes(view.stage)
       ? button(
           own.ready ? "unready" : "ready",
           own.ready
-            ? t("Pas encore prêt", "Not ready yet")
+            ? t("app.not_ready_yet")
             : !own.present
-              ? t("Connexion…", "Connecting…")
-              : t("Je suis prêt", "I’m ready"),
+              ? t("app.connecting")
+              : t("app.i_m_ready"),
           !view.players[seat] || !own.present,
           'class="primary"',
         )
       : planning
-        ? `${g?.solo ? "" : button("advance-phase", t("Phase suivante →", "Next phase →"), own.finishedPlanning || own.planningPhase >= view.mission.phaseEndsMs.length)}${button("finish-planning", t("Verrouiller mon programme", "Lock my program"), own.finishedPlanning || view.phase < view.mission.phaseEndsMs.length)}${g.dataCredits ? button("draw", `${t("Piocher", "Draw")} +${g.dataCredits}`) : ""}${g.androidDataCredits ? button("draw-android", t("Carte androïde", "Android card") + ` +${g.androidDataCredits}`, !g.canDrawAndroid) : ""}`
+        ? `${g?.solo ? "" : button("advance-phase", t("app.next_phase"), own.finishedPlanning || own.planningPhase >= view.mission.phaseEndsMs.length)}${button("finish-planning", t("app.lock_my_program"), own.finishedPlanning || view.phase < view.mission.phaseEndsMs.length)}${g.dataCredits ? button("draw", `${t("app.draw")} +${g.dataCredits}`) : ""}${g.androidDataCredits ? button("draw-android", t("app.android_card") + ` +${g.androidDataCredits}`, !g.canDrawAndroid) : ""}`
         : view.stage === "resolution"
-          ? `<button data-command="resolve" class="primary icon-button" title="${t("Étape de résolution suivante", "Next resolution step")}" aria-label="${t("Étape de résolution suivante", "Next resolution step")}" ${seat !== 0 || !!resolution?.outcome ? "disabled" : ""}>${pictogram("step")}</button><button data-command="resolve-all" class="quiet icon-button" title="${t("Résoudre la mission", "Resolve mission")}" aria-label="${t("Résoudre la mission", "Resolve mission")}" ${seat !== 0 || !!resolution?.outcome ? "disabled" : ""}>${pictogram("right")}${pictogram("right")}</button>`
+          ? `<button data-command="resolve" class="primary icon-button" title="${t("app.next_resolution_step")}" aria-label="${t("app.next_resolution_step")}" ${seat !== 0 || !!resolution?.outcome ? "disabled" : ""}>${pictogram("step")}</button><button data-command="resolve-all" class="quiet icon-button" title="${t("app.resolve_mission")}" aria-label="${t("app.resolve_mission")}" ${seat !== 0 || !!resolution?.outcome ? "disabled" : ""}>${pictogram("right")}${pictogram("right")}</button>`
           : view.stage === "cancelled"
-            ? '<button id="open-setup">' +
-              t("Nouvelle session", "New session") +
-              "</button>"
+            ? '<button id="open-setup">' + t("app.new_session") + "</button>"
             : "";
     const preparing = ["presence", "countdown"].includes(view.stage);
     root.classList.toggle("preparing", preparing);
@@ -551,12 +576,33 @@ export function mountConsole(root, host = null) {
     ];
     const grouped = [];
     for (const card of hand) {
-      if (teachingActions && !card.sides.some(side => side.length === 1 && teachingActions.includes(side[0]))) continue;
+      if (
+        teachingActions &&
+        !card.sides.some(
+          (side) => side.length === 1 && teachingActions.includes(side[0]),
+        )
+      )
+        continue;
       const same = grouped.find(
         (c) =>
           c.kind === "normal" &&
           card.kind === "normal" &&
-          JSON.stringify(teachingActions ? c.sides.filter(side => side.length === 1 && teachingActions.includes(side[0])) : c.sides) === JSON.stringify(teachingActions ? card.sides.filter(side => side.length === 1 && teachingActions.includes(side[0])) : card.sides),
+          JSON.stringify(
+            teachingActions
+              ? c.sides.filter(
+                  (side) =>
+                    side.length === 1 && teachingActions.includes(side[0]),
+                )
+              : c.sides,
+          ) ===
+            JSON.stringify(
+              teachingActions
+                ? card.sides.filter(
+                    (side) =>
+                      side.length === 1 && teachingActions.includes(side[0]),
+                  )
+                : card.sides,
+            ),
       );
       if (same) same.count++;
       else grouped.push({ ...card, count: 1 });
@@ -567,7 +613,7 @@ export function mountConsole(root, host = null) {
       g.specializations.some(
         (s) => s && ["medic", "special-ops"].includes(s.name),
       )
-        ? `<button id="combine" class="quiet icon-button" title="${t("Combiner deux cartes", "Combine two cards")}" aria-label="${t("Combiner deux cartes", "Combine two cards")}" aria-pressed="${combine}">${pictogram("combine")}</button>`
+        ? `<button id="combine" class="quiet icon-button" title="${t("app.combine_two_cards")}" aria-label="${t("app.combine_two_cards")}" aria-pressed="${combine}">${pictogram("combine")}</button>`
         : "";
     $("#card-help").textContent = selected
       .map((choice) => {
@@ -599,7 +645,7 @@ export function mountConsole(root, host = null) {
             )
             .map(
               (c) =>
-                `<div class="card ${c.kind}">${c.count > 1 ? `<span class="copies">×${c.count}</span>` : ""}${c.sides.map((side, index) => teachingActions && !(side.length === 1 && teachingActions.includes(side[0])) ? "" : `<button data-card="${esc(c.id)}" data-side="${index}" class="${selected.some((s) => s.id === c.id && s.side === index) ? "selected" : ""}" aria-pressed="${selected.some((s) => s.id === c.id && s.side === index)}" title="${esc(side.map(label).join(" → "))}" aria-label="${esc(side.map(label).join(" → "))}">${side.map(icon).join(" · ")}</button>`).join("")}</div>`,
+                `<div class="card ${c.kind}">${c.count > 1 ? `<span class="copies">×${c.count}</span>` : ""}${c.sides.map((side, index) => (teachingActions && !(side.length === 1 && teachingActions.includes(side[0])) ? "" : `<button ${view.tutorial?.timing && !view.tutorial.clockStarted && view.tutorial.scenario !== "deadline" ? "disabled" : ""} data-card="${esc(c.id)}" data-side="${index}" class="${selected.some((s) => s.id === c.id && s.side === index) ? "selected" : ""}" aria-pressed="${selected.some((s) => s.id === c.id && s.side === index)}" title="${esc(side.map(label).join(" → "))}" aria-label="${esc(side.map(label).join(" → "))}">${side.map(icon).join(" · ")}</button>`)).join("")}</div>`,
             )
             .join("")
         : "";
@@ -608,14 +654,14 @@ export function mountConsole(root, host = null) {
         ? ["all", "A", "B", "C", "bots", "move"]
             .map(
               (f) =>
-                `<button data-filter="${f}" class="quiet icon-button" aria-pressed="${handFilter === f}" title="${esc(f === "all" ? t("Toutes les cartes", "All cards") : f === "move" ? t("Déplacements", "Movement") : label(f))}" aria-label="${esc(f === "all" ? t("Toutes les cartes", "All cards") : f === "move" ? t("Déplacements", "Movement") : label(f))}">${f === "all" ? pictogram("cards") : f === "bots" ? pictogram("bots") : f === "move" ? pictogram("move") : pictogram(f)}</button>`,
+                `<button data-filter="${f}" class="quiet icon-button" aria-pressed="${handFilter === f}" title="${esc(f === "all" ? t("app.all_cards") : f === "move" ? t("app.movement_d9fd7b") : label(f))}" aria-label="${esc(f === "all" ? t("app.all_cards") : f === "move" ? t("app.movement_d9fd7b") : label(f))}">${f === "all" ? pictogram("cards") : f === "bots" ? pictogram("bots") : f === "move" ? pictogram("move") : pictogram(f)}</button>`,
             )
             .join("")
         : "";
     const teleporter = g.specializations[crew]?.name === "teleporter";
     $("#teleport").innerHTML =
       planning && canOwn && teleporter
-        ? `<div class="token-controls"><label>${t("Téléporter", "Teleport")}<select id="teleport-from">${Array.from({ length: view.crewSize }, (_, id) => `<option value="${id}" ${g.teleportTokens[crew][0] === id ? "selected" : ""}>${t("Équipier", "Crew")} ${id + 1}</option>`).join("")}</select></label><label>${t("Auprès de", "To")}<select id="teleport-to">${Array.from({ length: view.crewSize }, (_, id) => `<option value="${id}" ${g.teleportTokens[crew][1] === id ? "selected" : ""}>${t("Équipier", "Crew")} ${id + 1}</option>`).join("")}</select></label><button id="place-tokens" ${g.solo || view.transferClosesAt ? "" : "disabled"}>${t("Placer les jetons", "Set tokens")}</button></div><small>${t("Changeables pendant un transfert de données. Leur position finale sera utilisée pendant la résolution.", "Move tokens during data transfer. Their final positions are used during resolution.")}</small>`
+        ? `<div class="token-controls"><label>${t("app.teleport")}<select id="teleport-from">${Array.from({ length: view.crewSize }, (_, id) => `<option value="${id}" ${g.teleportTokens[crew][0] === id ? "selected" : ""}>${t("app.crew_49685c")} ${id + 1}</option>`).join("")}</select></label><label>${t("app.to")}<select id="teleport-to">${Array.from({ length: view.crewSize }, (_, id) => `<option value="${id}" ${g.teleportTokens[crew][1] === id ? "selected" : ""}>${t("app.crew_49685c")} ${id + 1}</option>`).join("")}</select></label><button id="place-tokens" ${g.solo || view.transferClosesAt ? "" : "disabled"}>${t("app.set_tokens")}</button></div><small>${t("app.move_tokens_during_data_transfer_their_final_positions")}</small>`
         : "";
     $("#transfer").innerHTML =
       planning && view.transferClosesAt && !g.transferUsed
@@ -623,12 +669,12 @@ export function mountConsole(root, host = null) {
             .filter((p) => p.seat !== seat)
             .map(
               (p) =>
-                `<button data-transfer="${p.seat}" ${selected.length === 1 ? "" : "disabled"}>${t("Envoyer à", "Send to")} ${p.seat + 1}</button>`,
+                `<button data-transfer="${p.seat}" ${selected.length === 1 ? "" : "disabled"}>${t("app.send_to")} ${p.seat + 1}</button>`,
             )
             .join("")
         : "";
     $("#replay").innerHTML = resolution
-      ? `<p>${resolution.outcome ? `${resolution.outcome.survived ? "✓" : "✕"} ${t("Score", "Score")} : <b>${resolution.outcome.score}</b> · ${resolution.outcome.threatPoints} ${t("menaces", "threats")} + ${resolution.outcome.visual} ${t("observation", "visual")} − ${resolution.outcome.penalties} ${t("pénalités", "penalties")}` : `T+${resolution.turn} · ${esc({ appear: t("Apparitions", "Appearances"), crew: t("Actions de l’équipage", "Crew actions"), damage: t("Dégâts", "Damage"), threats: t("Actions des menaces", "Threat actions"), computer: t("Ordinateur", "Computer") }[resolution.step])}`}</p><label>${t("Revoir une étape", "Review a step")} <input id="replay-slider" type="range" min="0" max="${resolution.frames.length - 1}" value="${replayFrame ?? resolution.frames.length - 1}"></label>${replayFrame !== null ? '<button id="live" class="quiet">' + t("Revenir au direct", "Back to live") + "</button>" : ""}`
+      ? `<p>${resolution.outcome ? `${resolution.outcome.survived ? "✓" : "✕"} ${t("app.score")} : <b>${resolution.outcome.score}</b> · ${resolution.outcome.threatPoints} ${t("app.threats_87b951")} + ${resolution.outcome.visual} ${t("app.visual")} − ${resolution.outcome.penalties} ${t("app.penalties")}` : `T+${resolution.turn} · ${esc({ appear: t("app.appearances"), crew: t("app.crew_actions"), damage: t("app.damage"), threats: t("app.threat_actions"), computer: t("app.computer") }[resolution.step])}`}</p><label>${t("app.review_a_step")} <input id="replay-slider" type="range" min="0" max="${resolution.frames.length - 1}" value="${replayFrame ?? resolution.frames.length - 1}"></label>${replayFrame !== null ? '<button id="live" class="quiet">' + t("app.back_to_live") + "</button>" : ""}`
       : "";
     renderCampaign(g?.campaign);
     $("#announcements").innerHTML = resolution
@@ -649,32 +695,29 @@ export function mountConsole(root, host = null) {
     $("#next-event").hidden = $("#next-event").disabled;
     $("#help").innerHTML =
       `<div class="pictogram-legend">${[
-        ["laser", t("Laser", "Laser")],
-        ["pulse", t("Impulsion", "Pulse")],
-        ["shield", t("Bouclier", "Shield")],
-        ["reactor", t("Réacteur", "Reactor")],
-        ["fuel", t("Combustible", "Fuel")],
-        ["computer", t("Ordinateur", "Computer")],
-        ["bots", t("Robots de combat", "Battlebots")],
-        ["android", t("Androïde", "Android")],
-        ["interceptor", t("Intercepteurs", "Interceptors")],
-        ["observation", t("Observation", "Visual confirmation")],
-        ["rocket", t("Roquette", "Rocket")],
-        ["hull", t("Points de vie", "Hit points")],
+        ["laser", t("app.laser")],
+        ["pulse", t("app.pulse")],
+        ["shield", t("app.shield")],
+        ["reactor", t("app.reactor")],
+        ["fuel", t("app.fuel")],
+        ["computer", t("app.computer")],
+        ["bots", t("app.battlebots")],
+        ["android", t("app.android")],
+        ["interceptor", t("app.interceptors")],
+        ["observation", t("app.visual_confirmation")],
+        ["rocket", t("app.rocket")],
+        ["hull", t("app.hit_points")],
       ]
         .map(([name, text]) => `<span>${pictogram(name)}${esc(text)}</span>`)
         .join("")}</div>` +
-      `<p>${t("Les zones gauche, centre et droite correspondent aux zones rouge, blanche et bleue des annonces originales. Le petit plan sur chaque menace indique sa trajectoire ou les salles touchées.", "Left, center and right correspond to red, white and blue in the original announcements. Each threat’s miniature map shows its trajectory or affected rooms.")}</p>` +
-      t(
-        "<p><b>Planifier.</b> Choisissez une carte puis un tour ; cliquez sur un tour rempli pour reprendre la carte. A utilise l’arme, B l’énergie, C le système indiqué dans la station. Les flèches déplacent votre équipier. Les déplacements planifiés ne déplacent pas encore les pions : tout sera exécuté pendant la résolution.</p><p><b>Coordonner.</b> Chaque arme ne tire qu’une fois par tour. Le réacteur de la zone alimente le laser lourd et l’impulsion ; les petits lasers ont leur propre batterie. Deux équipiers prenant le même ascenseur retardent le second.</p><p><b>Ordinateur.</b> Quelqu’un doit faire C sur la passerelle pendant les deux premiers tours de chaque phase (1–2, 4–5, 8–9), sinon les actions suivantes sont retardées.</p><p><b>Menaces.</b> Les tirs se combinent avant de retirer le bouclier adverse. Une roquette touche au tour suivant. Les ennemis avancent après les actions et exécutent X, Y, Z en les franchissant.</p><p><b>Coopérer à distance.</b> Utilisez une conversation vocale externe. Pendant une panne de communication, gardez le silence : cette page ne peut pas couper votre appel.</p>",
-        "<p><b>Plan.</b> Choose a card then a turn; click a filled turn to retrieve its card. A operates a weapon, B transfers energy, C uses the station system. Arrows move your crew member. Planning does not move the real ship pieces; programs execute during resolution.</p><p><b>Coordinate.</b> Each weapon fires once per turn. Heavy lasers and pulse draw from the zone reactor; light lasers have their own battery. A second crew member using the same lift is delayed.</p><p><b>Computer.</b> Someone must perform C on the bridge within the first two turns of each phase (1–2, 4–5, 8–9), or the next actions are delayed.</p><p><b>Threats.</b> Combine fire before subtracting enemy shields. Rockets hit on the following turn. Threats move after crew actions and execute X, Y and Z as they cross them.</p><p><b>Remote cooperation.</b> Use external voice chat. Stay silent during communications blackouts; this page cannot mute your call.</p>",
-      );
+      `<p>${t("app.left_center_and_right_correspond_to_red_white")}</p>` +
+      t("app.plan_choose_a_card_then_a_turn_click");
     navigation.sync();
   }
   function calledHtml(data) {
     if (!data) return "";
     const c = data.card;
-    return `<div class="called-threat"><h4>${t("Renfort", "Reinforcement")} · ${esc(c.name)}</h4><p>${c.hp} ♥ · ${c.shield} ⛨ · ${t("Vitesse", "Speed")} ${c.speed}${c.stations ? " · " + esc(c.stations.map((s) => stationLabel(s, locale)).join(", ")) + " · " + esc(label(c.repair)) : ""}</p>${traitDescriptions(
+    return `<div class="called-threat"><h4>${t("app.reinforcement")} · ${esc(c.name)}</h4><p>${c.hp} ♥ · ${c.shield} ⛨ · ${t("app.speed")} ${c.speed}${c.stations ? " · " + esc(c.stations.map((s) => stationLabel(s, locale)).join(", ")) + " · " + esc(label(c.repair)) : ""}</p>${traitDescriptions(
       c,
       locale,
     )
@@ -689,24 +732,37 @@ export function mountConsole(root, host = null) {
   function trackHtml(th, g) {
     const track = th.track ?? g.tracks[th.zone ?? "internal"];
     const pending = ["pending", "announced", "waiting"].includes(th.status);
-    const context = (replayFrame !== null ? g.resolution?.frames[replayFrame] : g.resolution) ?? {};
-    const groups = forecastMovement(th, track, { ...context, threats: context.threats ?? g.threats.map(item => ({ ...item, ...item.card })) });
-    const projection = t("Prévision sans intervention de l’équipage ; changements de vitesse propres à la menace inclus.", "Forecast without crew intervention; includes the threat’s own speed changes.");
-    return `<div class="approach-track"><div class="track-distance" style="--track-length:${track.length}"><div class="track" aria-label="${t("Piste d’approche", "Approach track")}">${Array.from(
+    const context =
+      (replayFrame !== null
+        ? g.resolution?.frames[replayFrame]
+        : g.resolution) ?? {};
+    const groups = forecastMovement(th, track, {
+      ...context,
+      threats:
+        context.threats ?? g.threats.map((item) => ({ ...item, ...item.card })),
+    });
+    const projection = t(
+      "app.forecast_without_crew_intervention_includes_the_threat_s",
+    );
+    return `<div class="approach-track"><div class="track-distance" style="--track-length:${track.length}"><div class="track" aria-label="${t("app.approach_track")}">${Array.from(
       { length: track.length },
       (_, i) => track.length - i,
     )
-      .map(n => {
+      .map((n) => {
         const mark = track.marks.find(([position]) => position === n)?.[1];
         const effects = th.effects?.[mark] ?? [];
         const appearance = checkpointAppearance(th, effects);
-        const groupIndex = groups.findIndex(group => group.positions.includes(n));
+        const groupIndex = groups.findIndex((group) =>
+          group.positions.includes(n),
+        );
         const group = groups[groupIndex];
-        const description = `${mark ? effects.map(effect => effectDescription(effect, locale)).join(" · ") || t("Aucun effet", "No effect") : t("Case", "Space") + " " + n}${group ? ` · T+${group.turn} · ${projection}` : ""}`;
+        const description = `${mark ? effects.map((effect) => effectDescription(effect, locale)).join(" · ") || t("app.no_effect") : t("app.space") + " " + n}${group ? ` · T+${group.turn} · ${projection}` : ""}`;
         const current = !pending && th.positionOnTrack === n;
         return `<span title="${esc(description)}" aria-label="${esc(description)}" ${current ? 'aria-current="step"' : ""} ${group ? `data-forecast-turn="${group.turn}"` : ""} class="${current ? "current" : ""} ${pending && n === track.length ? "entry" : ""} ${appearance ? "mark effect-mark" : ""} ${group ? `forecast-cell forecast-tone-${groupIndex % 2} ${n === group.positions[0] ? "forecast-start" : ""} ${n === group.positions.at(-1) ? "forecast-end" : ""}` : ""}">${appearance ? `${pictogram(appearance.icon)}<b>${esc(appearance.value)}</b>` : current ? "●" : ""}</span>`;
       })
-      .join("")}</div>${groups.length ? `<div class="track-turns" aria-label="${esc(projection)}"><small title="${esc(projection)}">T+</small>${groups.map((group, i) => `<span class="forecast-tone-${i % 2}" style="grid-column:${track.length - group.positions[0] + 1} / span ${group.positions.length}" title="${esc(`T+${group.turn} · ${group.positions.length} ${t("cases", "spaces")} · ${projection}`)}" aria-label="${esc(`T+${group.turn} · ${projection}`)}">${group.turn}</span>`).join("")}</div>` : ""}</div>${pictogram("ship")}</div>`;
+      .join(
+        "",
+      )}</div>${groups.length ? `<div class="track-turns" aria-label="${esc(projection)}"><small title="${esc(projection)}">T+</small>${groups.map((group, i) => `<span class="forecast-tone-${i % 2}" style="grid-column:${track.length - group.positions[0] + 1} / span ${group.positions.length}" title="${esc(`T+${group.turn} · ${group.positions.length} ${t("app.spaces")} · ${projection}`)}" aria-label="${esc(`T+${group.turn} · ${projection}`)}">${group.turn}</span>`).join("")}</div>` : ""}</div>${pictogram("ship")}</div>`;
   }
   function logText(e) {
     return eventDescription(
@@ -732,7 +788,7 @@ export function mountConsole(root, host = null) {
       ? Array.from(
           { length: Number($("#players").value) },
           (_, id) =>
-            `<label>${t("Joueur", "Player")} ${id + 1}<select id="career-seat-${id}" data-career-seat="${id}"><option value="">${t("Choisir un explorateur", "Choose explorer")}</option>${(
+            `<label>${t("app.player")} ${id + 1}<select id="career-seat-${id}" data-career-seat="${id}"><option value="">${t("app.choose_explorer")}</option>${(
               view?.explorers ?? []
             )
               .filter((e) => !e.dead && !e.activeRun)
@@ -770,7 +826,7 @@ export function mountConsole(root, host = null) {
                 .filter((s) => s.level);
             }
             const selected = previous[id] ?? (careers ? "" : choices[id]?.name);
-            return `<label>${t("Équipier", "Crew")} ${id + 1}<select id="specialist-${id}">${careers ? `<option value="">${t("Aucune spécialisation", "No specialization")}</option>` : ""}${choices.map((s) => `<option value="${s.name}" data-level="${s.level}" ${selected === s.name ? "selected" : ""}>${esc(specialName(s.name))} ${careers ? s.level : ""}</option>`).join("")}</select></label>`;
+            return `<label>${t("app.crew_49685c")} ${id + 1}<select id="specialist-${id}">${careers ? `<option value="">${t("app.no_specialization")}</option>` : ""}${choices.map((s) => `<option value="${s.name}" data-level="${s.level}" ${selected === s.name ? "selected" : ""}>${esc(specialName(s.name))} ${careers ? s.level : ""}</option>`).join("")}</select></label>`;
           }).join("")
         : "";
     navigation.syncChoices();
@@ -810,15 +866,15 @@ export function mountConsole(root, host = null) {
       $("#campaign").innerHTML = "";
       return;
     }
-    let content = `<h3>${t("Campagne", "Campaign")} · ${c.missions.length}/${c.limit}</h3>`;
+    let content = `<h3>${t("app.campaign")} · ${c.missions.length}/${c.limit}</h3>`;
     if (c.stage === "decision")
-      content += `<p>${t("Continuer nécessite l’accord de tous. Rentrer termine la campagne avant les réparations.", "Continuing requires everyone’s agreement. Returning ends the campaign before repairs.")}</p><button id="campaign-continue" ${c.votes.includes(seat) ? "disabled" : ""}>${t("Continuer", "Continue")}</button> <button id="campaign-return">${t("Rentrer à la base", "Return to base")}</button>`;
+      content += `<p>${t("app.continuing_requires_everyone_s_agreement_returning_ends_the")}</p><button id="campaign-continue" ${c.votes.includes(seat) ? "disabled" : ""}>${t("app.continue")}</button> <button id="campaign-return">${t("app.return_to_base")}</button>`;
     if (c.stage === "repairs") {
       const may =
         view.game.solo ||
         c.repairCursor === seat ||
         c.repairCursor >= view.players.length;
-      content += `<p>${t("Réparation de l’équipier", "Repair for crew")} ${c.repairCursor + 1}</p>`;
+      content += `<p>${t("app.repair_for_crew")} ${c.repairCursor + 1}</p>`;
       for (const [zone, tiles] of Object.entries(c.carried.zones))
         for (const tile of tiles)
           content += `<button data-repair-zone="${zone}" data-repair-tile="${tile}" ${!may || c.repairedZones[zone] >= 2 ? "disabled" : ""}>${esc(zoneName(zone))} · ${esc(tile)}</button> `;
@@ -826,10 +882,10 @@ export function mountConsole(root, host = null) {
         if (disabled)
           content += `<button data-repair-bot="${bot}" ${may ? "" : "disabled"}>♟ ${bot + 1}</button>`;
       });
-      content += `<button id="repair-skip" ${may ? "" : "disabled"}>${t("Ne rien réparer", "Skip repair")}</button>`;
+      content += `<button id="repair-skip" ${may ? "" : "disabled"}>${t("app.skip_repair")}</button>`;
     }
     if (c.stage === "ready" && host)
-      content += `<label>${t("Prochaine mission", "Next mission")}<select id="campaign-mission">${host.missions
+      content += `<label>${t("app.next_mission")}<select id="campaign-mission">${host.missions
         .filter((m) => /^(realmission|double)/.test(m.id))
         .map(
           (m) =>
@@ -837,9 +893,9 @@ export function mountConsole(root, host = null) {
         )
         .join("")}</select></label>`;
     if (c.stage === "ready")
-      content += `<p>${t("Prochaine mission : celle sélectionnée dans la configuration.", "Next mission: the one selected in setup.")}</p><label>${t("Si une seule escouade reste :", "If one battlebot squad remains:")}<select id="campaign-bots"><option value="red-lower">${stationLabel("red-lower", locale)}</option><option value="blue-upper">${stationLabel("blue-upper", locale)}</option></select></label><button id="campaign-next" ${seat === 0 ? "" : "disabled"}>${t("Mission suivante", "Next mission")}</button>`;
+      content += `<p>${t("app.next_mission_the_one_selected_in_setup")}</p><label>${t("app.if_one_battlebot_squad_remains")}<select id="campaign-bots"><option value="red-lower">${stationLabel("red-lower", locale)}</option><option value="blue-upper">${stationLabel("blue-upper", locale)}</option></select></label><button id="campaign-next" ${seat === 0 ? "" : "disabled"}>${t("app.next_mission_bda8db")}</button>`;
     if (c.outcome)
-      content += `<p>${t("Score de campagne", "Campaign score")} : <strong>${c.outcome.score}</strong></p>`;
+      content += `<p>${t("app.campaign_score")} : <strong>${c.outcome.score}</strong></p>`;
     $("#campaign").innerHTML = content;
   }
   function renderCareers(next) {
@@ -855,7 +911,7 @@ export function mountConsole(root, host = null) {
           unspent = e.level - spent;
         const learn =
           unspent && !e.activeRun && !e.dead && (!host || e.editable)
-            ? `<p>${unspent} ${t("niveau(x) à attribuer", "level(s) to assign")}</p>${Object.keys(
+            ? `<p>${unspent} ${t("app.level_s_to_assign")}</p>${Object.keys(
                 names,
               )
                 .map(
@@ -866,25 +922,25 @@ export function mountConsole(root, host = null) {
             : "";
         const claims =
           !e.activeRun && !e.dead && e.eligible.length && (!host || e.editable)
-            ? `<p><a target="_blank" rel="noopener" href="https://filemanager.czechgames.com/storage/files/space-alert-the-new-frontier/other-downloads/achievements/space-alert-2-achievements-${locale === "fr" ? "fr" : "en"}.pdf">${t("Conditions officielles des succès", "Official achievement requirements")}</a></p><label><input type="checkbox" data-agrees="${e.id}">${t("Conditions vérifiées ; accord de l’équipage si nécessaire.", "Requirements checked; crew agrees where required.")}</label><select id="claim-${e.id}" aria-label="${t("Succès", "Achievement")}" data-claim-choice="${e.id}">${e.eligible.map((a) => `<option value="${a.id}">${esc(a.name)} · +${a.xp}</option>`).join("")}</select><button data-claim="${e.id}">${t("Valider le succès", "Record achievement")}</button>`
+            ? `<p><a target="_blank" rel="noopener" href="https://filemanager.czechgames.com/storage/files/space-alert-the-new-frontier/other-downloads/achievements/space-alert-2-achievements-${locale === "fr" ? "fr" : "en"}.pdf">${t("app.official_achievement_requirements")}</a></p><label><input type="checkbox" data-agrees="${e.id}">${t("app.requirements_checked_crew_agrees_where_required")}</label><select id="claim-${e.id}" aria-label="${t("app.achievement")}" data-claim-choice="${e.id}">${e.eligible.map((a) => `<option value="${a.id}">${esc(a.name)} · +${a.xp}</option>`).join("")}</select><button data-claim="${e.id}">${t("app.record_achievement")}</button>`
             : "";
-        return `<article class="explorer-card" data-explorer="${e.id}"><h3>${esc(e.name)} · ${t("Niveau", "Level")} ${e.level} · ${e.xp} XP ${e.dead ? "†" : e.activeRun ? "· " + t("en mission", "on mission") : ""}</h3><p>${e.cloning ? t("Clonage autorisé", "Cloning enabled") : t("Hardcore", "Hardcore")} · ${e.clones} ${t("clone(s)", "clone(s)")}</p><p>${Object.entries(
+        return `<article class="explorer-card" data-explorer="${e.id}"><h3>${esc(e.name)} · ${t("app.level")} ${e.level} · ${e.xp} XP ${e.dead ? "†" : e.activeRun ? "· " + t("app.on_mission") : ""}</h3><p>${e.cloning ? t("app.cloning_enabled") : t("app.hardcore")} · ${e.clones} ${t("app.clone_s")}</p><p>${Object.entries(
           e.specializations,
         )
           .map(([n, l]) => `${esc(specialName(n))} ${l}`)
           .join(
             " · ",
-          )}</p>${!e.cloning && !e.activeRun && !e.dead && (!host || e.editable) ? `<button data-consent="${e.id}">${t("Autoriser le clonage", "Consent to cloning")}</button>` : ""}${learn}${claims}${
+          )}</p>${!e.cloning && !e.activeRun && !e.dead && (!host || e.editable) ? `<button data-consent="${e.id}">${t("app.consent_to_cloning")}</button>` : ""}${learn}${claims}${
           host &&
           e.editable &&
           view.stage === "presence" &&
           !view.players[seat]?.ready
             ? e.dead
-              ? `<button data-new-explorer="${e.id}">${t("Nouvel explorateur", "New explorer")}</button>`
+              ? `<button data-new-explorer="${e.id}">${t("app.new_explorer")}</button>`
               : Object.keys(e.specializations)
                   .map(
                     (n) =>
-                      `<button data-equip="${n}">${t("Choisir", "Choose")} ${esc(specialName(n))}</button>`,
+                      `<button data-equip="${n}">${t("app.choose")} ${esc(specialName(n))}</button>`,
                   )
                   .join(" ")
             : ""
@@ -922,7 +978,11 @@ export function mountConsole(root, host = null) {
     if (host) {
       if (target !== seat || seat < 0)
         throw Error("Only your own seat can send commands");
-      const result = await host.command({ type, sequence: view.nextSequence, ...extra });
+      const result = await host.command({
+        type,
+        sequence: view.nextSequence,
+        ...extra,
+      });
       if (type === "program") host.cue?.("place");
       if (type === "remove") host.cue?.("remove");
       return result;
@@ -959,25 +1019,55 @@ export function mountConsole(root, host = null) {
       render(next);
       $("#connection").textContent = "";
     } catch {
-      $("#connection").textContent = t("RECONNEXION", "RECONNECTING");
+      $("#connection").textContent = t("app.reconnecting");
     }
   }
   function rerender() {
     if (view) render(view, true);
   }
-  const editableTurns = () => [...root.querySelectorAll("#program [data-turn]:not(:disabled)")]
-    .filter(button => button.getClientRects().length > 0)
-    .map(button => Number(button.dataset.turn));
+  const editableTurns = () =>
+    [...root.querySelectorAll("#program [data-turn]:not(:disabled)")]
+      .filter((button) => button.getClientRects().length > 0)
+      .map((button) => Number(button.dataset.turn));
   async function placeCard(turn, cards) {
     const owner = crew;
-    await command("program", { crew: owner, turn, slotVersion: view.game.programs[owner][turn - 1].revision, cards });
-    placements.push({ crew: owner, turn, ids: cards.map(c => c.id).join(",") });
+    await command("program", {
+      crew: owner,
+      turn,
+      slotVersion: view.game.programs[owner][turn - 1].revision,
+      cards,
+    });
+    placements.push({
+      crew: owner,
+      turn,
+      ids: cards.map((c) => c.id).join(","),
+    });
     selected = [];
+    previewTurn = turn;
     rerender();
   }
-  const handlePlanningKey = event => {
-    if (!["Enter", "Backspace", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key) || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return;
-    if (event.target.closest?.("input, textarea, select, [contenteditable]:not([contenteditable=false]), dialog")) return;
+  const handlePlanningKey = (event) => {
+    if (
+      ![
+        "Enter",
+        "Backspace",
+        "ArrowLeft",
+        "ArrowRight",
+        "ArrowUp",
+        "ArrowDown",
+      ].includes(event.key) ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.altKey ||
+      event.shiftKey
+    )
+      return;
+    if (
+      event.target.closest?.(
+        "input, textarea, select, [contenteditable]:not([contenteditable=false]), dialog",
+      )
+    )
+      return;
     if (root.querySelector("dialog[open]")) return;
     if (event.key === "Enter") {
       const run = $("#basics-run") ?? $('[data-guide="run"]');
@@ -991,23 +1081,51 @@ export function mountConsole(root, host = null) {
     event.preventDefault();
     if (pending || event.repeat) return;
     if (event.key !== "Backspace") {
-      const action = { ArrowLeft: "red", ArrowRight: "blue", ArrowUp: "lift", ArrowDown: "lift" }[event.key];
-      const turn = editable.find(n => !view.game.programs[crew][n - 1].cards.length);
-      const hand = [...(view.game.hand ?? []), ...(view.game.androidCards ?? []).filter(c => c.owner === crew)];
-      const card = hand.find(c => c.sides.some(side => side.length === 1 && side[0] === action));
+      const action = {
+        ArrowLeft: "red",
+        ArrowRight: "blue",
+        ArrowUp: "lift",
+        ArrowDown: "lift",
+      }[event.key];
+      const turn = editable.find(
+        (n) => !view.game.programs[crew][n - 1].cards.length,
+      );
+      const hand = [
+        ...(view.game.hand ?? []),
+        ...(view.game.androidCards ?? []).filter((c) => c.owner === crew),
+      ];
+      const card = hand.find((c) =>
+        c.sides.some((side) => side.length === 1 && side[0] === action),
+      );
       if (turn !== undefined && card) {
-        const side = card.sides.findIndex(side => side.length === 1 && side[0] === action);
+        const side = card.sides.findIndex(
+          (side) => side.length === 1 && side[0] === action,
+        );
         perform(() => placeCard(turn, [{ id: card.id, side }]));
       }
       return;
     }
-    const matches = placements.filter(p => p.crew === crew && editable.includes(p.turn) &&
-      view.game.programs[crew][p.turn - 1].cards.map(c => c.id).join(",") === p.ids);
-    const turn = matches.at(-1)?.turn ?? editable.filter(n => view.game.programs[crew][n - 1].cards.length).at(-1);
+    const matches = placements.filter(
+      (p) =>
+        p.crew === crew &&
+        editable.includes(p.turn) &&
+        view.game.programs[crew][p.turn - 1].cards
+          .map((c) => c.id)
+          .join(",") === p.ids,
+    );
+    const turn =
+      matches.at(-1)?.turn ??
+      editable
+        .filter((n) => view.game.programs[crew][n - 1].cards.length)
+        .at(-1);
     if (!turn) return;
     event.preventDefault();
     perform(async () => {
-      await command("remove", { crew, turn, slotVersion: view.game.programs[crew][turn - 1].revision });
+      await command("remove", {
+        crew,
+        turn,
+        slotVersion: view.game.programs[crew][turn - 1].revision,
+      });
       selected = [];
       rerender();
     });
@@ -1049,7 +1167,7 @@ export function mountConsole(root, host = null) {
         const card = view.game.hand.find((c) =>
           c.sides.some((s) => s.length === 1 && s[0] === action),
         );
-        if (!card) throw Error(t("Carte indisponible", "Card unavailable"));
+        if (!card) throw Error(t("app.card_unavailable"));
         basicsPicked = false;
         await command("program", {
           crew: 0,
@@ -1080,11 +1198,12 @@ export function mountConsole(root, host = null) {
       return;
     }
     if (el.id === "basics-plan") {
-      if (view.stage === "resolution") perform(async () => {
-        basicsStarted = true;
-        basicsPicked = false;
-        await localPost("/api/lesson-back", {});
-      });
+      if (view.stage === "resolution")
+        perform(async () => {
+          basicsStarted = true;
+          basicsPicked = false;
+          await localPost("/api/lesson-back", {});
+        });
       return;
     }
     if (el.id === "basics-run" || el.id === "basics-execute") {
@@ -1098,8 +1217,16 @@ export function mountConsole(root, host = null) {
       return;
     }
     if (el.dataset.lesson) {
-      if (host?.tutorial) { host.openLesson(el.dataset.lesson); return; }
-      if (!host) { location.assign(`/learn?chapter=${encodeURIComponent(el.dataset.lesson)}&locale=${locale}`); return; }
+      if (host?.tutorial) {
+        host.openLesson(el.dataset.lesson);
+        return;
+      }
+      if (!host) {
+        location.assign(
+          `/learn?chapter=${encodeURIComponent(el.dataset.lesson)}&locale=${locale}`,
+        );
+        return;
+      }
       perform(async () => {
         seat = 0;
         crew = 0;
@@ -1206,10 +1333,7 @@ export function mountConsole(root, host = null) {
         const agrees = root.querySelector(`[data-agrees="${id}"]`).checked;
         if (!agrees)
           throw Error(
-            t(
-              "Vérifiez les conditions du succès avant de le valider.",
-              "Check the achievement requirements before recording it.",
-            ),
+            t("app.check_the_achievement_requirements_before_recording_it"),
           );
         return localPost("/api/career", {
           type: "claim",
@@ -1246,7 +1370,9 @@ export function mountConsole(root, host = null) {
           choice,
         ].slice(-2);
       else {
-        const turn = editableTurns().find(n => !view.game.programs[crew][n - 1].cards.length);
+        const turn = editableTurns().find(
+          (n) => !view.game.programs[crew][n - 1].cards.length,
+        );
         if (turn !== undefined) {
           perform(() => placeCard(turn, [choice]));
           return;
@@ -1265,7 +1391,8 @@ export function mountConsole(root, host = null) {
         slot = view.game.programs[crew][turn - 1];
       perform(async () => {
         if (selected.length) await placeCard(turn, selected);
-        else if (slot.cards.length) await command("remove", { crew, turn, slotVersion: slot.revision });
+        else if (slot.cards.length)
+          await command("remove", { crew, turn, slotVersion: slot.revision });
         selected = [];
         rerender();
       });
@@ -1276,12 +1403,7 @@ export function mountConsole(root, host = null) {
         const type = el.dataset.command;
         if (
           type === "advance-phase" &&
-          !confirm(
-            t(
-              "Les tours de cette phase seront définitivement verrouillés. Continuer ?",
-              "This permanently locks the current phase. Continue?",
-            ),
-          )
+          !confirm(t("app.this_permanently_locks_the_current_phase_continue"))
         )
           return;
         await command(
@@ -1313,7 +1435,7 @@ export function mountConsole(root, host = null) {
     if (el.id === "sound") {
       sound = !sound;
       updateSound();
-      if (sound) speak(t("Annonces activées", "Announcements enabled"));
+      if (sound) speak(t("app.announcements_enabled"));
       else speechSynthesis.cancel();
     }
     if (el.id === "ready-all")
@@ -1424,20 +1546,23 @@ export function mountConsole(root, host = null) {
       const practiceTime = $("[data-practice-time]");
       if (practiceTime)
         practiceTime.textContent =
-          duration(Math.max(0, (end ?? now) - now)) +
-          (paused ? t(" · en pause", " · paused") : "");
+          duration(
+            view.stage === "resolution" && view.tutorial?.timing
+              ? (view.tutorial.remainingMs ?? 0)
+              : Math.max(0, (end ?? now) - now),
+          ) + (paused && view.stage === "programming" ? t("app.paused") : "");
       $("#clock").textContent = paused
-        ? t("En pause", "Paused")
+        ? t("app.paused_afa0b8")
         : view.stage === "presence" && !view.players[seat]?.ready
-          ? t("En attente", "Waiting")
+          ? t("app.waiting_bade46")
           : duration((end ?? now) - now);
       $("#clock-caption").textContent = view.tutorial
         ? ""
         : view.stage === "programming"
-          ? t("avant le saut", "until jump")
+          ? t("app.until_jump")
           : view.stage === "presence"
             ? view.players[seat]?.ready
-              ? t("prêt encore", "ready for")
+              ? t("app.ready_for")
               : ""
             : "";
     }, 100),
@@ -1464,7 +1589,16 @@ export function mountConsole(root, host = null) {
     })();
   }
   return {
-    resetTutorial() { $("#error").textContent = ""; basicsPicked = false; basicsStarted = false; selected = []; replayFrame = null; key = ""; },
+    resetTutorial() {
+      previewTurn = null;
+      placements.length = 0;
+      $("#error").textContent = "";
+      basicsPicked = false;
+      basicsStarted = false;
+      selected = [];
+      replayFrame = null;
+      key = "";
+    },
     render(next) {
       if (host && next.bgs?.settings) {
         $("#mission").value = next.bgs.settings.mission ?? next.mission.id;
@@ -1484,16 +1618,19 @@ export function mountConsole(root, host = null) {
       if (seat === nextSeat) return;
       seat = nextSeat;
       crew = Math.max(0, seat);
+      previewTurn = null;
       selected = [];
       rerender();
     },
     setPreferences(prefs) {
       appearance = prefs.bgs ?? {};
-      if (prefs.locale) locale = prefs.locale;
+
       if (prefs.sound !== undefined) sound = !!prefs.sound;
+      if (prefs.locale) return language.set(prefs.locale);
       rerender();
     },
     destroy() {
+      language.destroy();
       root.ownerDocument.removeEventListener("keydown", handlePlanningKey);
       navigation.destroy();
       for (const id of intervals) clearInterval(id);
