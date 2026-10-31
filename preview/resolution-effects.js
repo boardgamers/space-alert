@@ -65,8 +65,8 @@ export function createResolutionEffects(root, cue) {
   const layer = doc.createElement("div");
   layer.className = "resolution-effects";
   layer.setAttribute("aria-hidden", "true");
-  root.append(layer);
-  let previous = null, previousIndex = -1, busyUntil = 0, jumping = false, pendingFrame = null;
+  root.querySelector(".flight-layout").append(layer);
+  let previous = null, previousIndex = -1, busyUntil = 0, pendingFrame = null;
   let oldPawns = new Map();
   let oldShip = null;
   const animations = new Set(), timers = new Set(), restores = [];
@@ -101,7 +101,6 @@ export function createResolutionEffects(root, cue) {
     for (const restore of restores.splice(0)) restore();
     layer.replaceChildren();
     busyUntil = 0;
-    jumping = false;
   }
   function node(name, p, color, parent = layer) {
     const element = doc.createElement("span");
@@ -160,7 +159,7 @@ export function createResolutionEffects(root, cue) {
     const vessel = q(".ship-vessel"), position = point(vessel);
     if (!position) return;
     // Keep the jump attached to the ship even if completion text changes the
-    // page's scroll position. Combat projectiles use viewport coordinates.
+    // page's scroll position.
     const stage = doc.createElement("div");
     stage.className = "ship-jump-effects";
     stage.setAttribute("aria-hidden", "true");
@@ -170,7 +169,6 @@ export function createResolutionEffects(root, cue) {
     const p = { x: bounds.left - base.left + bounds.width / 2,
       y: bounds.top - base.top + bounds.height / 2, width: bounds.width, height: bounds.height };
     const jumpSound = kind => sound(kind, position);
-    jumping = true;
     const duration = reduced.matches ? 900 : 2800;
     const departure = reduced.matches ? 0 : 1100;
     const arrival = reduced.matches ? 0 : 1500;
@@ -220,7 +218,7 @@ export function createResolutionEffects(root, cue) {
         { transform: "translate(-50%,-50%) scale(1)", opacity: 1, offset: .7 },
         { transform: "translate(-50%,-50%) scale(1)", opacity: 0 },
       ], duration - arrival);
-      later(() => { stage.remove(); jumping = false; }, duration - arrival);
+      later(() => stage.remove(), duration - arrival);
     }, arrival);
     busyUntil = Math.max(busyUntil, performance.now() + duration);
   }
@@ -230,7 +228,8 @@ export function createResolutionEffects(root, cue) {
     const sound = (kind, p) => {
       if (spoken.has(kind)) return;
       spoken.add(kind);
-      cue(kind, p ? Math.max(-.7, Math.min(.7, p.x / Math.max(1, win.innerWidth) * 2 - 1)) : 0);
+      cue(kind, p ? Math.max(-.7, Math.min(.7,
+        (p.x + layer.getBoundingClientRect().left) / Math.max(1, win.innerWidth) * 2 - 1)) : 0);
     };
     const moved = new Set();
     for (const e of events) {
@@ -345,10 +344,15 @@ export function createResolutionEffects(root, cue) {
     previous = current;
     previousIndex = index;
   }
-  // Moving/resizing the viewport invalidates projectile coordinates.
-  win.addEventListener("resize", clear);
-  const scroll = () => { if (!jumping && pendingFrame === null) clear(); };
-  doc.addEventListener("scroll", scroll, true);
+  // Effects are attached to the board, so scrolling and BGS changing the
+  // iframe's height on completion cannot cancel a killing shot. A width
+  // change can reflow the ship/target columns and invalidate their positions.
+  let viewportWidth = win.innerWidth;
+  const resize = () => {
+    if (win.innerWidth !== viewportWidth) clear();
+    viewportWidth = win.innerWidth;
+  };
+  win.addEventListener("resize", resize);
   const visibility = () => { if (doc.hidden) clear(); };
   doc.addEventListener("visibilitychange", visibility);
   return {
@@ -357,8 +361,7 @@ export function createResolutionEffects(root, cue) {
     reset() { clear(); previous = null; previousIndex = -1; },
     destroy() {
       clear(); layer.remove();
-      win.removeEventListener("resize", clear);
-      doc.removeEventListener("scroll", scroll, true);
+      win.removeEventListener("resize", resize);
       doc.removeEventListener("visibilitychange", visibility);
     },
   };
