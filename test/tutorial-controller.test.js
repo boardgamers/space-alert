@@ -76,3 +76,16 @@ for (const route of [["blue", "lift"], ["lift", "blue"], ["blue", "red"], ["red"
     t.destroy();
   });
 }
+
+test("BGS chapter metadata accepts the progress version emitted by every tutorial", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const info = JSON.parse(await readFile(new URL("../bgs/gameinfo.json", import.meta.url)));
+  for (const chapter of info.version.tutorial.chapters) {
+    let progress;
+    const tutorial = await createLessonTutorial(chapter.id, { onProgress: value => { progress = value; } });
+    await tutorial.continue();
+    assert.equal(progress.id, chapter.id);
+    assert.equal(progress.version, chapter.version);
+    tutorial.destroy();
+  }
+});

@@ -236,14 +236,74 @@
         "name": "new-frontier",
         "label": "The New Frontier"
       }
-    ]
+    ],
+    "tutorial": {
+      "chapters": [
+        {
+          "id": "basics",
+          "version": 3,
+          "title": "Commencer ici : programmer les tours",
+          "description": "Start here: planning turns"
+        },
+        {
+          "id": "first-shot",
+          "version": 2,
+          "title": "Votre premier tir",
+          "description": "Your first shot"
+        },
+        {
+          "id": "energy",
+          "version": 2,
+          "title": "Énergie et coordination",
+          "description": "Energy and coordination"
+        },
+        {
+          "id": "repairs",
+          "version": 2,
+          "title": "Réparer une panne",
+          "description": "Repairing a malfunction"
+        },
+        {
+          "id": "battlebots",
+          "version": 2,
+          "title": "Robots et intercepteurs",
+          "description": "Battlebots and interceptors"
+        },
+        {
+          "id": "double-actions",
+          "version": 2,
+          "title": "Deux actions, dans l’ordre",
+          "description": "Two actions, in order"
+        },
+        {
+          "id": "phasing",
+          "version": 2,
+          "title": "Menaces de l’extension",
+          "description": "Expansion threats"
+        },
+        {
+          "id": "specializations",
+          "version": 2,
+          "title": "Spécialisations",
+          "description": "Specializations"
+        }
+      ]
+    }
   },
   "metadata": {
     "_id": "space-alert",
     "slug": "space-alert",
     "label": "Space Alert",
-    "players": [1, 2, 3, 4, 5],
+    "players": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
     "releaseYear": 2008,
-    "tags": ["cooperative"]
+    "tags": [
+      "cooperative"
+    ]
   }
 }
