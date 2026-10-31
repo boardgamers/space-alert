@@ -957,9 +957,16 @@ export function mountConsole(root, host = null) {
     rerender();
   }
   const handlePlanningKey = event => {
-    if (!["Backspace", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key) || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return;
+    if (!["Enter", "Backspace", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key) || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return;
     if (event.target.closest?.("input, textarea, select, [contenteditable]:not([contenteditable=false]), dialog")) return;
     if (root.querySelector("dialog[open]")) return;
+    if (event.key === "Enter") {
+      const run = $("#basics-run");
+      if (!run || !run.getClientRects().length) return;
+      event.preventDefault();
+      if (!run.disabled && !pending && !event.repeat) run.click();
+      return;
+    }
     const editable = editableTurns();
     if (!editable.length) return;
     event.preventDefault();
