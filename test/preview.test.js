@@ -205,3 +205,96 @@ test("untimed lessons advance only explicitly and remain paused after restart", 
     await rm(dir, { recursive: true, force: true });
   }
 });
+
+test("practice clock starts, pauses, resumes without charging paused time, and rejects ordinary games", async () => {
+  let now = 1000;
+  const server = createPreviewServer({ clock: () => now });
+  server.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const post = (path, body) =>
+    fetch(base + path + "?seat=0", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+  const state = () => fetch(base + "/api/state?seat=0").then((r) => r.json());
+  try {
+    assert.equal(
+      (await post("/api/lesson-clock", { running: true })).status,
+      400,
+    );
+    let s = await (await post("/api/lesson", { lesson: "basics" })).json();
+    const start = s.serverNow;
+    now += 1000000;
+    assert.equal((await state()).serverNow, start);
+    s = await (await post("/api/lesson-clock", { running: true })).json();
+    assert.equal(s.tutorial.clockRunning, true);
+    now += 12000;
+    s = await (await post("/api/lesson-clock", { running: false })).json();
+    assert.equal(s.serverNow, start + 12000);
+    now += 1000000;
+    assert.equal((await state()).serverNow, start + 12000);
+    await post("/api/lesson-clock", { running: true });
+    now += 5000;
+    assert.equal((await state()).serverNow, start + 17000);
+    now += 300000;
+    s = await state();
+    assert.equal(s.phase, 2);
+    assert.equal(s.game.ship.crew[0].station, "white-upper");
+    await post("/api/lesson-clock", { running: false });
+    now += 1000000;
+    assert.equal((await state()).phase, 2);
+  } finally {
+    server.closeAllConnections();
+    await new Promise((resolve) => server.close(resolve));
+  }
+});
+
+test("basics can return from playback to an editable plan with cards preserved", async () => {
+  const server = createPreviewServer({ clock: () => 1000 });
+  server.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const post = async (path, body = {}) => {
+    const response = await fetch(base + path + "?seat=0", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    assert.equal(response.status, 200);
+    return response.json();
+  };
+  try {
+    let s = await post("/api/lesson", { lesson: "basics" });
+    const card = s.game.hand.find(c => c.sides.some(side => side[0] === "blue"));
+    s = (await post("/api/command", {
+      type: "program", sequence: s.nextSequence, crew: 0, turn: 1,
+      slotVersion: s.game.programs[0][0].revision,
+      cards: [{ id: card.id, side: card.sides.findIndex(side => side[0] === "blue") }],
+    })).view;
+    const plan = structuredClone(s.game.programs[0]);
+    await post("/api/lesson-next");
+    s = await post("/api/lesson-next");
+    for (let i = 0; i < 10; i++) {
+      s = (await post("/api/command", { type: "resolve", sequence: s.nextSequence })).view;
+      if (s.game.resolution.turn === 1 && s.game.resolution.step === "damage") break;
+    }
+    assert.equal(s.game.ship.crew[0].station, "blue-upper");
+    const revision = s.revision;
+    s = await post("/api/lesson-back");
+    assert.equal(s.stage, "programming");
+    assert.equal(s.phase, 1);
+    assert.equal(s.tutorial.clockRunning, false);
+    assert.ok(s.revision > revision);
+    assert.equal(s.game.ship.crew[0].station, "white-upper");
+    assert.deepEqual(s.game.programs[0], plan);
+    const removed = await post("/api/command", {
+      type: "remove", sequence: s.nextSequence, crew: 0, turn: 1,
+      slotVersion: s.game.programs[0][0].revision,
+    });
+    assert.equal(removed.accepted, true);
+  } finally {
+    server.closeAllConnections();
+    await new Promise(resolve => server.close(resolve));
+  }
+});

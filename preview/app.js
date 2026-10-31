@@ -1,3 +1,4 @@
+import { basicsView } from "./basics.js";
 import { mountNavigation } from "./navigation.js";
 import { pictogram, shipLocator, specializationIcons } from "./icons.js";
 import { createTacticalView } from "./tactical.js";
@@ -44,8 +45,20 @@ export function mountConsole(root, host = null) {
     replayFrame = null,
     sound = false,
     combine = false,
-    lastSpoken = 0;
+    lastSpoken = 0,
+    basicsStarted = false,
+    basicsPicked = false;
   const t = (fr, en) => (locale === "fr" ? fr : en);
+  const actionWords = (text) =>
+    text.replace(
+      /\b[ABC]\b/g,
+      (key) =>
+        ({
+          A: t("Armes", "Weapons"),
+          B: t("Énergie", "Energy"),
+          C: t("Systèmes", "Systems"),
+        })[key],
+    );
   const navigation = mountNavigation(root, {
     locale: () => locale,
     hosted: !!host,
@@ -81,16 +94,16 @@ export function mountConsole(root, host = null) {
   const specialName = (n) => names[n]?.[locale === "fr" ? 0 : 1] ?? n;
   const label = (a) =>
     ({
-      A: t("A · Tirer ou réparer l’arme", "A · Fire or repair weapon"),
+      A: t("Armes · Tirer ou réparer (A)", "Weapons · Fire or repair (A)"),
       B: t(
-        "B · Transférer l’énergie ou réparer",
-        "B · Transfer energy or repair",
+        "Énergie · Transférer ou réparer (B)",
+        "Energy · Transfer or repair (B)",
       ),
       C: t(
-        "C · Système de la station ou réparation",
-        "C · Station system or repair",
+        "Systèmes · Utiliser ou réparer (C)",
+        "Systems · Operate or repair (C)",
       ),
-      bots: t("Attaquer avec les robots", "Battlebot attack"),
+      bots: t("Robot de combat · Attaquer", "Battlebot · Attack"),
       red: t("Aller à gauche", "Move left"),
       blue: t("Aller à droite", "Move right"),
       lift: t("Changer de pont", "Change deck"),
@@ -113,6 +126,9 @@ export function mountConsole(root, host = null) {
     if (a.startsWith("teleport:"))
       return `<span class="teleport-action" style="--zone:var(--${esc(a.slice(9).split("-")[0])})">${pictogram("teleport")}${shipLocator([a.slice(9)])}</span>`;
     const actionIcon = {
+      A: "A",
+      B: "B",
+      C: "C",
       bots: "bots",
       red: "left",
       blue: "right",
@@ -282,6 +298,21 @@ export function mountConsole(root, host = null) {
     if (crew >= view.crewSize) crew = seat;
     root.lang = locale;
     localizeSetup();
+    const basic = !!view.tutorial?.basics;
+    root.classList.toggle("learning-basics", basic);
+    $("#basics-guide").hidden = !basic;
+    if (basic)
+      $("#basics-guide").innerHTML = basicsView(view, locale, {
+        started: basicsStarted || view.tutorial.nativeStep > 0,
+        picked: basicsPicked,
+        shipMarkup: shipCutaway({
+          ship: { ...view.game.ship, crew: [view.game.ship.crew[0]] },
+          selectedCrew: 0,
+          canPlan: false,
+          isAndroid: () => true,
+          crewLabel: () => t("Androïde 1", "Android 1"),
+        }),
+      });
     const g = view.game,
       own = view.players[seat] ?? {
         ready: true,
@@ -325,9 +356,10 @@ export function mountConsole(root, host = null) {
       )
       .join(" ");
     $("#lesson-guide").hidden = !view.tutorial;
-    $("#lesson-guide").innerHTML = view.tutorial
-      ? `<ol>${view.tutorial.instructions.map((p) => `<li>${esc(p[locale === "fr" ? 0 : 1])}</li>`).join("")}</ol>${view.stage === "programming" ? `<button id="lesson-next" class="icon-label">${pictogram(view.phase === 1 ? "step" : "lock")}<span>${view.phase === 1 ? t("Phase 2", "Phase 2") : t("Terminer la programmation", "Finish programming")}</span></button>` : ""} <button data-lesson="${view.tutorial.id}" class="quiet icon-button" title="${t("Recommencer", "Restart")}" aria-label="${t("Recommencer", "Restart")}">${pictogram("restart")}</button>`
-      : "";
+    $("#lesson-guide").innerHTML =
+      view.tutorial && !basic
+        ? `<ol>${view.tutorial.instructions.map((p) => `<li>${esc(actionWords(p[locale === "fr" ? 0 : 1]))}</li>`).join("")}</ol><div class="lesson-actions">${view.stage === "programming" ? `<button id="lesson-clock" class="icon-label">${pictogram(view.tutorial.clockRunning ? "pause" : "clock")}<span>${view.tutorial.clockRunning ? t("Mettre le chrono en pause", "Pause clock") : t("Lancer le chrono d’entraînement", "Start practice clock")}</span></button><button id="lesson-next" class="icon-label">${pictogram(view.phase === 1 ? "step" : "lock")}<span>${view.phase === 1 ? t("Phase 2", "Phase 2") : t("Terminer la programmation", "Finish programming")}</span></button>` : ""} <button data-lesson="${view.tutorial.id}" class="quiet icon-button" title="${t("Recommencer", "Restart")}" aria-label="${t("Recommencer", "Restart")}">${pictogram("restart")}</button></div>`
+        : "";
     $("#comms").innerHTML = symbol(
       view.communicationsAvailable ? "comms" : "muted",
       view.communicationsAvailable
@@ -346,18 +378,19 @@ export function mountConsole(root, host = null) {
       : "";
     if (ship) {
       $("#ship").innerHTML = shipCutaway({
-        ship,
+        ship: basic ? { ...ship, crew: [ship.crew[0]] } : ship,
         selectedCrew: crew,
         canPlan:
-          view.stage === "programming" &&
+          !basic && view.stage === "programming" &&
           seat >= 0 &&
           (g?.solo || crew === seat || crew >= view.players.length) &&
           !own.finishedPlanning,
+        isAndroid: (id) => g.solo || id >= view.players.length,
         crewLabel: (id) =>
           view.players[id]?.name ?? `${t("Androïde", "Android")} ${id + 1}`,
       });
       $("#resources").innerHTML =
-        `${symbol("fuel", `${t("Combustible", "Fuel")} : ${ship.fuel}`, `<b>${ship.fuel}</b>`)}${symbol("rocket", `${t("Roquettes", "Rockets")} : ${ship.rockets}`, `<b>${ship.rockets}</b>`)}${symbol("computer", t("Ordinateur", "Computer") + " · " + ship.computer.map((x, i) => `${t("Phase", "Phase")} ${i + 1} : ${x ? t("entretenu", "maintained") : t("à entretenir", "not maintained")}`).join(" · "), ship.computer.map((x, i) => `<span class="computer-phase ${x ? "maintained" : ""}">${i + 1}</span>`).join(""))}${symbol("bots", `${t("Robots disponibles", "Available battlebots")} : ${ship.bots.filter((b) => b.owner === null && b.station && !b.disabled).length}`, `<b>${ship.bots.filter((b) => b.owner === null && b.station && !b.disabled).length}</b>`)}${ship.crew
+        `${symbol("fuel", `${t("Combustible", "Fuel")} : ${ship.fuel}`, `<b>${ship.fuel}</b>`)}${symbol("rocket", `${t("Roquettes", "Rockets")} : ${ship.rockets}`, `<b>${ship.rockets}</b>`)}${symbol("computer", t("Ordinateur", "Computer") + " · " + ship.computer.map((x, i) => `${t("Phase", "Phase")} ${i + 1} : ${x ? t("entretenu", "maintained") : t("à entretenir", "not maintained")}`).join(" · "), ship.computer.map((x, i) => `<span class="computer-phase ${x ? "maintained" : ""}">${i + 1}</span>`).join(""))}${symbol("bots", `${t("Robots de combat · Escouades disponibles", "Battlebots · Available squads")} : ${ship.bots.filter((b) => b.owner === null && b.station && !b.disabled).length}`, `<b>${ship.bots.filter((b) => b.owner === null && b.station && !b.disabled).length}</b><small>${t("escouades", "squads")}</small>`)}${ship.crew
           .filter((p) => p.space)
           .map((p) =>
             symbol(
@@ -427,15 +460,15 @@ export function mountConsole(root, host = null) {
       ownPhase =
         g?.solo || crew >= view.players.length ? view.phase : own.planningPhase;
     $("#program").innerHTML = (g?.programs[crew] ?? [])
-      .slice(0, view.mission.phaseEndsMs.length === 2 ? 7 : 12)
+      .slice(0, basic ? 3 : view.mission.phaseEndsMs.length === 2 ? 7 : 12)
       .map((slot) => {
         const editable =
-          planning &&
+          (!basic || slot.turn < 3) && planning &&
           canOwn &&
           !own.finishedPlanning &&
           phaseFor(slot.turn) === ownPhase;
         const description = `T+${slot.turn} · ${slot.cards.map((c) => (c.sides ? c.sides[c.side].map(label).join(" → ") : c.category === "movement" ? t("Déplacement", "Movement") : t("Action", "Action"))).join(" + ") || t("Vide", "Empty")}`;
-        return `<button class="slot ${phaseFor(slot.turn) < ownPhase ? "locked" : ""} ${phaseFor(slot.turn) > ownPhase ? "future" : ""}" data-turn="${slot.turn}" ${editable ? "" : "disabled"} title="${esc(description)}" aria-label="${esc(description)}"><span class="turn">T+${slot.turn} ${phaseFor(slot.turn) < ownPhase ? pictogram("lock") : ""}</span><span class="action">${slot.cards.map((c) => (c.sides ? c.sides[c.side].map(icon).join(" ") : pictogram(c.category === "movement" ? "move" : "cards"))).join(" + ") || "·"}</span></button>`;
+        return `<button class="slot ${basic && resolution && slot.turn === (resolution.step === "damage" ? resolution.turn : Math.max(0, resolution.turn - 1)) ? "current" : ""} ${phaseFor(slot.turn) < ownPhase ? "locked" : ""} ${phaseFor(slot.turn) > ownPhase ? "future" : ""}" data-turn="${slot.turn}" ${editable ? "" : "disabled"} title="${esc(description)}" aria-label="${esc(description)}"><span class="turn">T+${slot.turn} ${phaseFor(slot.turn) < ownPhase ? pictogram("lock") : ""}</span><span class="action">${slot.cards.map((c) => (c.sides ? c.sides[c.side].map(icon).join(" ") : pictogram(c.category === "movement" ? "move" : "cards"))).join(" + ") || pictogram("wait")}</span></button>`;
       })
       .join("");
     $("#player-help").textContent = planning
@@ -473,7 +506,7 @@ export function mountConsole(root, host = null) {
       : planning
         ? `${g?.solo ? "" : button("advance-phase", t("Phase suivante →", "Next phase →"), own.finishedPlanning || own.planningPhase >= view.mission.phaseEndsMs.length)}${button("finish-planning", t("Verrouiller mon programme", "Lock my program"), own.finishedPlanning || view.phase < view.mission.phaseEndsMs.length)}${g.dataCredits ? button("draw", `${t("Piocher", "Draw")} +${g.dataCredits}`) : ""}${g.androidDataCredits ? button("draw-android", t("Carte androïde", "Android card") + ` +${g.androidDataCredits}`, !g.canDrawAndroid) : ""}`
         : view.stage === "resolution"
-          ? `${button("resolve", t("Étape suivante →", "Next step →"), seat !== 0 || !!resolution?.outcome, 'class="primary"')}${button("resolve-all", t("Résoudre la mission", "Resolve mission"), seat !== 0 || !!resolution?.outcome)}`
+          ? `<button data-command="resolve" class="primary icon-button" title="${t("Étape de résolution suivante", "Next resolution step")}" aria-label="${t("Étape de résolution suivante", "Next resolution step")}" ${seat !== 0 || !!resolution?.outcome ? "disabled" : ""}>${pictogram("step")}</button><button data-command="resolve-all" class="quiet icon-button" title="${t("Résoudre la mission", "Resolve mission")}" aria-label="${t("Résoudre la mission", "Resolve mission")}" ${seat !== 0 || !!resolution?.outcome ? "disabled" : ""}>${pictogram("right")}${pictogram("right")}</button>`
           : view.stage === "cancelled"
             ? '<button id="open-setup">' +
               t("Nouvelle session", "New session") +
@@ -498,11 +531,12 @@ export function mountConsole(root, host = null) {
     ];
     const grouped = [];
     for (const card of hand) {
+      if (basic && !card.sides.some(side => side.length === 1 && ["red", "blue"].includes(side[0]))) continue;
       const same = grouped.find(
         (c) =>
           c.kind === "normal" &&
           card.kind === "normal" &&
-          JSON.stringify(c.sides) === JSON.stringify(card.sides),
+          JSON.stringify(basic ? c.sides.filter(side => side.length === 1 && ["red", "blue"].includes(side[0])) : c.sides) === JSON.stringify(basic ? card.sides.filter(side => side.length === 1 && ["red", "blue"].includes(side[0])) : card.sides),
       );
       if (same) same.count++;
       else grouped.push({ ...card, count: 1 });
@@ -545,7 +579,7 @@ export function mountConsole(root, host = null) {
             )
             .map(
               (c) =>
-                `<div class="card ${c.kind}">${c.count > 1 ? `<span class="copies">×${c.count}</span>` : ""}${c.sides.map((side, index) => `<button data-card="${esc(c.id)}" data-side="${index}" class="${selected.some((s) => s.id === c.id && s.side === index) ? "selected" : ""}" aria-pressed="${selected.some((s) => s.id === c.id && s.side === index)}" title="${esc(side.map(label).join(" → "))}" aria-label="${esc(side.map(label).join(" → "))}">${side.map(icon).join(" · ")}</button>`).join("")}</div>`,
+                `<div class="card ${c.kind}">${c.count > 1 ? `<span class="copies">×${c.count}</span>` : ""}${c.sides.map((side, index) => basic && !(side.length === 1 && ["red", "blue"].includes(side[0])) ? "" : `<button data-card="${esc(c.id)}" data-side="${index}" class="${selected.some((s) => s.id === c.id && s.side === index) ? "selected" : ""}" aria-pressed="${selected.some((s) => s.id === c.id && s.side === index)}" title="${esc(side.map(label).join(" → "))}" aria-label="${esc(side.map(label).join(" → "))}">${side.map(icon).join(" · ")}</button>`).join("")}</div>`,
             )
             .join("")
         : "";
@@ -554,7 +588,7 @@ export function mountConsole(root, host = null) {
         ? ["all", "A", "B", "C", "bots", "move"]
             .map(
               (f) =>
-                `<button data-filter="${f}" class="quiet icon-button" aria-pressed="${handFilter === f}" title="${esc(f === "all" ? t("Toutes les cartes", "All cards") : f === "move" ? t("Déplacements", "Movement") : label(f))}" aria-label="${esc(f === "all" ? t("Toutes les cartes", "All cards") : f === "move" ? t("Déplacements", "Movement") : label(f))}">${f === "all" ? pictogram("cards") : f === "bots" ? pictogram("bots") : f === "move" ? pictogram("move") : f}</button>`,
+                `<button data-filter="${f}" class="quiet icon-button" aria-pressed="${handFilter === f}" title="${esc(f === "all" ? t("Toutes les cartes", "All cards") : f === "move" ? t("Déplacements", "Movement") : label(f))}" aria-label="${esc(f === "all" ? t("Toutes les cartes", "All cards") : f === "move" ? t("Déplacements", "Movement") : label(f))}">${f === "all" ? pictogram("cards") : f === "bots" ? pictogram("bots") : f === "move" ? pictogram("move") : pictogram(f)}</button>`,
             )
             .join("")
         : "";
@@ -601,7 +635,7 @@ export function mountConsole(root, host = null) {
         ["reactor", t("Réacteur", "Reactor")],
         ["fuel", t("Combustible", "Fuel")],
         ["computer", t("Ordinateur", "Computer")],
-        ["bots", t("Robots", "Battlebots")],
+        ["bots", t("Robots de combat", "Battlebots")],
         ["android", t("Androïde", "Android")],
         ["interceptor", t("Intercepteurs", "Interceptors")],
         ["observation", t("Observation", "Visual confirmation")],
@@ -722,6 +756,7 @@ export function mountConsole(root, host = null) {
   $("#career-seats").addEventListener("change", setupSpecialists);
   async function localPost(path, body) {
     if (host) {
+      if (host.tutorialPost) return host.tutorialPost(path, body);
       if (path === "/api/campaign-next") return command("campaign-next", body);
       if (path === "/api/career") {
         if (body.id && body.id !== view.careerIds[seat])
@@ -858,7 +893,9 @@ export function mountConsole(root, host = null) {
     if (host) {
       if (target !== seat || seat < 0)
         throw Error("Only your own seat can send commands");
-      return host.command({ type, sequence: view.nextSequence, ...extra });
+      const result = await host.command({ type, sequence: view.nextSequence, ...extra });
+      if (type === "program") host.cue?.("place");
+      return result;
     }
     const s =
       target === seat
@@ -907,15 +944,92 @@ export function mountConsole(root, host = null) {
       navigation.openPanel("setup");
       return;
     }
+    if (el.id === "basics-start" || el.dataset.basicsPick) {
+      host?.cue?.("select");
+      if (el.id === "basics-start") basicsStarted = true;
+      else
+        basicsPicked =
+          basicsPicked === el.dataset.basicsPick
+            ? false
+            : el.dataset.basicsPick;
+      rerender();
+      return;
+    }
+    if (el.dataset.basicsTurn) {
+      const turn = Number(el.dataset.basicsTurn);
+      if (turn > 2) return;
+      perform(async () => {
+        if (!basicsPicked) {
+          await command("remove", {
+            crew: 0,
+            turn,
+            slotVersion: view.game.programs[0][turn - 1].revision,
+          });
+          return;
+        }
+        const action = basicsPicked;
+        const card = view.game.hand.find((c) =>
+          c.sides.some((s) => s.length === 1 && s[0] === action),
+        );
+        if (!card) throw Error(t("Carte indisponible", "Card unavailable"));
+        basicsPicked = false;
+        await command("program", {
+          crew: 0,
+          turn,
+          slotVersion: view.game.programs[0][turn - 1].revision,
+          cards: [
+            {
+              id: card.id,
+              side: card.sides.findIndex(
+                (s) => s.length === 1 && s[0] === action,
+              ),
+            },
+          ],
+        });
+      });
+      return;
+    }
+    if (el.id === "lesson-clock") {
+      perform(() =>
+        localPost("/api/lesson-clock", {
+          running: !view.tutorial.clockRunning,
+        }),
+      );
+      return;
+    }
+    if (el.id === "basics-plan") {
+      if (view.stage === "resolution") perform(async () => {
+        basicsStarted = true;
+        basicsPicked = false;
+        await localPost("/api/lesson-back", {});
+      });
+      return;
+    }
+    if (el.id === "basics-run" || el.id === "basics-execute") {
+      if (view.stage === "resolution") return;
+      perform(async () => {
+        while (view.stage === "programming")
+          await localPost("/api/lesson-next", {});
+        host?.cue?.("start");
+        rerender();
+      });
+      return;
+    }
     if (el.dataset.lesson) {
+      if (host?.tutorial) { host.openLesson(el.dataset.lesson); return; }
+      if (!host) { location.assign(`/learn?chapter=${encodeURIComponent(el.dataset.lesson)}&locale=${locale}`); return; }
       perform(async () => {
         seat = 0;
         crew = 0;
         selected = [];
         replayFrame = null;
+        basicsStarted = false;
+        basicsPicked = false;
         await localPost("/api/lesson", { lesson: el.dataset.lesson });
         navigation.closePanel();
-        $("#lesson-guide").scrollIntoView({ block: "start" });
+        $(
+          view.tutorial?.basics ? "#basics-guide" : "#lesson-guide",
+        ).scrollIntoView({ block: "start" });
       });
       return;
     }
@@ -1042,6 +1156,7 @@ export function mountConsole(root, host = null) {
       return;
     }
     if (el.dataset.card) {
+      host?.cue?.("select");
       const choice = { id: el.dataset.card, side: Number(el.dataset.side) };
       if (e.shiftKey || combine)
         selected = [
@@ -1212,7 +1327,8 @@ export function mountConsole(root, host = null) {
   intervals.push(
     setInterval(() => {
       if (!view) return;
-      const now = view.serverNow + performance.now() - received;
+      const paused = view.tutorial && !view.tutorial.clockRunning;
+      const now = view.serverNow + (paused ? 0 : performance.now() - received);
       const end =
         view.stage === "presence"
           ? view.players[seat]?.readyUntil
@@ -1221,8 +1337,13 @@ export function mountConsole(root, host = null) {
             : view.stage === "programming"
               ? view.missionStartAt + view.mission.phaseEndsMs.at(-1)
               : now;
-      $("#clock").textContent = view.tutorial
-        ? t("Libre", "Untimed")
+      const practiceTime = $("[data-practice-time]");
+      if (practiceTime)
+        practiceTime.textContent =
+          duration(Math.max(0, (end ?? now) - now)) +
+          (paused ? t(" · en pause", " · paused") : "");
+      $("#clock").textContent = paused
+        ? t("En pause", "Paused")
         : view.stage === "presence" && !view.players[seat]?.ready
           ? t("En attente", "Waiting")
           : duration((end ?? now) - now);
@@ -1259,6 +1380,7 @@ export function mountConsole(root, host = null) {
     })();
   }
   return {
+    resetTutorial() { basicsPicked = false; basicsStarted = false; selected = []; replayFrame = null; key = ""; },
     render(next) {
       if (host && next.bgs?.settings) {
         $("#mission").value = next.bgs.settings.mission ?? next.mission.id;
@@ -1272,7 +1394,11 @@ export function mountConsole(root, host = null) {
       if (host) $("#connection").textContent = "";
     },
     setPlayer(index) {
-      seat = index ?? -1;
+      const nextSeat = index ?? -1;
+      // BGS repeats player information during state/presence updates. Only an
+      // actual seat change should discard the locally selected android/cards.
+      if (seat === nextSeat) return;
+      seat = nextSeat;
       crew = Math.max(0, seat);
       selected = [];
       rerender();

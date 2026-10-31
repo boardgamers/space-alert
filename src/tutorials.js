@@ -10,6 +10,12 @@ const lesson = (id, title, instructions, options = {}) => ({
 });
 export const LESSONS = [
   lesson(
+    "basics",
+    ["Commencer ici : programmer les tours", "Start here: planning turns"],
+    [],
+    { basics: true },
+  ),
+  lesson(
     "first-shot",
     ["Votre premier tir", "Your first shot"],
     [
@@ -155,7 +161,7 @@ export function createLesson(id, now) {
     id: `lesson-${id}`,
     title: l.title[1],
     doubleActions: !!l.doubleActions,
-    phaseEndsMs: [600000, 1200000],
+    phaseEndsMs: [300000, 600000],
     events: l.threat
       ? [
           {
@@ -186,7 +192,13 @@ export function createLesson(id, now) {
   );
   s = submit(s, 0, { type: "ready", sequence: 1 }, now).state;
   s = advanceClock(s, now + 3000);
-  s.tutorial = { id, title: l.title, instructions: l.instructions };
+  s.tutorial = {
+    id,
+    title: l.title,
+    instructions: l.instructions,
+    basics: !!l.basics,
+    clockRunning: false,
+  };
   s.game.tracks = Object.fromEntries(
     ["red", "white", "blue", "internal"].map((z) => [
       z,

@@ -101,7 +101,7 @@ header {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  max-width: 1260px;
+  max-width: none;
   margin: auto;
   padding: 22px 28px;
   border-bottom: 1px solid var(--line);
@@ -127,7 +127,7 @@ header {
   gap: 7px;
 }
 main {
-  max-width: 1260px;
+  max-width: none;
   margin: auto;
   padding: 22px 28px;
 }
@@ -185,6 +185,11 @@ h1 {
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
   gap: 30px;
+}
+.tactical {
+  width: 100%;
+  max-width: 760px;
+  min-width: 0;
 }
 .section-heading {
   display: flex;
@@ -312,13 +317,21 @@ h2 {
   gap: 5px;
 }
 .slot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   min-width: 0;
   min-height: 64px;
-  padding: 5px 3px;
+  padding: 20px 3px;
   background: #101f2b;
   border-color: #344553;
 }
 .slot .turn {
+  position: absolute;
+  top: 7px;
+  left: 3px;
+  right: 3px;
   font-size: 9px;
   color: var(--muted);
   display: block;
@@ -757,7 +770,7 @@ input:not([type="checkbox"]):not([type="range"]) {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
-  max-width: 1260px;
+  max-width: none;
   margin: auto;
   padding: 8px 28px;
   border-bottom: 1px solid var(--line);
@@ -1127,14 +1140,23 @@ input:not([type="checkbox"]):not([type="range"]) {
 .cutaway {
   position: relative;
   container-type: inline-size;
-  padding: 0 9px;
-  border-inline: 5px solid #526c79;
-  border-radius: 40% 40% 18px 18px / 24px 24px 18px 18px;
+}
+.ship-hull {
+  position: relative;
+  padding: 0 14px 12px;
+}
+.ship-hull::before {
+  content: "";
+  position: absolute;
+  inset: 39px 0 0;
+  border: 2px solid #8296a0;
+  border-top: 0;
+  border-radius: 0 0 18px 18px;
   background: #172c39;
-  box-shadow: inset 0 0 0 2px #263f4d;
 }
 .ship-bow {
-  margin: 0 -9px;
+  position: relative;
+  margin: 0 -14px;
   height: 40px;
 }
 .ship-bow svg {
@@ -1145,7 +1167,7 @@ input:not([type="checkbox"]):not([type="range"]) {
   fill: none;
 }
 .ship-bow .hull-shell {
-  fill: #314e5c;
+  fill: #172c39;
 }
 .ship-bow .bridge-window {
   fill: #79ccd4;
@@ -1494,15 +1516,16 @@ input:not([type="checkbox"]):not([type="range"]) {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
-  padding: 0 10px;
+  padding: 0 14px 18px;
 }
 .ship-stern > span {
   display: flex;
   gap: 5px;
   justify-content: center;
-  width: 65%;
+  width: min(55%, 100px);
   margin: auto;
-  padding: 6px 10px 9px;
+  padding: 0 8px;
+  height: 20px;
   border: 2px solid #81939a;
   border-top: 0;
   border-radius: 0 0 12px 12px;
@@ -1511,6 +1534,7 @@ input:not([type="checkbox"]):not([type="range"]) {
 .ship-stern i {
   width: 12px;
   height: 14px;
+  transform: translateY(12px);
   background: #95dfe7;
   border-radius: 0 0 6px 6px;
   box-shadow: 0 3px 7px #82eff04a;
@@ -1678,13 +1702,17 @@ input:not([type="checkbox"]):not([type="range"]) {
 }
 @media (max-width: 760px) {
   .cutaway {
-    margin-inline: -9px;
-    padding-inline: 6px;
-    border-inline-width: 3px;
+    margin-inline: 0;
+  }
+  .ship-hull {
+    padding-inline: 9px;
+  }
+  .ship-hull::before {
+    top: 29px;
   }
   .ship-bow {
     height: 30px;
-    margin-inline: -6px;
+    margin-inline: -9px;
   }
 }
 /* Shared equipment inspector and threat cards. */
@@ -1771,14 +1799,14 @@ input:not([type="checkbox"]):not([type="range"]) {
 .threat-portrait {
   display: block;
   position: relative;
-  height: 180px;
+  height: 204px;
   background: #10212d;
   overflow: hidden;
 }
 .threat-portrait > .equipment-art {
   width: 128px;
   height: 118px;
-  margin: 24px auto 0;
+  margin: 66px auto 0;
   border-radius: 0;
 }
 .threat-timing {
@@ -1789,6 +1817,10 @@ input:not([type="checkbox"]):not([type="range"]) {
   white-space: nowrap;
 }
 .threat-target {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   justify-content: center;
   align-items: end;
@@ -1963,3 +1995,401 @@ input:not([type="checkbox"]):not([type="range"]) {
     height: 115px;
   }
 }
+
+/* The first lesson reveals only the idea currently being taught. */
+.learning-basics .flight-layout,
+.learning-basics .mission-line,
+.learning-basics #lesson-guide,
+.learning-basics #crew,
+.learning-basics .header-tools {
+  display: none !important;
+}
+#basics-guide {
+  max-width: 760px;
+  margin: 16px auto 60px;
+}
+.basics-top,
+.basics-stages {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.basics-top > span {
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  color: #b4c8d9;
+}
+.basics-stages {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 24px 0;
+  color: #a0aabb;
+}
+.basics-stages button {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  min-height: 52px;
+  margin: 0;
+  padding: 10px 12px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  border-radius: 0;
+  font-size: inherit;
+  line-height: 1.3;
+  text-align: left;
+}
+.basics-stages .step-number {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 26px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-size: .8rem;
+}
+.basics-stages .active {
+  color: #b8ffe3;
+  border-bottom-color: #74e8bd;
+  background: #142b32;
+}
+#basics-guide h1 {
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  line-height: 1.2;
+}
+.basics-explanation {
+  max-width: 62ch;
+  line-height: 1.65;
+  min-height: 4.5em;
+}
+.basics-program button {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 8px;
+}
+.basics-program button:disabled {
+  opacity: 1;
+  color: #b9c9d7;
+  background: #17232e;
+  cursor: default;
+}
+.basics-program button:not(:disabled),
+.basics-program button.current {
+  outline: 2px solid #74e8bd;
+  outline-offset: 2px;
+}
+.basics-program strong,
+.basics-card strong {
+  font-size: 2.2rem;
+  line-height: 1;
+}
+.basics-card-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.basics-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  min-width: 165px;
+  padding: 20px;
+}
+.basics-card.selected {
+  outline: 3px solid #74e8bd;
+  outline-offset: 3px;
+}
+.practice-clock {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 18px;
+  margin: 20px 0;
+  border: 1px solid #496071;
+  border-radius: 12px;
+}
+.practice-clock strong,
+.practice-clock small {
+  display: block;
+}
+.practice-clock strong {
+  font-size: 1.35rem;
+  font-variant-numeric: tabular-nums;
+}
+#basics-run {
+  width: 100%;
+}
+@media (max-width: 520px) {
+  .basics-top {
+    align-items: flex-start;
+  }
+  .basics-stages {
+    font-size: 0.85rem;
+  }
+  .basics-program {
+    gap: 7px;
+  }
+}
+
+.shared-equipment-icon {
+  fill: none;
+  stroke: #b7e3e9;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.system-card .action-key {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+}
+.action-key .pictogram {
+  width: 17px;
+  height: 17px;
+}
+.ship-key .pictogram {
+  width: 18px;
+  height: 18px;
+  color: var(--gold);
+}
+#hand-filter .pictogram {
+  width: 23px;
+  height: 23px;
+}
+#resources .symbol-stat small {
+  font-size: 0.72rem;
+}
+
+/* Crew selectors and board markers share the same drawing and number treatment. */
+.crew-tabs .equipment-art {
+  width: 27px;
+  height: 27px;
+  flex: 0 0 27px;
+  color: #bfd0db;
+}
+.crew-tabs [aria-pressed="true"] .equipment-art {
+  color: #ffe0a0;
+}
+.crew-pawn {
+  width: auto;
+  height: 30px;
+  gap: 2px;
+  align-items: center;
+}
+.crew-pawn > svg.equipment-art {
+  width: 27px;
+  height: 27px;
+  fill: none;
+  stroke: #162e3d;
+  stroke-width: 2;
+}
+.crew-pawn > svg.pictogram {
+  width: 23px;
+  height: 27px;
+  fill: none;
+  stroke: currentColor;
+}
+.crew-pawn b {
+  position: static;
+  width: auto;
+  min-width: 8px;
+  color: currentColor;
+  text-shadow: none;
+  font-size: 11px;
+}
+
+.lesson-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 4px;
+}
+.lesson-actions > button {
+  min-height: 44px;
+  margin: 0;
+  padding: 10px 14px;
+  line-height: 22px;
+}
+.lesson-actions > .icon-button {
+  width: 44px;
+  padding: 10px;
+  flex: 0 0 44px;
+}
+.lesson-actions .pictogram {
+  width: 22px;
+  height: 22px;
+}
+.basics-card-choices {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.basics-card-choices .basics-card {
+  min-width: 135px;
+}
+.basics-program strong .pictogram,
+.basics-card strong .pictogram {
+  width: 32px;
+  height: 32px;
+}
+.basics-card-choices .basics-card {
+  min-width: 88px;
+  min-height: 80px;
+}
+
+/* Teach on the real ship; reveal its systems in later lessons. */
+.training-ship {
+  max-width: 530px;
+  margin: 20px auto 28px;
+}
+.training-ship .systems,
+.training-ship .between-decks,
+.training-ship .ship-passage,
+.training-ship .ship-key,
+.training-ship .damage {
+  display: none;
+}
+.training-ship .deck-upper .station {
+  min-height: 88px;
+}
+.training-ship .deck-upper .occupants {
+  align-items: center;
+  min-height: 50px;
+  padding: 8px 0;
+}
+.training-ship .deck-lower {
+  margin-top: 10px;
+  opacity: 0.25;
+}
+.training-ship .deck-lower .station {
+  min-height: 88px;
+}
+.training-ship .deck-lower .occupants {
+  display: none;
+}
+.training-ship .crew-pawn > svg.equipment-art {
+  width: 36px;
+  height: 36px;
+}
+.training-ship .crew-pawn {
+  height: 38px;
+}
+.basics-program-heading {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 10px;
+  color: #b9c9d7;
+  font-size: 0.85rem;
+}
+.basics-program.program {
+  display: flex;
+  gap: 16px;
+  justify-content: flex-start;
+  margin: 0 0 20px;
+  padding: 14px;
+  border-left: 3px solid #e6b66b;
+  background: #101e28;
+  border-radius: 0 8px 8px 0;
+}
+.basics-program button.slot {
+  width: 76px;
+  min-height: 90px;
+  flex: 0 0 76px;
+  border-radius: 6px;
+  gap: 16px;
+}
+.basics-program .turn {
+  font-size: 0.72rem;
+}
+.basics-card-area {
+  align-items: flex-start;
+}
+
+/* BGS checkpoint controller, with a localized guide matching the ship console. */
+.native-guide { margin: 0 0 24px; }
+.native-guide-top, .native-guide-tools, .native-guide-controls {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.native-guide-top { justify-content: space-between; color: #b4c8d9; }
+.native-guide-tools a { color: #a9d7e7; font-size: .8rem; }
+.native-guide h1 { font-size: clamp(1.4rem, 3vw, 2rem); margin: 20px 0 8px; }
+.native-guide-text { line-height: 1.6; white-space: pre-line; max-width: 65ch; }
+.native-guide-controls { margin-top: 16px; }
+.native-guide-controls small { color: #9db0bf; margin-left: auto; }
+.native-guide .basics-stages { grid-template-columns: repeat(3, 1fr); margin: 16px 0; }
+.native-tutorial .basics-top,
+.native-tutorial #basics-guide > .basics-stages,
+.native-tutorial #basics-guide > h1,
+.native-tutorial .basics-explanation,
+.native-tutorial #basics-start,
+.native-tutorial .basics-complete,
+.native-tutorial #console-nav,
+.native-tutorial .header-tools,
+.native-tutorial .mission-line,
+.native-tutorial #crew,
+.native-tutorial #lesson-guide > ol,
+.native-tutorial #lesson-guide [data-lesson] { display: none; }
+.native-tutorial #basics-guide { margin-top: 0; }
+.native-tutorial .training-ship { margin-top: 0; }
+.practice-readiness { display: flex; align-items: center; gap: 12px; margin: 12px 0; color: #b8ffe3; }
+.practice-readiness progress { width: 80px; height: 6px; accent-color: #74e8bd; }
+@media (max-width: 520px) {
+  .native-guide .basics-stages { gap: 3px; }
+  .native-guide .basics-stages button { flex-direction: column; gap: 6px; padding: 10px 4px; text-align: center; }
+  .native-guide-controls small { width: 100%; margin: 0; }
+}
+.native-tutorial #basics-run { width: 64px; height: 48px; }
+.practice-readiness > span { display: inline-flex; align-items: center; gap: 6px; }
+.native-tutorial.learning-basics .flight-layout { display: grid !important; margin: 0; align-items: start; }
+.native-tutorial.learning-basics #planning { min-width: 0; }
+.native-tutorial.learning-basics #program { display: flex; gap: 12px; border-left: 3px solid #e6b66b; padding: 12px; background: #101e28; }
+.native-tutorial.learning-basics #program .slot { flex: 0 0 72px; min-height: 90px; }
+.native-tutorial.learning-basics #program .slot.current { border-color: #74e8bd; box-shadow: 0 0 0 2px #74e8bd55; }
+.native-tutorial.learning-basics #hand { grid-template-columns: repeat(2, 80px); }
+.native-tutorial.learning-basics #hand .card { min-height: 68px; }
+.native-tutorial.learning-basics #hand .copies,
+.native-tutorial.learning-basics #program-crew,
+.native-tutorial.learning-basics .crew-tabs,
+.native-tutorial.learning-basics #player-help,
+.native-tutorial.learning-basics #card-help,
+.native-tutorial.learning-basics #controls,
+.native-tutorial.learning-basics #hand-filter,
+.native-tutorial.learning-basics #resources,
+.native-tutorial.learning-basics #threats,
+.native-tutorial.learning-basics #comms,
+.native-tutorial.learning-basics #latest,
+.native-tutorial.learning-basics #replay,
+.native-tutorial.learning-basics .tactical .section-heading:has(#threat-title),
+.native-tutorial[data-tutorial-step="0"] #planning { display: none !important; }
+
+.native-tutorial.learning-basics .tactical { max-width: 600px; }
+.native-tutorial.learning-basics #ship { width: 100%; max-width: 600px; margin: 0; }
+.ready-dots { display: flex; gap: 6px; }
+.ready-dots i { display: block; width: 14px; height: 18px; border: 1px solid #688999; border-radius: 3px; }
+.ready-dots i.filled { background: #74e8bd; border-color: #74e8bd; }
+.practice-readiness #basics-run { margin-left: auto; }
+@media (max-width: 720px) {
+  .native-tutorial.learning-basics .flight-layout { grid-template-columns: 1fr; }
+}
+.native-tutorial.learning-basics #ship .station-title { visibility: hidden; }
+.native-tutorial.learning-basics[data-tutorial-stage="resolution"] #controls { display: flex !important; gap: 10px; }
+.native-tutorial.learning-basics[data-tutorial-stage="resolution"] #replay { display: block !important; }
+.native-tutorial.learning-basics[data-tutorial-stage="resolution"] #replay label,
+.native-tutorial.learning-basics[data-tutorial-stage="resolution"] #replay #live { display: none; }
+.native-tutorial.learning-basics[data-tutorial-step="3"] #controls { display: none !important; }
+
+.training-ship .deck-upper .station,
+.training-ship .deck-lower .station { min-height: 104px; }

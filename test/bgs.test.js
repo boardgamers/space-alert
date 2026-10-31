@@ -227,3 +227,66 @@ test("career progress is bounded, contains no mission secrets, and rejects unkno
   assert.equal(next.players[0].ready, false);
   assert.equal(next.players[0].lastSequence, 0);
 });
+
+test("table careers survive sitting out a game without gating the current crew", () => {
+  const old = initial({ careers: true });
+  old.bgs.explorers.alice.level = 2;
+  old.bgs.explorers.alice.xp = 24;
+  // Bob is still level zero and must not prevent Alice's solo campaign.
+  const progress = e.tableProgress(e.dropPlayer(old));
+  const solo = e.init(
+    1,
+    [],
+    { careers: true, campaign: 3 },
+    "solo",
+    0,
+    ctx(2000, {
+      gameId: "solo",
+      playerIds: ["alice"],
+      present: [0],
+      table: { id: "table", round: 2, progress },
+    }),
+  );
+  assert.equal(solo.bgs.explorers.bob.level, 0);
+  assert.deepEqual(
+    e.stripSecret(solo, 0, ctx(2000)).explorers.map((x) => x.id),
+    ["alice"],
+  );
+  const soloProgress = e.tableProgress(e.dropPlayer(solo));
+  const disabled = e.init(
+    1,
+    [],
+    { careers: false },
+    "disabled",
+    0,
+    ctx(3000, {
+      gameId: "disabled",
+      playerIds: ["bob"],
+      present: [0],
+      table: { id: "table", round: 3, progress: soloProgress },
+    }),
+  );
+  assert.deepEqual(e.stripSecret(disabled, 0, ctx(3000)).explorers, []);
+  const returned = e.init(
+    2,
+    [],
+    { careers: true },
+    "return",
+    0,
+    ctx(4000, {
+      gameId: "return",
+      playerIds: ["bob", "alice"],
+      table: {
+        id: "table",
+        round: 4,
+        progress: e.tableProgress(e.dropPlayer(disabled)),
+      },
+    }),
+  );
+  assert.equal(returned.bgs.explorers.alice.xp, 24);
+  assert.equal(returned.bgs.explorers.alice.level, 2);
+  assert.equal(returned.bgs.explorers.alice.activeRun, null);
+  assert.equal(returned.players[1].lastSequence, 0);
+  assert.equal(returned.players[1].ready, false);
+  assert.equal(progress.data.explorers.alice.xp, 24);
+});

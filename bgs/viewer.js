@@ -1,3 +1,4 @@
+import { mountLesson } from "./tutorial.js";
 import { registerViewer } from "@boardgamers/protocol/viewer";
 import { mountConsole } from "../preview/app.js";
 import html from "../preview/index.html";
@@ -55,12 +56,15 @@ registerViewer("SpaceAlert", (context) => {
         settings: state.bgs.settings,
       };
       view.careerIds = state.bgs.playerIds;
-      view.explorers = Object.values(state.bgs.explorers).map((e) => ({
-        ...e,
-        activeRun: !!e.activeRun,
-        eligible: [],
-        editable: false,
-      }));
+      view.explorers = state.bgs.playerIds
+        .map((id) => state.bgs.explorers[id])
+        .filter(Boolean)
+        .map((e) => ({
+          ...e,
+          activeRun: !!e.activeRun,
+          eligible: [],
+          editable: false,
+        }));
     }
     ui.render(view);
     if (pending && view.nextSequence > pending.sequence) {
@@ -100,4 +104,4 @@ registerViewer("SpaceAlert", (context) => {
       }
     },
   };
-});
+}, { tutorial: mountLesson });

@@ -118,22 +118,26 @@ export function init(players, expansions, options, seed, creator, context) {
   if (progress && progress.version !== 1)
     throw Error("Unsupported Space Alert career version");
   const previous = progress?.data?.explorers ?? {};
-  const explorers = Object.fromEntries(
-    playerIds
-      .filter((id) => options.careers || previous[id])
-      .map((id, i) => [
-        id,
-        previous[id]
-          ? structuredClone(previous[id])
-          : createExplorer(id, `Explorer ${i + 1}`),
-      ]),
-  );
+  // A table career survives games its owner sits out.
+  const explorers = {
+    ...structuredClone(previous),
+    ...Object.fromEntries(
+      playerIds
+        .filter((id) => options.careers || previous[id])
+        .map((id, i) => [
+          id,
+          previous[id]
+            ? structuredClone(previous[id])
+            : createExplorer(id, `Explorer ${i + 1}`),
+        ]),
+    ),
+  };
   if (Object.values(explorers).some((e) => e.activeRun))
     throw Error("Previous explorers have not returned from their mission");
   if (
     options.careers &&
     campaignLimit &&
-    Object.values(explorers).some((e) => e.level < 2)
+    playerIds.some((id) => explorers[id].level < 2)
   )
     throw Error("Career explorers need level 2 before a campaign");
   const state = createSession(
@@ -379,7 +383,9 @@ export function stripSecret(state, seat, context) {
   const id = state.bgs.playerIds[seat];
   view.careerIds = state.bgs.playerIds;
   view.explorers = (
-    state.bgs.settings.careers ? Object.values(state.bgs.explorers) : []
+    state.bgs.settings.careers
+      ? state.bgs.playerIds.map((id) => state.bgs.explorers[id])
+      : []
   ).map((e) => ({
     ...e,
     activeRun: !!e.activeRun,

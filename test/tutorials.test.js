@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { LESSONS, createLesson } from "../src/tutorials.js";
+import { snapshot } from "../src/view.js";
 import { submit, advanceClock } from "../src/session.js";
 import {
   traitDescriptions,
@@ -118,4 +119,21 @@ test("every catalogue effect has explanatory FR and EN text, and replay names wo
     ]),
     /Fighter/,
   );
+});
+
+test("first lesson separates planning from movement and an empty turn waits", () => {
+  let s = createLesson("basics", 0);
+  s = program(s, 0, 1, ["blue"]);
+  s = program(s, 0, 2, ["red"]);
+  assert.equal(snapshot(s, 0).game.ship.crew[0].station, "white-upper");
+  const r = resolve(s);
+  for (const [turn, station] of [
+    [1, "blue-upper"],
+    [2, "white-upper"],
+    [3, "white-upper"],
+  ]) {
+    const frame = r.frames.find((f) => f.turn === turn && f.step === "damage");
+    assert.equal(frame.ship.crew[0].station, station);
+  }
+  assert.equal(r.threats.length, 0);
 });

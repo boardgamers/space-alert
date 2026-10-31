@@ -69,7 +69,7 @@ For the current audit of the complete standard inventory, see [components](compo
 
 1. **Timing:** readiness, shared start, autonomous deadlines, reconnect and per-player phase locks implemented and tested. Untimed tutorials use explicit host clock advances without changing normal mission timing.
 2. **Local play:** private physical cards, Android/solo rules, ship resolution, all threat cards, all specialization abilities, scoring, campaigns and local explorer persistence implemented.
-3. **Teaching/viewer:** seven untimed guided exercises use the actual engine. FR/EN controls and effect descriptions, threat details, replay, native scrolling and journal available. Official names remain English; original visual symbols are placeholders for any later licensed artwork.
+3. **Teaching/viewer:** eight guided exercises, starting with a focused plan/execute introduction and a pausable practice clock, use the actual engine. FR/EN controls and effect descriptions, threat details, replay, native scrolling and journal available. Official names remain English; original visual symbols are placeholders for any later licensed artwork.
 4. **Rules validation:** deterministic fixtures cover critical interactions, and every threat terminates and replays from serialized state. This is not exhaustive proof of all combinations; human playtests remain necessary before claiming release readiness.
 5. **BGS release:** the private-playtest adapter is implemented; see [integration and deployment](realtime-host.md). Public release awaits human playtesting. Careers currently persist within a table, and voice remains external.
 

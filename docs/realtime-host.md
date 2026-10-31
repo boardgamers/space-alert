@@ -1,6 +1,6 @@
 # BGS integration
 
-The adapter is in `bgs/engine.js`; the hosted viewer is `bgs/viewer.js`. It uses BGS protocol 0.8 and the platform's durable engine wakeups. The standalone development server remains useful for rule tests, but is not the online host.
+The adapter is in `bgs/engine.js`; the hosted viewer is `bgs/viewer.js`. It uses the published BGS protocol 0.10.0 package and the platform's durable engine wakeups. The standalone development server remains useful for rule tests, but is not the online host.
 
 ## Clock and commands
 
@@ -19,6 +19,8 @@ After programming, resolution has no deadline. Campaign repairs and the decision
 BGS **Play again** creates a new game record with fresh randomness, the same reserved seats and optional setup changes. The crew stays seated at the same table URL, with one shared chat. The next Space Alert mission opens its preparation screen immediately; everyone uses **I’m ready** there. Async games such as Fuji ask for one new confirmation per play. Reservations send no invitation emails. Old games remain available through the table's paginated history. This generic flow also works for asynchronous games such as Fuji.
 
 BGS carries only the versioned `tableProgress` checkpoint into the next game's `init`; full game states are never copied. The adapter keeps career totals, achievements and the latest mission summary, keyed by account ID. Older summaries stay with their original replays. `migrateTableProgress` rejects unknown schemas. Cancellation clears an unfinished run without awarding experience; disabling careers preserves earned progress.
+
+Careers survive games their owner sits out, including games with careers disabled. Only the current crew appears in the live career panel.
 
 Careers are **table-local**, not account-wide profiles. Moving to another table starts a separate career. There is no global campaign directory or cross-table character synchronization. The game version is retained between games; retired versions ask players to create a new table.
 

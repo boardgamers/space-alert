@@ -1,4 +1,4 @@
-import { pictogram, specializationIcons } from "./icons.js";
+import { pictogram, specializationIcons, equipmentPicture } from "./icons.js";
 
 const navIcons = {
   journal: "journal",
@@ -55,7 +55,10 @@ export function mountNavigation(root, { locale, hosted }) {
     button.type = "button";
     button.textContent = option.textContent;
     if (select.id === "program-crew") {
-      button.innerHTML = pictogram(option.dataset.kind);
+      button.innerHTML =
+        option.dataset.kind === "android"
+          ? equipmentPicture("android")
+          : pictogram(option.dataset.kind);
       const name = document.createElement("span");
       name.textContent = option.dataset.shortLabel;
       button.append(name);

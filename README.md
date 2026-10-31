@@ -13,9 +13,11 @@ npm test
 npm run dev
 ```
 
-Open <http://127.0.0.1:5250>. Start with **Flight school / École de vol**: seven untimed exercises use the real engine, with editable programs and a teammate already maintaining the computer. The examples cover firing, energy, malfunctions, battlebots/interceptors, double actions, phasing and specializations.
+Open <http://127.0.0.1:5250>. Start with **Flight school / École de vol**: eight exercises use the real engine. Start with **Planning turns**: one crew member, two movement cards, and an empty turn. Arrange the cards, try the start/pause practice clock, then watch each turn execute. The later exercises have editable programs and a teammate already maintaining the computer; they cover firing, energy, malfunctions, battlebots/interceptors, double actions, phasing and specializations.
 
 For a full mission, expand **Local session / Session locale**. Select 1–5 humans, the crew, mission, threat pools and optional modules. In solo, you control four androids and have access to the full action deck. In multiplayer testing, open another tab with `?seat=1`, etc. Readiness lasts two minutes; everyone must be ready together. The local mission starts after a three-second countdown. If someone misses the window, the crew keeps waiting. Select a card half, then a turn. Advance individual phases to lock previous turns, or let the shared clock do so. After programming, the captain can resolve one step at a time or finish the mission; everyone can inspect the replay and log.
+
+Training starts with its clock paused. **Start practice clock** and **Pause clock** control time only in training; normal missions retain their shared, continuous clock. You can also advance lesson phases explicitly.
 
 The local seat selector, “Ready all” and “Next announcement” buttons are development tools. This host has **no authentication** and deliberately listens only on `127.0.0.1`. It is not an online multiplayer deployment. Use external voice for cooperation; browser speech synthesis is optional and communications-blackout silence relies on the players.
 
@@ -48,7 +50,7 @@ No publisher artwork, scanned cards, rulebook files or official voice recordings
 
 ## Build for BGS
 
-The BGS integration requires the published `@boardgamers/protocol` **0.8.x** package:
+The BGS integration requires the published `@boardgamers/protocol` **0.10.0** package:
 
 ```sh
 npm install
@@ -67,3 +69,21 @@ npm run build
 ```
 
 Upload the generated engine tarball and `dist/viewer.js` through BGS admin. Use the metadata in [`bgs/gameinfo.json`](bgs/gameinfo.json): engine entry `bgs/engine.js`, viewer global `SpaceAlert`, game-managed time control, and no Elo. Keep the version private during playtesting. BGS assigns uploaded asset URLs; the example intentionally has no viewer URL. See [the integration notes](docs/realtime-host.md) for clock, table and career behavior.
+
+
+### Playable tutorials
+
+Open `/learn?chapter=basics&locale=fr` on the local preview server. Lessons use
+`@boardgamers/protocol/tutorial` for validated action history, checkpoints,
+previous/replay/restart controls, and browser-local progress. The BGS viewer
+registers the same `mountLesson` through `launchTutorial`; chapter metadata still
+needs configuring when the viewer is published. Nothing has been published by
+this local change.
+
+Tutorials mount the ordinary console, ship, card controls and program slots.
+The first chapter hides unrelated systems, card sides and crew members. Both
+ship decks retain the same room height. Resolution is untimed and uses the
+ordinary resolution controls; the planning clock never drives individual turns.
+The speaker toggle enables short synthesized action cues (off initially).
+
+[BGS playable tutorial API](https://codeberg.org/boardgamers/boardgamers/src/branch/main/apps/docs/docs/guide/tutorials.md)

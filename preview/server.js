@@ -33,11 +33,14 @@ import {
 } from "../src/session.js";
 
 export function createPreviewServer({ clock = Date.now, storagePath } = {}) {
+  let lessonPlanning = null;
   let offset = 0,
     explorers = {},
     careerIds = [];
   const trustedClock = () =>
-    state?.tutorial && state.stage === "programming"
+    state?.tutorial &&
+    !state.tutorial.clockRunning &&
+    state.stage === "programming"
       ? state.observedAt
       : clock() + offset;
   let state = createSession(
@@ -52,6 +55,7 @@ export function createPreviewServer({ clock = Date.now, storagePath } = {}) {
     const saved = JSON.parse(readFileSync(storagePath, "utf8"));
     if (saved.schema === 2) {
       state = saved.state;
+      lessonPlanning = saved.lessonPlanning ?? null;
       offset = saved.offset ?? 0;
       explorers = saved.explorers ?? {};
       careerIds = saved.careerIds ?? [];
@@ -67,7 +71,7 @@ export function createPreviewServer({ clock = Date.now, storagePath } = {}) {
     mkdirSync(dirname(storagePath), { recursive: true });
     writeFileSync(
       storagePath + ".tmp",
-      JSON.stringify({ schema: 2, state, offset, explorers, careerIds }),
+      JSON.stringify({ schema: 2, state, offset, explorers, careerIds, lessonPlanning }),
       {
         mode: 0o600,
       },
@@ -127,7 +131,7 @@ export function createPreviewServer({ clock = Date.now, storagePath } = {}) {
   }
   function viewFor(seat) {
     const view = snapshot(state, seat);
-    view.tutorial = state.tutorial;
+    view.tutorial = state.tutorial ? { ...state.tutorial, canReturnToPlanning: !!lessonPlanning } : undefined;
     view.careerIds = careerIds;
     view.explorers = Object.values(explorers).map((e) => ({
       ...e,
@@ -140,8 +144,15 @@ export function createPreviewServer({ clock = Date.now, storagePath } = {}) {
   function schedule() {
     clearTimeout(timer);
     settleCareers();
+    if (state.tutorial?.basics && state.stage === "programming" && state.phase === 1)
+      lessonPlanning = structuredClone(state);
     persist();
-    if (state.tutorial && state.stage === "programming") return;
+    if (
+      state.tutorial &&
+      !state.tutorial.clockRunning &&
+      state.stage === "programming"
+    )
+      return;
     const at = nextWakeup(state);
     if (at === null) return;
     timer = setTimeout(
@@ -189,6 +200,8 @@ export function createPreviewServer({ clock = Date.now, storagePath } = {}) {
           "/api/career",
           "/api/lesson",
           "/api/lesson-next",
+          "/api/lesson-clock",
+          "/api/lesson-back",
           "/api/campaign-next",
         ].includes(url.pathname)
       ) {
@@ -211,11 +224,39 @@ export function createPreviewServer({ clock = Date.now, storagePath } = {}) {
         if (url.pathname === "/api/lesson") {
           if (careerIds.some((id) => explorers[id].activeRun))
             throw Error("Finish the current career mission first");
+          lessonPlanning = null;
           state = createLesson(command.lesson, clock() + offset);
           careerIds = [];
           persisted = -1;
           schedule();
           return json(200, viewFor(0));
+        }
+        if (url.pathname === "/api/lesson-back") {
+          if (!state.tutorial?.basics || !lessonPlanning || state.stage !== "resolution")
+            throw Error("No planning checkpoint");
+          const revision = state.revision + 1;
+          state = structuredClone(lessonPlanning);
+          state.revision = revision;
+          state.tutorial.clockRunning = false;
+          offset = state.observedAt - clock();
+          schedule();
+          return json(200, viewFor(0));
+        }
+        if (url.pathname === "/api/lesson-clock") {
+          if (
+            !state.tutorial ||
+            state.stage !== "programming" ||
+            typeof command.running !== "boolean"
+          )
+            throw Error("No active practice clock");
+          state = advanceClock(state, trustedClock());
+          if (state.stage !== "programming")
+            throw Error("Programming has finished");
+          offset = state.observedAt - clock();
+          state.tutorial.clockRunning = command.running;
+          state.revision++;
+          schedule();
+          return json(200, viewFor(seat));
         }
         if (url.pathname === "/api/lesson-next") {
           if (!state.tutorial || state.stage !== "programming")
@@ -224,6 +265,7 @@ export function createPreviewServer({ clock = Date.now, storagePath } = {}) {
             state,
             state.missionStartAt + state.mission.phaseEndsMs[state.phase - 1],
           );
+          offset = state.observedAt - clock();
           schedule();
           return json(200, viewFor(0));
         }
@@ -410,9 +452,23 @@ export function createPreviewServer({ clock = Date.now, storagePath } = {}) {
         res.end(await readFile(new URL(`.${url.pathname}`, import.meta.url)));
         return;
       }
+      if (req.method === "GET" && url.pathname === "/learn") {
+        res.writeHead(200, { "Content-Type": "text/html", "Cache-Control": "no-store" });
+        return res.end('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Space Alert · Entraînement</title></head><body><script type="module" src="/tutorial-bundle.js"></script></body></html>');
+      }
+      if (req.method === "GET" && url.pathname === "/tutorial-bundle.js") {
+        const { build } = await import("esbuild");
+        const bundle = await build({
+          entryPoints: [fileURLToPath(new URL("tutorial-entry.js", import.meta.url))],
+          bundle: true, write: false, format: "esm", loader: { ".html": "text", ".css": "text" },
+        });
+        res.writeHead(200, { "Content-Type": "text/javascript", "Cache-Control": "no-store" });
+        return res.end(bundle.outputFiles[0].text);
+      }
       const file = {
         "/": "index.html",
         "/app.js": "app.js",
+        "/basics.js": "basics.js",
         "/local.js": "local.js",
         "/text.js": "text.js",
         "/navigation.js": "navigation.js",
