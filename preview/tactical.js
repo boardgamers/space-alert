@@ -170,6 +170,7 @@ export function createTacticalView({
 
   function threatPortrait(th) {
     const hp = Math.max(0, th.hp - (th.damage ?? 0));
+    const pending = ["pending", "announced", "waiting"].includes(th.status);
     const gone = ["destroyed", "survived", "discarded"].includes(th.status);
     const status =
       th.status === "destroyed"
@@ -193,7 +194,7 @@ export function createTacticalView({
           .join(", ")}`
       : `${t("Trajectoire", "Trajectory")} : ${zoneName(th.zone)}`;
     const target = `<span class="threat-target" style="--zone:var(--${["red", "white", "blue"].includes(th.zone) ? th.zone : "cyan"})" role="img" aria-label="${esc(targetName)}" title="${esc(targetName)}">${shipLocator(stations, internal ? null : th.zone)}</span>`;
-    return `<span class="threat-portrait ${gone ? "resolved-threat" : ""}">${target}${visual}<span class="threat-hud"><span class="hull-gauge"><span>${symbol("hull", `${t("Points de vie", "Hit points")} : ${hp}/${th.hp}`, `<b>${hp}<small>/${th.hp}</small></b>`)}</span><span class="hull-bar"><i style="width:${Math.max(0, Math.min(100, (hp / Math.max(1, th.hp)) * 100))}%"></i></span></span><span class="shield-badge">${symbol("shield", `${t("Bouclier", "Shield")} : ${th.shield}`, `<b>${th.shield}</b>`)}</span></span>${status ? `<span class="threat-outcome">${esc(status)}</span>` : ""}</span>`;
+    return `<span class="threat-portrait ${pending ? "pending-threat" : ""} ${gone ? "resolved-threat" : ""}">${target}${visual}<span class="threat-hud"><span class="hull-gauge"><span>${symbol("hull", `${t("Points de vie", "Hit points")} : ${hp}/${th.hp}`, `<b>${hp}<small>/${th.hp}</small></b>`)}</span><span class="hull-bar"><i style="width:${Math.max(0, Math.min(100, (hp / Math.max(1, th.hp)) * 100))}%"></i></span></span><span class="shield-badge">${symbol("shield", `${t("Bouclier", "Shield")} : ${th.shield}`, `<b>${th.shield}</b>`)}</span></span>${pending ? `<span class="threat-pending">${t("À venir", "Incoming")}</span>` : ""}${status ? `<span class="threat-outcome">${esc(status)}</span>` : ""}</span>`;
   }
   return { shipCutaway, threatPortrait };
 }

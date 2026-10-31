@@ -31,6 +31,14 @@ export async function mountLesson(target, { chapter = "basics", locale = "en", o
     target.querySelector("#planning").append(target.querySelector("#basics-guide"));
     target.querySelector("#ship").classList.add("training-ship");
   }
+  if (chapter === "first-shot") {
+    const threats = target.querySelector("#threats");
+    const heading = target.querySelector("#threat-title").closest(".section-heading");
+    const objective = document.createElement("section");
+    objective.className = "lesson-target";
+    target.querySelector("#planning").append(objective);
+    objective.append(heading, threats);
+  }
   const goChapter = id => {
     if (standalone) location.assign(`/learn?chapter=${encodeURIComponent(id)}&locale=${encodeURIComponent(locale)}`);
   };

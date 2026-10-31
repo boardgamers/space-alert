@@ -18,8 +18,8 @@ export const LESSONS = [
   lesson(
     "first-shot",
     ["Votre premier tir", "Your first shot"],
-    [["Détruisez la cible avec le laser surligné. Tirez aux tours 2 et 3.",
-      "Destroy the target with the highlighted laser. Fire on turns 2 and 3."]],
+    [["Détruisez la cible avec le laser surligné.",
+      "Destroy the target with the highlighted laser."]],
     { threat: "E1-07", turn: 2 },
   ),
   lesson(

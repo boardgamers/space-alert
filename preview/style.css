@@ -2495,3 +2495,12 @@ input:not([type="checkbox"]):not([type="range"]) {
   .native-guide-row { gap: 6px; }
   .native-guide-row .native-guide-tools a { display: none; }
 }
+
+.native-tutorial[data-chapter="first-shot"] #program { margin-top: 32px; }
+.slot-arrival { position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 3px; white-space: nowrap; color: #e8c984; font-size: 12px; }
+.slot-arrival .pictogram { width: 16px; height: 16px; }
+.lesson-target { margin-top: 24px; max-width: 340px; }
+.lesson-target .section-heading { margin-bottom: 10px; }
+.pending-threat > .equipment-art { opacity: .35; }
+.threat-pending { position: absolute; top: 68px; right: 10px; color: var(--muted); font-size: 12px; }
+.lesson-target .hull-gauge { border-color: #74e8bd; }
