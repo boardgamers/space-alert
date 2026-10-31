@@ -2504,3 +2504,14 @@ input:not([type="checkbox"]):not([type="range"]) {
 .pending-threat > .equipment-art { opacity: .35; }
 .threat-pending { position: absolute; top: 68px; right: 10px; color: var(--muted); font-size: 12px; }
 .lesson-target .hull-gauge { border-color: #74e8bd; }
+/* Discovery introduces the target before exposing editable program controls. */
+.native-tutorial[data-chapter="first-shot"][data-tutorial-step="0"] #planning {
+  display: block !important;
+}
+.native-tutorial[data-chapter="first-shot"][data-tutorial-step="0"] #planning > :not(.lesson-target) {
+  display: none !important;
+}
+.native-tutorial[data-chapter="first-shot"][data-tutorial-step="0"] .lesson-target {
+  margin-top: 0;
+}
+.native-tutorial[data-chapter="first-shot"] #latest { display: none; }
