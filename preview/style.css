@@ -2446,3 +2446,6 @@ input:not([type="checkbox"]):not([type="range"]) {
 @media (max-width: 800px) {
   .native-tutorial.learning-basics .flight-layout { grid-template-columns: 1fr; gap: 20px; }
 }
+
+.native-tutorial[data-tutorial-stage="resolution"] #controls,
+.native-tutorial.learning-basics[data-tutorial-stage="resolution"] #controls { display: none !important; }

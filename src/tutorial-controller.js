@@ -42,7 +42,7 @@ export function createLessonTutorial(id, { locale = "en", storage, onProgress } 
         text: lesson.basics ? t("Rejoignez la salle marquée en deux actions. La troisième case reste vide : attendre.", "Reach the marked room in two actions. Leave the third slot empty: wait.") : t("Programmez les cartes sur le vaisseau, puis terminez la programmation. Le chrono est facultatif ici.", "Program cards on the ship, then finish planning. The clock is optional here."),
         complete: state => state.stage === "resolution" },
       { id: "execute", title: t("Exécuter les tours", "Run the turns"),
-        text: t("Programme verrouillé. Avancez la résolution avec ▶. Les équipiers agissent ensemble, puis les menaces.", "Program locked. Advance resolution with ▶. Crew act together, then threats."),
+        text: t("Programme verrouillé. Les équipiers agissent ensemble, puis les menaces.", "Program locked. Crew act together, then threats."),
         complete: state => lesson.basics ? completedTurns(state) >= 3 && state.game.resolution.ship.crew[0].station === state.tutorial.targetStation : !!state.game.resolution?.outcome },
     ],
     completion: { title: t("Exercice terminé", "Exercise complete"), text: lesson.basics ? t("Destination atteinte ! Votre programme vous y a conduit.", "Destination reached! Your program took you there.") : t("Rejouez pour comparer un autre programme, ou passez à la suite.", "Replay to compare another program, or move on.") },
