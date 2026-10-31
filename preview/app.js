@@ -389,6 +389,15 @@ export function mountConsole(root, host = null) {
         crewLabel: (id) =>
           view.players[id]?.name ?? `${t("Androïde", "Android")} ${id + 1}`,
       });
+      if (basic && view.tutorial.targetStation) {
+        const goal = $("#ship").querySelector(`[data-station="${view.tutorial.targetStation}"]`);
+        if (goal) {
+          const reached = view.stage === "resolution" && ship.crew[0].station === view.tutorial.targetStation;
+          goal.classList.add("tutorial-destination");
+          goal.classList.toggle("destination-reached", reached);
+          goal.insertAdjacentHTML("beforeend", `<span class="destination-marker" role="img" aria-label="${t("Destination", "Destination")}" title="${t("Destination", "Destination")}">${pictogram(reached ? "check" : "destination")}</span>`);
+        }
+      }
       $("#resources").innerHTML =
         `${symbol("fuel", `${t("Combustible", "Fuel")} : ${ship.fuel}`, `<b>${ship.fuel}</b>`)}${symbol("rocket", `${t("Roquettes", "Rockets")} : ${ship.rockets}`, `<b>${ship.rockets}</b>`)}${symbol("computer", t("Ordinateur", "Computer") + " · " + ship.computer.map((x, i) => `${t("Phase", "Phase")} ${i + 1} : ${x ? t("entretenu", "maintained") : t("à entretenir", "not maintained")}`).join(" · "), ship.computer.map((x, i) => `<span class="computer-phase ${x ? "maintained" : ""}">${i + 1}</span>`).join(""))}${symbol("bots", `${t("Robots de combat · Escouades disponibles", "Battlebots · Available squads")} : ${ship.bots.filter((b) => b.owner === null && b.station && !b.disabled).length}`, `<b>${ship.bots.filter((b) => b.owner === null && b.station && !b.disabled).length}</b><small>${t("escouades", "squads")}</small>`)}${ship.crew
           .filter((p) => p.space)
@@ -531,12 +540,12 @@ export function mountConsole(root, host = null) {
     ];
     const grouped = [];
     for (const card of hand) {
-      if (basic && !card.sides.some(side => side.length === 1 && ["red", "blue"].includes(side[0]))) continue;
+      if (basic && !card.sides.some(side => side.length === 1 && ["red", "blue", "lift"].includes(side[0]))) continue;
       const same = grouped.find(
         (c) =>
           c.kind === "normal" &&
           card.kind === "normal" &&
-          JSON.stringify(basic ? c.sides.filter(side => side.length === 1 && ["red", "blue"].includes(side[0])) : c.sides) === JSON.stringify(basic ? card.sides.filter(side => side.length === 1 && ["red", "blue"].includes(side[0])) : card.sides),
+          JSON.stringify(basic ? c.sides.filter(side => side.length === 1 && ["red", "blue", "lift"].includes(side[0])) : c.sides) === JSON.stringify(basic ? card.sides.filter(side => side.length === 1 && ["red", "blue", "lift"].includes(side[0])) : card.sides),
       );
       if (same) same.count++;
       else grouped.push({ ...card, count: 1 });
@@ -579,7 +588,7 @@ export function mountConsole(root, host = null) {
             )
             .map(
               (c) =>
-                `<div class="card ${c.kind}">${c.count > 1 ? `<span class="copies">×${c.count}</span>` : ""}${c.sides.map((side, index) => basic && !(side.length === 1 && ["red", "blue"].includes(side[0])) ? "" : `<button data-card="${esc(c.id)}" data-side="${index}" class="${selected.some((s) => s.id === c.id && s.side === index) ? "selected" : ""}" aria-pressed="${selected.some((s) => s.id === c.id && s.side === index)}" title="${esc(side.map(label).join(" → "))}" aria-label="${esc(side.map(label).join(" → "))}">${side.map(icon).join(" · ")}</button>`).join("")}</div>`,
+                `<div class="card ${c.kind}">${c.count > 1 ? `<span class="copies">×${c.count}</span>` : ""}${c.sides.map((side, index) => basic && !(side.length === 1 && ["red", "blue", "lift"].includes(side[0])) ? "" : `<button data-card="${esc(c.id)}" data-side="${index}" class="${selected.some((s) => s.id === c.id && s.side === index) ? "selected" : ""}" aria-pressed="${selected.some((s) => s.id === c.id && s.side === index)}" title="${esc(side.map(label).join(" → "))}" aria-label="${esc(side.map(label).join(" → "))}">${side.map(icon).join(" · ")}</button>`).join("")}</div>`,
             )
             .join("")
         : "";

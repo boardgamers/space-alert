@@ -13,7 +13,7 @@ export function createLessonTutorial(id, { locale = "en", storage, onProgress } 
   if (!lesson) throw Error("Unknown lesson");
   const t = (fr, en) => locale === "fr" ? fr : en;
   return createTutorial({
-    game: "space-alert", id, version: 2, storage, onProgress,
+    game: "space-alert", id, version: lesson.basics ? 3 : 2, storage, onProgress,
     initialState: () => createLesson(id, 1000),
     move(state, move) {
       if (move.type === "practice-phase") {
@@ -39,12 +39,12 @@ export function createLessonTutorial(id, { locale = "en", storage, onProgress } 
       { id: "discover", title: lesson.title[locale === "fr" ? 0 : 1],
         text: lesson.basics ? t("Préparez vos actions, puis regardez-les s’exécuter. Commençons sans menace, avec un seul androïde.", "Plan your actions, then watch them execute. Start without threats, with one android.") : lesson.instructions.map(p => p[locale === "fr" ? 0 : 1]).join("\n\n") },
       { id: "plan", title: t("Préparer le programme", "Plan the program"),
-        text: lesson.basics ? t("Placez deux flèches dans le programme. Le vaisseau attend. La troisième case reste vide : attendre.", "Place two arrows in the program. The ship waits. The third slot stays empty: wait.") : t("Programmez les cartes sur le vaisseau, puis terminez la programmation. Le chrono est facultatif ici.", "Program cards on the ship, then finish planning. The clock is optional here."),
+        text: lesson.basics ? t("Rejoignez la salle marquée en deux actions. La troisième case reste vide : attendre.", "Reach the marked room in two actions. Leave the third slot empty: wait.") : t("Programmez les cartes sur le vaisseau, puis terminez la programmation. Le chrono est facultatif ici.", "Program cards on the ship, then finish planning. The clock is optional here."),
         complete: state => state.stage === "resolution" },
       { id: "execute", title: t("Exécuter les tours", "Run the turns"),
         text: t("Programme verrouillé. Avancez la résolution avec ▶. Les équipiers agissent ensemble, puis les menaces.", "Program locked. Advance resolution with ▶. Crew act together, then threats."),
-        complete: state => lesson.basics ? completedTurns(state) >= 3 : !!state.game.resolution?.outcome },
+        complete: state => lesson.basics ? completedTurns(state) >= 3 && state.game.resolution.ship.crew[0].station === state.tutorial.targetStation : !!state.game.resolution?.outcome },
     ],
-    completion: { title: t("Exercice terminé", "Exercise complete"), text: lesson.basics ? t("Le chrono sert à préparer. Les tours exécutent ensuite votre programme. Une case vide signifie attendre.", "The clock is for planning. Turns then execute your program. An empty slot means wait.") : t("Rejouez pour comparer un autre programme, ou passez à la suite.", "Replay to compare another program, or move on.") },
+    completion: { title: t("Exercice terminé", "Exercise complete"), text: lesson.basics ? t("Destination atteinte ! Votre programme vous y a conduit.", "Destination reached! Your program took you there.") : t("Rejouez pour comparer un autre programme, ou passez à la suite.", "Replay to compare another program, or move on.") },
   });
 }

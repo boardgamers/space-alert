@@ -197,6 +197,7 @@ export function createLesson(id, now) {
     title: l.title,
     instructions: l.instructions,
     basics: !!l.basics,
+    targetStation: l.basics ? "blue-lower" : undefined,
     clockRunning: false,
   };
   s.game.tracks = Object.fromEntries(
@@ -218,6 +219,16 @@ export function createLesson(id, now) {
     s.game.hands[0] = s.game.hands[0].filter((c) => c !== id);
     s.game.programs[1][turn - 1] = { cards: [{ id, side }] };
     s.game.slotVersions[1][turn - 1]++;
+  }
+  if (l.basics) {
+    // A small physical hand makes spending and reusing actions visible.
+    const remaining = { red: 2, blue: 2, lift: 2 };
+    s.game.hands[0] = s.game.hands[0].filter(id => {
+      const action = s.game.cards[id].sides.find(side => side.length === 1 && remaining[side[0]] > 0)?.[0];
+      if (!action) return false;
+      remaining[action]--;
+      return true;
+    });
   }
   return s;
 }

@@ -53,3 +53,26 @@ test("practice clock advances planning only; resolution remains untimed", async 
   assert.equal(completedTurns(t.snapshot.state), 0);
   t.destroy();
 });
+
+for (const route of [["blue", "lift"], ["lift", "blue"], ["blue", "red"], ["red", "lift"]]) {
+  test(`navigation lesson checks the resolved destination: ${route.join(", ")}`, async () => {
+    const t = await createLessonTutorial("basics");
+    await t.continue();
+    await place(t, 1, route[0]);
+    await place(t, 2, route[1]);
+    assert.equal(t.snapshot.completed, false);
+    await t.play({ type: "practice-phase" });
+    await t.play({ type: "practice-phase" });
+    for (let i = 0; i < 30 && completedTurns(t.snapshot.state) < 3; i++)
+      assert.equal(await t.play({ type: "resolve" }), true, t.snapshot.error);
+    const succeeds = route.includes("blue") && route.includes("lift");
+    assert.equal(t.snapshot.completed, succeeds);
+    assert.equal(t.snapshot.state.game.resolution.ship.crew[0].station === "blue-lower", succeeds);
+    if (!succeeds) {
+      await t.previousStep();
+      assert.equal(t.snapshot.state.stage, "programming");
+      assert.equal(t.snapshot.step, 1);
+    }
+    t.destroy();
+  });
+}

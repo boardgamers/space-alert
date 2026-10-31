@@ -35,6 +35,7 @@ const paths = {
   step: "m5 4 11 8L5 20V4Zm14 0v16",
   forward: "m2 5 9 7-9 7V5Zm10 0 9 7-9 7V5Z",
   restart: "M4 10a8 8 0 1 1 1 8M4 3v7h7",
+  destination: "M5 21V3m0 0h14l-3 4 3 4H5",
   check: "m4 12 5 5L20 6",
   close: "m5 5 14 14M5 19 19 5",
   cards: "M7 7h13v15H7zM4 18H2V2h13v2",

@@ -2264,7 +2264,7 @@ input:not([type="checkbox"]):not([type="range"]) {
 .training-ship .deck-upper .station {
   min-height: 88px;
 }
-.training-ship .deck-upper .occupants {
+.training-ship .occupants {
   align-items: center;
   min-height: 50px;
   padding: 8px 0;
@@ -2277,7 +2277,7 @@ input:not([type="checkbox"]):not([type="range"]) {
   min-height: 88px;
 }
 .training-ship .deck-lower .occupants {
-  display: none;
+  display: flex;
 }
 .training-ship .crew-pawn > svg.equipment-art {
   width: 36px;
@@ -2358,9 +2358,8 @@ input:not([type="checkbox"]):not([type="range"]) {
 .native-tutorial.learning-basics #program { display: flex; gap: 12px; border-left: 3px solid #e6b66b; padding: 12px; background: #101e28; }
 .native-tutorial.learning-basics #program .slot { flex: 0 0 72px; min-height: 90px; }
 .native-tutorial.learning-basics #program .slot.current { border-color: #74e8bd; box-shadow: 0 0 0 2px #74e8bd55; }
-.native-tutorial.learning-basics #hand { grid-template-columns: repeat(2, 80px); }
+.native-tutorial.learning-basics #hand { grid-template-columns: repeat(3, 80px); }
 .native-tutorial.learning-basics #hand .card { min-height: 68px; }
-.native-tutorial.learning-basics #hand .copies,
 .native-tutorial.learning-basics #program-crew,
 .native-tutorial.learning-basics .crew-tabs,
 .native-tutorial.learning-basics #player-help,
@@ -2393,3 +2392,19 @@ input:not([type="checkbox"]):not([type="range"]) {
 
 .training-ship .deck-upper .station,
 .training-ship .deck-lower .station { min-height: 104px; }
+
+.native-tutorial.learning-basics .training-ship .deck-lower { opacity: 1; }
+.training-ship .station.tutorial-destination {
+  border: 2px dashed #e8c984;
+  background: #e8c98418;
+}
+.destination-marker { position: absolute; right: 10px; bottom: 10px; color: #e8c984; }
+.training-ship .station.destination-reached { border-style: solid; border-color: #74e8bd; background: #74e8bd18; }
+.destination-reached .destination-marker { color: #74e8bd; }
+.native-tutorial.learning-basics #hand .card > button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 68px;
+  width: 100%;
+}
