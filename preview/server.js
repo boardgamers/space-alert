@@ -469,6 +469,7 @@ export function createPreviewServer({ clock = Date.now, storagePath } = {}) {
         "/": "index.html",
         "/app.js": "app.js",
         "/basics.js": "basics.js",
+        "/clock.js": "clock.js",
         "/local.js": "local.js",
         "/text.js": "text.js",
         "/navigation.js": "navigation.js",

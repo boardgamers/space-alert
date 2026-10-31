@@ -7,6 +7,7 @@ import { LESSONS } from "../src/tutorials.js";
 import { snapshot } from "../src/view.js";
 import { mountConsole } from "../preview/app.js";
 import { pictogram } from "../preview/icons.js";
+import { practiceClockText } from "../preview/clock.js";
 import { createSoundDesign } from "../preview/sound.js";
 import html from "../preview/index.html";
 import css from "../preview/style.css";
@@ -223,7 +224,7 @@ export async function mountLesson(
         ),
       );
       const phaseTime = `${Math.floor(phaseLeft / 60)}:${String(phaseLeft % 60).padStart(2, "0")}`;
-      programControls.innerHTML = `<div class="phase-lesson-controls">${s.state.phase === 1 ? transport("phase-deadline", "forward", t("phases.skip"), !ready || !s.state.game.threats.length || s.busy) : `<button data-guide="run" class="primary icon-button" aria-keyshortcuts="Enter" title="${t("phases.execute")} · ↵" aria-label="${t("phases.execute")}" ${!ready || s.busy ? "disabled" : ""}>${pictogram("check")}<kbd>↵</kbd></button>`}<div class="practice-clock"><div><strong data-practice-time></strong><small>${t("phases.deadline", { phase: s.state.phase, time: phaseTime })}</small></div>${transport("phase-clock", s.state.tutorial.clockRunning ? "pause" : "clock", t(s.state.tutorial.clockRunning ? "basics.pause" : "basics.start_clock"))}</div></div>`;
+      programControls.innerHTML = `<div class="phase-lesson-controls">${s.state.phase === 1 ? transport("phase-deadline", "forward", t("phases.skip"), !ready || !s.state.game.threats.length || s.busy) : `<button data-guide="run" class="primary icon-button" aria-keyshortcuts="Enter" title="${t("phases.execute")} · ↵" aria-label="${t("phases.execute")}" ${!ready || s.busy ? "disabled" : ""}>${pictogram("check")}<kbd>↵</kbd></button>`}<div class="practice-clock"><div><strong data-practice-time>${practiceClockText(s.state, locale)}</strong><small>${t("phases.deadline", { phase: s.state.phase, time: phaseTime })}</small></div>${transport("phase-clock", s.state.tutorial.clockRunning ? "pause" : "clock", t(s.state.tutorial.clockRunning ? "basics.pause" : "basics.start_clock"))}</div></div>`;
     }
     guide.innerHTML = `<div class="native-guide-row"><nav class="basics-stages" aria-label="${t("tutorial.steps")}">${label.map((name, i) => `<button data-guide-step="${deadline ? i + 3 : i}" class="quiet ${stage === i ? "active" : ""}" ${i > stage || s.busy ? "disabled" : ""} ${stage === i ? 'aria-current="step"' : ""}><span class="step-number">${i + 1}</span><span>${name}</span></button>`).join("")}</nav><div class="native-guide-tools">${standalone ? `<a href="/">${t("tutorial.local_game")}</a>` : ""}${transport("sound", soundOn ? "speaker" : "muted", soundOn ? t("tutorial.mute_sounds") : t("tutorial.enable_sounds"))}</div></div>
       <h1>${escape(s.title)}</h1>${s.step === 0 && (chapter === "basics" || phaseLesson) ? missionOverview() : ""}${chapter === "basics" || chapter === "first-shot" ? `<small class="lesson-scope">${t("timing.exercise", { turns: 3 })}${chapter === "basics" ? ` · ${deadline ? 2 : 1}/2` : ""}</small>` : ""}<p class="native-guide-text">${escape(missed ? t("tutorial.destination_missed_go_back_and_plan_another_route") : s.text)}</p>

@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { snapshot } from "../src/view.js";
+import { basicsView } from "../preview/basics.js";
 import {
   createLessonTutorial,
   completedTurns,
@@ -80,6 +81,35 @@ test("practice clock advances planning only; resolution remains untimed", async 
   await t.play({ type: "practice-tick", ms: 600000 });
   assert.equal(completedTurns(t.snapshot.state), 0);
   t.destroy();
+});
+
+test("every execution frame renders the stopped clock without waiting for a timer", async () => {
+  const tutorial = await createLessonTutorial("basics");
+  try {
+    await tutorial.continue();
+    await tutorial.play({ type: "practice-clock", running: true });
+    await tutorial.play({ type: "practice-tick", ms: 338000 });
+    await place(tutorial, 1, "blue");
+    await place(tutorial, 2, "lift");
+    await tutorial.play({ type: "practice-run" });
+    let frames = 0;
+    do {
+      const view = snapshot(tutorial.snapshot.state, 0);
+      view.tutorial = { ...tutorial.snapshot.state.tutorial, nativeStep: 2 };
+      const markup = basicsView(view, "en", {});
+      assert.equal(
+        markup.match(/data-practice-time>([^<]*)<\/strong>/)?.[1],
+        "04:22",
+      );
+      frames++;
+      if (completedTurns(tutorial.snapshot.state) >= 3) break;
+      assert.equal(await tutorial.play({ type: "resolve" }), true);
+    } while (frames < 50);
+    assert.equal(completedTurns(tutorial.snapshot.state), 3);
+    assert.ok(frames > 3);
+  } finally {
+    tutorial.destroy();
+  }
 });
 
 for (const route of [

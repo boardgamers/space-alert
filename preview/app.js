@@ -1,6 +1,7 @@
 import { plannedRoute } from "./program-route.js";
 import { translate, createLocaleSelection, lessonCopy } from "./i18n.js";
 import { basicsView } from "./basics.js";
+import { duration, practiceClockText } from "./clock.js";
 import { mountNavigation } from "./navigation.js";
 import {
   pictogram,
@@ -56,7 +57,8 @@ export function mountConsole(root, host = null) {
     combine = false,
     lastSpoken = 0,
     basicsStarted = false,
-    basicsPicked = false;
+    basicsPicked = false,
+    basicsMarkup;
   let route = [],
     previewTurn = null;
   const t = (key, params) => translate(locale, key, params);
@@ -171,10 +173,6 @@ export function mountConsole(root, host = null) {
     button.setAttribute("aria-pressed", String(sound));
     button.innerHTML = pictogram(sound ? "speaker" : "muted");
   }
-  const duration = (ms) => {
-    const s = Math.max(0, Math.ceil(ms / 1000));
-    return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
-  };
   function announcement(e) {
     if (e.type === "threat")
       return `T+${e.turn} · ${e.severity === "serious" ? t("app.serious_threat") : t("app.threat")} · ${e.position === "internal" ? t("app.internal") : zoneName(e.zone)}`;
@@ -327,8 +325,8 @@ export function mountConsole(root, host = null) {
         : null;
     root.classList.toggle("learning-basics", simpleShip);
     $("#basics-guide").hidden = !basic;
-    if (basic)
-      $("#basics-guide").innerHTML = basicsView(view, locale, {
+    if (basic) {
+      const markup = basicsView(view, locale, {
         started: basicsStarted || view.tutorial.nativeStep > 0,
         picked: basicsPicked,
         shipMarkup: shipCutaway({
@@ -339,6 +337,11 @@ export function mountConsole(root, host = null) {
           crewLabel: () => t("app.android_1"),
         }),
       });
+      if (markup !== basicsMarkup) {
+        $("#basics-guide").innerHTML = markup;
+        basicsMarkup = markup;
+      }
+    }
     const g = view.game,
       own = view.players[seat] ?? {
         ready: true,
@@ -1544,13 +1547,14 @@ export function mountConsole(root, host = null) {
               ? view.missionStartAt + view.mission.phaseEndsMs.at(-1)
               : now;
       const practiceTime = $("[data-practice-time]");
-      if (practiceTime)
-        practiceTime.textContent =
-          duration(
-            view.stage === "resolution" && view.tutorial?.timing
-              ? (view.tutorial.remainingMs ?? 0)
-              : Math.max(0, (end ?? now) - now),
-          ) + (paused && view.stage === "programming" ? t("app.paused") : "");
+      if (practiceTime) {
+        const text = practiceClockText(
+          view,
+          locale,
+          performance.now() - received,
+        );
+        if (practiceTime.textContent !== text) practiceTime.textContent = text;
+      }
       $("#clock").textContent = paused
         ? t("app.paused_afa0b8")
         : view.stage === "presence" && !view.players[seat]?.ready
