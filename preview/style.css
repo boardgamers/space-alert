@@ -2387,6 +2387,7 @@ input:not([type="checkbox"]):not([type="range"]) {
 .native-tutorial.learning-basics[data-tutorial-stage="resolution"] #replay label,
 .native-tutorial.learning-basics[data-tutorial-stage="resolution"] #replay #live { display: none; }
 .native-tutorial.learning-basics[data-tutorial-step="3"] #controls { display: none !important; }
+.native-tutorial.learning-basics[data-tutorial-step="3"] #replay { display: none !important; }
 
 .training-ship .deck-upper .station,
 .training-ship .deck-lower .station { min-height: 104px; }

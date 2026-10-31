@@ -1073,7 +1073,10 @@ export function mountConsole(root, host = null) {
       return;
     if (root.querySelector("dialog[open]")) return;
     if (event.key === "Enter") {
-      const run = $("#basics-run") ?? $('[data-guide="run"]');
+      const run =
+        $("#basics-run") ??
+        $('[data-guide="run"]') ??
+        $('[data-guide="timeout"]');
       if (!run || !run.getClientRects().length) return;
       event.preventDefault();
       if (!run.disabled && !pending && !event.repeat) run.click();

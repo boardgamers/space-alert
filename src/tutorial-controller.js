@@ -235,14 +235,21 @@ export async function createLessonTutorial(
             ? [
                 {
                   id: "deadline-intro",
-                  title: t("timing.try_deadline"),
+                  title: t("timing.destination_reached"),
                   text: t("timing.early_done"),
                   complete: (state) => state.tutorial.scenario === "deadline",
                 },
                 {
                   id: "deadline-plan",
                   title: t("timing.let_time_run_out"),
-                  text: t("timing.deadline_plan"),
+                  text: (state) =>
+                    t(
+                      state.tutorial.clockRunning
+                        ? "timing.deadline_running"
+                        : state.game.programs[0].some((slot) => slot?.cards?.length)
+                          ? "timing.deadline_ready"
+                          : "timing.deadline_plan",
+                    ),
                   complete: (state) => state.stage === "resolution",
                 },
                 {
