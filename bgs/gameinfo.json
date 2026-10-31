@@ -24,7 +24,7 @@
         "name": "sound",
         "type": "checkbox",
         "label": "Spoken announcements",
-        "default": false
+        "default": true
       }
     ],
     "options": [

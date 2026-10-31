@@ -2515,3 +2515,16 @@ input:not([type="checkbox"]):not([type="range"]) {
   margin-top: 0;
 }
 .native-tutorial[data-chapter="first-shot"] #latest { display: none; }
+
+.lesson-program-controls { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+.lesson-program-controls:empty { display: none; }
+.lesson-program-controls [data-guide="run"] { display: inline-flex; align-items: center; gap: 12px; min-height: 48px; }
+.lesson-program-controls kbd { font: inherit; font-size: 12px; color: var(--muted); }
+.native-tutorial[data-chapter="first-shot"] #replay { display: none !important; }
+
+.compact-console-header { flex-wrap: wrap; }
+.compact-console-header .console-nav { margin: 0 0 0 auto; padding: 0; border: 0; flex-wrap: nowrap; }
+.compact-console-header .header-tools { flex: 0 0 auto; }
+@media (max-width: 760px) {
+  .compact-console-header .console-nav button { flex-direction: row; padding: 6px; }
+}

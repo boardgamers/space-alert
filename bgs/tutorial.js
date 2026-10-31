@@ -12,11 +12,17 @@ export async function mountLesson(target, { chapter = "basics", locale = "en", o
   const index = LESSONS.findIndex(l => l.id === chapter);
   if (index < 0) throw Error("Unknown tutorial chapter");
   const sound = createSoundDesign();
-  let soundOn = false, disposed = false, lastStep = -1, lastTurn = 0, lastTick = performance.now();
+  let soundOn = true, disposed = false, lastStep = -1, lastTurn = 0, lastTick = performance.now();
   let playing = false, previousStage, playbackBusy = false;
-  const canPlay = s => s.state.stage === "resolution" && !s.completed && !s.state.game.resolution?.outcome && !(chapter === "basics" && completedTurns(s.state) >= 3);
+  const shotExerciseEnded = s => chapter === "first-shot" && s.state.tutorial.stopAtTarget &&
+    s.state.game.resolution?.turn >= 3 && ["threats", "computer", "appear"].includes(s.state.game.resolution.step);
+  const canPlay = s => !shotExerciseEnded(s) && s.state.stage === "resolution" && !s.completed && !s.state.game.resolution?.outcome && !(chapter === "basics" && completedTurns(s.state) >= 3);
   let storage;
-  try { storage = window.localStorage; } catch {}
+  try { storage = window.localStorage; soundOn = storage.getItem("space-alert:tutorial-sound") !== "off"; } catch {}
+  // Unlock audio on the first real interaction, respecting browser autoplay rules.
+  const unlockSound = () => sound.enable(soundOn);
+  target.ownerDocument.addEventListener("pointerdown", unlockSound, true);
+  target.ownerDocument.addEventListener("keydown", unlockSound, true);
   const tutorial = await createLessonTutorial(chapter, { locale, storage, onProgress });
   target.innerHTML = html.split("<body>")[1].split('<script type="module"')[0].split("</body>")[0];
   const style = document.createElement("style");
@@ -31,6 +37,9 @@ export async function mountLesson(target, { chapter = "basics", locale = "en", o
     target.querySelector("#planning").append(target.querySelector("#basics-guide"));
     target.querySelector("#ship").classList.add("training-ship");
   }
+  const programControls = document.createElement("div");
+  programControls.className = "lesson-program-controls";
+  target.querySelector("#hand").after(programControls);
   if (chapter === "first-shot") {
     const threats = target.querySelector("#threats");
     const heading = target.querySelector("#threat-title").closest(".section-heading");
@@ -61,6 +70,9 @@ export async function mountLesson(target, { chapter = "basics", locale = "en", o
         await tick();
         await play({ type: "practice-clock", running: body.running });
         lastTick = performance.now();
+      } else if (path === "/api/lesson-deadline") {
+        await play({ type: "practice-deadline" });
+        lastTick = performance.now();
       } else if (path === "/api/lesson-next") await play({ type: "practice-phase" });
       else throw Error("Unsupported tutorial action");
     },
@@ -75,9 +87,10 @@ export async function mountLesson(target, { chapter = "basics", locale = "en", o
     const planned = s.state.game.programs[0].some(slot => slot?.cards?.length);
     const readyToFire = chapter === "first-shot" && [1, 2].every(i => s.state.game.programs[0][i]?.cards?.length);
     const missed = LESSONS[index].basics && s.step === 2 && completedTurns(s.state) >= 3 && !s.completed;
+    programControls.innerHTML = `${canPlay(s) ? transport("playback", playing ? "pause" : "right", playing ? t("Pause", "Pause") : t("Lire le programme", "Play program")) : ""}${!LESSONS[index].basics && chapter !== "first-shot" && s.step === 1 && s.state.phase === 1 ? transport("phase", "step", t("Phase 2", "Phase 2"), s.busy) : ""}${!LESSONS[index].basics && s.step === 1 ? `<button data-guide="run" class="primary icon-button" aria-keyshortcuts="Enter" title="${t("Exécuter le programme", "Run program")} · ↵" aria-label="${t("Exécuter le programme", "Run program")}" ${(chapter === "first-shot" ? !readyToFire : !planned) || s.busy ? "disabled" : ""}>${pictogram("step")}<kbd>↵</kbd></button>` : ""}`;
     guide.innerHTML = `<div class="native-guide-row"><nav class="basics-stages" aria-label="${t("Étapes", "Steps")}">${label.map((name, i) => `<button data-guide-step="${i}" class="quiet ${Math.min(s.step, 2) === i ? 'active' : ''}" ${i > s.step || s.busy ? 'disabled' : ''} ${s.step === i ? 'aria-current="step"' : ''}><span class="step-number">${i + 1}</span><span>${name}</span></button>`).join('')}</nav><div class="native-guide-tools">${standalone ? `<a href="/">${t("Partie locale", "Local game")}</a>` : ''}${transport("sound", soundOn ? "speaker" : "muted", soundOn ? t("Couper les sons", "Mute sounds") : t("Activer les sons", "Enable sounds"))}</div></div>
       <h1>${escape(s.title)}</h1><p class="native-guide-text">${escape(missed ? t("Destination manquée. Revenez préparer un autre trajet.", "Destination missed. Go back and plan another route.") : s.text)}</p>
-      <div class="native-guide-controls">${canPlay(s) ? transport("playback", playing ? "pause" : "right", playing ? t("Pause", "Pause") : t("Lire le programme", "Play program")) : ""}${transport("restart", "rewind", t("Recommencer l’exercice", "Restart exercise"), s.busy)}${transport("previous", "left", t("Étape précédente", "Previous step"), s.step === 0 || s.busy)}${transport("replay", "restart", t("Rejouer cette étape", "Replay step"), s.busy || s.step === 0)}${!LESSONS[index].basics && chapter !== "first-shot" && s.step === 1 && s.state.phase === 1 ? transport("phase", "step", t("Phase 2", "Phase 2"), s.busy) : ""}${!LESSONS[index].basics && s.step === 1 ? transport("run", "step", t("Exécuter le programme · ↵", "Run program · ↵"), (chapter === "first-shot" ? !readyToFire : !planned) || s.busy) : ""}${s.canContinue ? `<button data-guide="continue" class="primary icon-button" title="${t("Commencer", "Start")}" aria-label="${t("Commencer", "Start")}">${pictogram("right")}</button>` : ''}${s.completed && (nextChapter || standalone && LESSONS[index + 1]) ? `<button data-guide="next" class="primary icon-label"><span>${t("Exercice suivant", "Next exercise")}</span>${pictogram("right")}</button>` : ''}</div>
+      <div class="native-guide-controls">${transport("restart", "rewind", t("Recommencer l’exercice", "Restart exercise"), s.busy)}${transport("previous", "left", t("Étape précédente", "Previous step"), s.step === 0 || s.busy)}${transport("replay", "restart", t("Rejouer cette étape", "Replay step"), s.busy || s.step === 0)}${s.canContinue ? `<button data-guide="continue" class="primary icon-button" title="${t("Commencer", "Start")}" aria-label="${t("Commencer", "Start")}">${pictogram("right")}</button>` : ''}${s.completed && (nextChapter || standalone && LESSONS[index + 1]) ? `<button data-guide="next" class="primary icon-label"><span>${t("Exercice suivant", "Next exercise")}</span>${pictogram("right")}</button>` : ''}</div>
       ${s.error ? `<p role="alert">${escape(s.error)}</p>` : ''}`;
   }
   const unsubscribe = tutorial.subscribe(s => {
@@ -119,11 +132,13 @@ export async function mountLesson(target, { chapter = "basics", locale = "en", o
     if (!button || tutorial.snapshot.busy) return;
     const action = button.dataset.guide;
     if (action === "sound") {
-      soundOn = !soundOn; sound.enable(soundOn); sound.cue("select"); renderGuide(tutorial.snapshot); return;
+      soundOn = !soundOn;
+      try { storage?.setItem("space-alert:tutorial-sound", soundOn ? "on" : "off"); } catch {}
+      sound.enable(soundOn); sound.cue("select"); renderGuide(tutorial.snapshot); return;
     }
     if (action === "phase") { await play({ type: "practice-phase" }); return; }
     if (action === "run") {
-      while (tutorial.snapshot.state.stage === "programming") await play({ type: "practice-phase" });
+      await play({ type: "practice-run" });
       return;
     }
     if (action === "playback") {
@@ -149,6 +164,7 @@ export async function mountLesson(target, { chapter = "basics", locale = "en", o
     lastTick = performance.now();
   };
   guide.addEventListener("click", onClick);
+  programControls.addEventListener("click", onClick);
   // Playback pacing only: each tick executes the next deterministic engine step.
   const playback = setInterval(async () => {
     if (!playing || disposed || playbackBusy || tutorial.snapshot.busy || !canPlay(tutorial.snapshot)) return;
@@ -159,10 +175,13 @@ export async function mountLesson(target, { chapter = "basics", locale = "en", o
   }, 450);
   const ticker = setInterval(() => {
     if (!tutorial.snapshot.busy) void tick().catch(() => {});
-  }, 5000);
+  }, 1000);
   return () => {
     disposed = true; clearInterval(playback); clearInterval(ticker); unsubscribe(); tutorial.destroy(); ui.destroy(); sound.destroy();
     guide.removeEventListener("click", onClick);
+    programControls.removeEventListener("click", onClick);
+    target.ownerDocument.removeEventListener("pointerdown", unlockSound, true);
+    target.ownerDocument.removeEventListener("keydown", unlockSound, true);
     target.classList.remove("native-tutorial");
   };
 }

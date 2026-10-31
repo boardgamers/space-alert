@@ -113,3 +113,47 @@ test("every chapter can plan, execute, complete, and replay through native contr
     tutorial.destroy();
   }
 });
+
+test("first shot stops on target destruction at turn 3, and preserves new and legacy saves", async () => {
+  for (const objective of [true, false]) {
+    const data = new Map();
+    const storage = { getItem: key => data.get(key), setItem: (key, value) => data.set(key, value) };
+    const tutorial = await createLessonTutorial("first-shot", { storage });
+    await tutorial.continue();
+    await place(tutorial, 2, "A");
+    await place(tutorial, 3, "A");
+    if (objective) await tutorial.play({ type: "practice-run" });
+    else while (tutorial.snapshot.state.stage === "programming") await tutorial.play({ type: "practice-phase" });
+    for (let i = 0; i < 100 && !tutorial.snapshot.completed; i++)
+      assert.equal(await tutorial.play({ type: "resolve" }), true);
+    assert.equal(tutorial.snapshot.completed, true);
+    const resolution = tutorial.snapshot.state.game.resolution;
+    if (objective) {
+      assert.equal(resolution.turn, 3);
+      assert.equal(resolution.step, "threats");
+      assert.equal(resolution.outcome, null);
+      assert.equal(resolution.threats[0].status, "destroyed");
+    } else assert.ok(resolution.outcome);
+    const restored = await createLessonTutorial("first-shot", { storage });
+    assert.equal(restored.snapshot.completed, true);
+    assert.deepEqual(restored.snapshot.state, tutorial.snapshot.state);
+    restored.destroy(); tutorial.destroy();
+  }
+});
+
+test("the clock demonstration waits until the actual planning deadline before resolution", async () => {
+  const tutorial = await createLessonTutorial("basics");
+  await tutorial.continue();
+  await place(tutorial, 1, "blue");
+  await place(tutorial, 2, "lift");
+  await tutorial.play({ type: "practice-deadline" });
+  assert.equal(tutorial.snapshot.state.stage, "programming");
+  assert.equal(snapshot(tutorial.snapshot.state, 0).game.ship.crew[0].station, "white-upper");
+  assert.equal(completedTurns(tutorial.snapshot.state), 0);
+  await tutorial.play({ type: "practice-tick", ms: 4999 });
+  assert.equal(tutorial.snapshot.state.stage, "programming");
+  await tutorial.play({ type: "practice-tick", ms: 1 });
+  assert.equal(tutorial.snapshot.state.stage, "resolution");
+  assert.equal(completedTurns(tutorial.snapshot.state), 0);
+  tutorial.destroy();
+});

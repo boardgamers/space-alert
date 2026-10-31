@@ -64,6 +64,11 @@ export function mountConsole(root, host = null) {
     locale: () => locale,
     hosted: !!host,
   });
+  if (host && !host.tutorial) {
+    const header = $("header");
+    header.classList.add("compact-console-header");
+    header.insertBefore($("#console-nav"), header.querySelector(".header-tools"));
+  }
   let appearance = {};
   const playerColor = (i) => {
     const color = appearance.playerColors?.[i];
@@ -480,7 +485,7 @@ export function mountConsole(root, host = null) {
           !own.finishedPlanning &&
           phaseFor(slot.turn) === ownPhase;
         const description = `T+${slot.turn} · ${slot.cards.map((c) => (c.sides ? c.sides[c.side].map(label).join(" → ") : c.category === "movement" ? t("Déplacement", "Movement") : t("Action", "Action"))).join(" + ") || t("Vide", "Empty")}`;
-        return `<button class="slot ${slot.cards.length ? "filled" : "empty"} ${basic && resolution && slot.turn === (resolution.step === "damage" ? resolution.turn : Math.max(0, resolution.turn - 1)) ? "current" : ""} ${phaseFor(slot.turn) < ownPhase ? "locked" : ""} ${phaseFor(slot.turn) > ownPhase ? "future" : ""}" data-turn="${slot.turn}" ${editable ? "" : "disabled"} title="${esc(description)}" aria-label="${esc(description)}">${firstShot && slot.turn === 2 ? `<span class="slot-arrival" title="${t("La cible arrive avant ce tir", "Target arrives before this shot")}">${pictogram("down")}${t("Arrivée", "Arrival")}</span>` : ""}<span class="turn">T+${slot.turn} ${phaseFor(slot.turn) < ownPhase ? pictogram("lock") : ""}</span><span class="action">${slot.cards.map((c) => (c.sides ? c.sides[c.side].map(icon).join(" ") : pictogram(c.category === "movement" ? "move" : "cards"))).join(" + ") || pictogram("wait")}</span></button>`;
+        return `<button class="slot ${slot.cards.length ? "filled" : "empty"} ${(basic || firstShot) && resolution && slot.turn === (resolution.step === "damage" ? resolution.turn : Math.max(0, resolution.turn - 1)) ? "current" : ""} ${phaseFor(slot.turn) < ownPhase ? "locked" : ""} ${phaseFor(slot.turn) > ownPhase ? "future" : ""}" data-turn="${slot.turn}" ${editable ? "" : "disabled"} title="${esc(description)}" aria-label="${esc(description)}">${firstShot && slot.turn === 2 ? `<span class="slot-arrival" title="${t("La cible arrive avant ce tir", "Target arrives before this shot")}">${pictogram("down")}${t("Arrivée", "Arrival")}</span>` : ""}<span class="turn">T+${slot.turn} ${phaseFor(slot.turn) < ownPhase ? pictogram("lock") : ""}</span><span class="action">${slot.cards.map((c) => (c.sides ? c.sides[c.side].map(icon).join(" ") : pictogram(c.category === "movement" ? "move" : "cards"))).join(" + ") || pictogram("wait")}</span></button>`;
       })
       .join("");
     $("#program").setAttribute("aria-keyshortcuts", "ArrowLeft ArrowRight ArrowUp ArrowDown Backspace");
@@ -1049,6 +1054,10 @@ export function mountConsole(root, host = null) {
           ],
         });
       });
+      return;
+    }
+    if (el.id === "lesson-deadline" && host?.tutorial) {
+      perform(() => localPost("/api/lesson-deadline", {}));
       return;
     }
     if (el.id === "lesson-clock") {
