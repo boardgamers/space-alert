@@ -2353,10 +2353,10 @@ input:not([type="checkbox"]):not([type="range"]) {
 .practice-readiness > span { display: inline-flex; align-items: center; gap: 6px; }
 .native-tutorial.learning-basics .flight-layout { display: grid !important; margin: 0; align-items: start; }
 .native-tutorial.learning-basics #planning { min-width: 0; }
-.native-tutorial.learning-basics #program { display: flex; gap: 12px; border-left: 3px solid #e6b66b; padding: 12px; background: #101e28; }
-.native-tutorial.learning-basics #program .slot { flex: 0 0 72px; min-height: 90px; }
+.native-tutorial.learning-basics #program { display: flex; gap: 10px; border: 0; padding: 0; background: transparent; }
+.native-tutorial.learning-basics #program .slot { flex: 0 0 88px; min-height: 104px; }
 .native-tutorial.learning-basics #program .slot.current { border-color: #74e8bd; box-shadow: 0 0 0 2px #74e8bd55; }
-.native-tutorial.learning-basics #hand { grid-template-columns: repeat(3, 80px); }
+.native-tutorial.learning-basics #hand { grid-template-columns: repeat(3, 88px); gap: 10px; margin-top: 12px; }
 .native-tutorial.learning-basics #hand .card { min-height: 68px; }
 .native-tutorial.learning-basics #program-crew,
 .native-tutorial.learning-basics .crew-tabs,
@@ -2418,3 +2418,31 @@ input:not([type="checkbox"]):not([type="range"]) {
 .native-tutorial .practice-readiness #basics-run { margin-left: 12px; }
 .native-tutorial .practice-clock { margin: 12px 0; padding: 12px; gap: 12px; }
 .native-tutorial .practice-clock strong { font-size: 1rem; }
+
+/* Keep the exercise controls within reach of the ship, even on wide screens. */
+.native-tutorial.learning-basics .flight-layout {
+  grid-template-columns: minmax(0, 600px) minmax(260px, 320px);
+  justify-content: start;
+  gap: 28px;
+}
+.native-guide .basics-stages { max-width: 948px; }
+.native-guide-top { max-width: 948px; }
+.slot.filled {
+  background: #23463f;
+  border: 2px solid #74e8bd;
+  color: #d8fff0;
+}
+.slot.filled::after {
+  content: "";
+  position: absolute;
+  bottom: 8px;
+  width: 18px;
+  height: 4px;
+  border-radius: 2px;
+  background: #74e8bd;
+}
+.slot.empty { border-style: dashed; }
+.slot.empty .action { opacity: .45; }
+@media (max-width: 800px) {
+  .native-tutorial.learning-basics .flight-layout { grid-template-columns: 1fr; gap: 20px; }
+}

@@ -15,6 +15,7 @@ export function createSoundDesign() {
     if (!enabled || !context || context.state !== "running") return;
     const notes = {
       select: [[660, 0, .045]], place: [[440, 0, .065], [660, .06, .09]],
+      remove: [[520, 0, .06], [310, .055, .09]],
       start: [[330, 0, .09], [440, .1, .09], [660, .2, .14]],
       turn: [[300, 0, .07], [450, .08, .12]], wait: [[260, 0, .13]],
       complete: [[440, 0, .1], [550, .12, .1], [660, .24, .22]],

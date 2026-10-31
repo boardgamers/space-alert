@@ -478,7 +478,7 @@ export function mountConsole(root, host = null) {
           !own.finishedPlanning &&
           phaseFor(slot.turn) === ownPhase;
         const description = `T+${slot.turn} · ${slot.cards.map((c) => (c.sides ? c.sides[c.side].map(label).join(" → ") : c.category === "movement" ? t("Déplacement", "Movement") : t("Action", "Action"))).join(" + ") || t("Vide", "Empty")}`;
-        return `<button class="slot ${basic && resolution && slot.turn === (resolution.step === "damage" ? resolution.turn : Math.max(0, resolution.turn - 1)) ? "current" : ""} ${phaseFor(slot.turn) < ownPhase ? "locked" : ""} ${phaseFor(slot.turn) > ownPhase ? "future" : ""}" data-turn="${slot.turn}" ${editable ? "" : "disabled"} title="${esc(description)}" aria-label="${esc(description)}"><span class="turn">T+${slot.turn} ${phaseFor(slot.turn) < ownPhase ? pictogram("lock") : ""}</span><span class="action">${slot.cards.map((c) => (c.sides ? c.sides[c.side].map(icon).join(" ") : pictogram(c.category === "movement" ? "move" : "cards"))).join(" + ") || pictogram("wait")}</span></button>`;
+        return `<button class="slot ${slot.cards.length ? "filled" : "empty"} ${basic && resolution && slot.turn === (resolution.step === "damage" ? resolution.turn : Math.max(0, resolution.turn - 1)) ? "current" : ""} ${phaseFor(slot.turn) < ownPhase ? "locked" : ""} ${phaseFor(slot.turn) > ownPhase ? "future" : ""}" data-turn="${slot.turn}" ${editable ? "" : "disabled"} title="${esc(description)}" aria-label="${esc(description)}"><span class="turn">T+${slot.turn} ${phaseFor(slot.turn) < ownPhase ? pictogram("lock") : ""}</span><span class="action">${slot.cards.map((c) => (c.sides ? c.sides[c.side].map(icon).join(" ") : pictogram(c.category === "movement" ? "move" : "cards"))).join(" + ") || pictogram("wait")}</span></button>`;
       })
       .join("");
     $("#program").setAttribute("aria-keyshortcuts", "ArrowLeft ArrowRight ArrowUp ArrowDown Backspace");
@@ -906,6 +906,7 @@ export function mountConsole(root, host = null) {
         throw Error("Only your own seat can send commands");
       const result = await host.command({ type, sequence: view.nextSequence, ...extra });
       if (type === "program") host.cue?.("place");
+      if (type === "remove") host.cue?.("remove");
       return result;
     }
     const s =
