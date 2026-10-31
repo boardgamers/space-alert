@@ -557,7 +557,7 @@
   "timing.let_time_run_out": "Let time run out",
   "timing.deadline_plan": "Place one arrow. Leave the other two slots empty.",
   "timing.empty_waits": "Time is up: the arrow executes, then the two empty slots wait.",
-  "timing.complete": "Finish early or run out of time: the whole program executes. Empty slots wait.",
+  "timing.complete": "Here, one planning phase is followed by three turns. Empty slots mean waiting.",
   "timing.stopped": "Clock stopped",
   "timing.expired": "Time is up",
   "timing.last_seconds": "Last 5 seconds",

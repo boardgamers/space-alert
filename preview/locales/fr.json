@@ -557,7 +557,7 @@
   "timing.let_time_run_out": "Laisser le temps s’écouler",
   "timing.deadline_plan": "Placez une flèche. Laissez les deux autres cases vides.",
   "timing.empty_waits": "Temps écoulé : la flèche s’exécute, puis les deux cases vides font attendre.",
-  "timing.complete": "Prêt avant la fin ou temps écoulé : tout le programme s’exécute. Les cases vides font attendre.",
+  "timing.complete": "Ici, une seule phase de préparation, puis trois tours. Une case vide fait attendre.",
   "timing.stopped": "Chrono arrêté",
   "timing.expired": "Temps écoulé",
   "timing.last_seconds": "5 dernières secondes",
