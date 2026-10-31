@@ -93,6 +93,7 @@ test("a seven-turn mission includes the final threat movement, reports impact, a
     t: (key) => translate("en", key), esc: String, symbol: () => "", zoneName: String,
   });
   const portrait = threatPortrait(r.threats[0]);
-  assert.match(portrait, /class="threat-outcome">Impact</);
+  assert.match(portrait, /data-outcome="impact"/);
+  assert.match(portrait, />Impact<\/span>/);
   assert.doesNotMatch(portrait, /Escaped/);
 });

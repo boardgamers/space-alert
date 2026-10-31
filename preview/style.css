@@ -1905,19 +1905,45 @@ input:not([type="checkbox"]):not([type="range"]) {
 }
 .resolved-threat > .equipment-art {
   filter: saturate(0.3);
-  opacity: 0.55;
+  opacity: 0.22;
 }
 .threat-outcome {
+  --outcome-color: #c2d2dd;
   position: absolute;
-  top: 38%;
-  left: 0;
-  right: 0;
-  padding: 8px;
-  background: #081723db;
-  color: #ffe29b;
+  top: 58%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  width: max-content;
+  max-width: calc(100% - 170px);
+  color: var(--outcome-color);
   text-align: center;
+  font-size: 14px;
+  line-height: 1.2;
   font-weight: 700;
+  text-shadow: 0 2px 5px #06111c, 0 0 12px #06111c;
 }
+.outcome-symbol {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  background: #0a1b27f2;
+  box-shadow: 0 0 0 5px #0b1b2780;
+}
+.outcome-symbol .pictogram {
+  width: 28px;
+  height: 28px;
+  stroke-width: 2;
+}
+.resolved-threat[data-outcome="destroyed"] .threat-outcome { --outcome-color: #80e7bd; }
+.resolved-threat[data-outcome="impact"] .threat-outcome { --outcome-color: #ffac83; }
+.resolved-threat[data-outcome="escaped"] .threat-outcome { --outcome-color: #efd295; }
 .approach-track {
   display: flex;
   gap: 7px;

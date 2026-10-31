@@ -141,14 +141,16 @@ export function createTacticalView({
       (effect) => effect.type === "attack" &&
         ["hp", "double-hp", "triple-hp"].includes(effect.amount),
     );
-    const status =
+    const outcome =
       th.status === "destroyed"
-        ? t("tactical.destroyed")
+        ? "destroyed"
         : th.status === "survived"
-          ? t(impacted ? "tactical.impact" : "tactical.escaped")
+          ? impacted ? "impact" : "escaped"
           : th.status === "discarded"
-            ? t("tactical.discarded")
+            ? "discarded"
             : null;
+    const status = outcome ? t(`tactical.${outcome}`) : null;
+    const outcomeIcon = { destroyed: "check", impact: "impact", escaped: "escape", discarded: "close" }[outcome];
     const visual = threatIllustration(th);
     const internal = th.position === "internal";
     const stations = internal
@@ -163,7 +165,7 @@ export function createTacticalView({
           .join(", ")}`
       : `${t("tactical.trajectory")} : ${zoneName(th.zone)}`;
     const target = `<span class="threat-target" style="--zone:var(--${["red", "white", "blue"].includes(th.zone) ? th.zone : "cyan"})" role="img" aria-label="${esc(targetName)}" title="${esc(targetName)}">${shipLocator(stations, internal ? null : th.zone)}</span>`;
-    return `<span class="threat-portrait ${pending ? "pending-threat" : ""} ${gone ? "resolved-threat" : ""}">${target}${visual}<span class="threat-hud"><span class="hull-gauge"><span>${symbol("hull", `${t("app.hit_points")} : ${hp}/${th.hp}`, `<b>${hp}<small>/${th.hp}</small></b>`)}</span><span class="hull-bar"><i style="width:${Math.max(0, Math.min(100, (hp / Math.max(1, th.hp)) * 100))}%"></i></span></span><span class="shield-badge">${symbol("shield", `${t("app.shield")} : ${th.shield}`, `<b>${th.shield}</b>`)}</span></span>${status ? `<span class="threat-outcome">${esc(status)}</span>` : ""}</span>`;
+    return `<span class="threat-portrait ${pending ? "pending-threat" : ""} ${gone ? "resolved-threat" : ""}" ${outcome ? `data-outcome="${outcome}"` : ""}>${target}${visual}<span class="threat-hud"><span class="hull-gauge"><span>${symbol("hull", `${t("app.hit_points")} : ${hp}/${th.hp}`, `<b>${hp}<small>/${th.hp}</small></b>`)}</span><span class="hull-bar"><i style="width:${Math.max(0, Math.min(100, (hp / Math.max(1, th.hp)) * 100))}%"></i></span></span><span class="shield-badge">${symbol("shield", `${t("app.shield")} : ${th.shield}`, `<b>${th.shield}</b>`)}</span></span>${status ? `<span class="threat-outcome"><span class="outcome-symbol">${pictogram(outcomeIcon)}</span><span>${esc(status)}</span></span>` : ""}</span>`;
   }
   return { shipCutaway, threatPortrait };
 }
