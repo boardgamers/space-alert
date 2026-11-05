@@ -5,11 +5,11 @@
   "lesson.first-shot.lane": "Center lane",
   "lesson.first-shot.shield": "The center shield absorbs hits automatically while charged.",
   "lesson.energy.title": "Energy and coordination",
-  "lesson.energy.instruction.0": "The center laser needs one energy per shot. Its reactor starts with three: refill it to fire four times.",
+  "lesson.energy.instruction.0": "The center laser needs one energy per shot. Its reactor starts with three: refill it to fire four times. One refill uses a fuel capsule to fill the central reactor to capacity—not just add one energy. It does not refill the other reactors or shields.",
   "lesson.energy.instruction.1": "Android 1: fire on turns 1-4. Android 3: use the lift on turn 1, refill on turn 2. Then lock phase 1 to plan turn 4.",
   "lesson.repairs.title": "Repairing a malfunction",
   "lesson.repairs.instruction.0": "Repair the highlighted malfunction.",
-  "lesson.repairs.instruction.1": "→ on turn 1, then energy on turns 2-4.",
+  "lesson.repairs.instruction.1": "Move right on turn 1, then use B on turns 2, 3 and 4. While the malfunction is active, B repairs it instead of recharging the shield; it needs three repair actions.",
   "lesson.battlebots.title": "Battlebots and interceptors",
   "lesson.battlebots.instruction.0": "Collect the battlebots, then reach the interceptors.",
   "lesson.battlebots.instruction.1": "→ · systems · ← · ← · systems. In flight, play battlebots to fire; leave a slot empty to return.",
@@ -177,7 +177,9 @@
   "app.damage": "Damage",
   "app.threat_actions": "Threat actions",
   "app.review_a_step": "Review a step",
-  "app.back_to_live": "Back to live",
+  "app.back_to_live": "Jump to latest state",
+  "app.play_replay": "Play replay",
+  "app.pause_replay": "Pause replay",
   "app.laser": "Laser",
   "app.pulse": "Pulse",
   "app.shield": "Shield",
@@ -606,5 +608,6 @@
   "program.selected_turn": "Turn {turn}",
   "program.choose_turn": "Click a turn to edit",
   "lesson.energy.retry": "{count}/4 shots fired. Go back and plan four center-laser shots with a reactor refill.",
-  "tutorial.lock_phase": "Lock phase {phase}"
+  "tutorial.lock_phase": "Lock phase {phase}",
+  "tutorial.phase_ready": "Required actions programmed — ready to lock."
 }

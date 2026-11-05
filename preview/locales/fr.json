@@ -5,11 +5,11 @@
   "lesson.first-shot.lane": "Zone centrale",
   "lesson.first-shot.shield": "Le bouclier central absorbe les tirs automatiquement tant qu’il est chargé.",
   "lesson.energy.title": "Énergie et coordination",
-  "lesson.energy.instruction.0": "Le laser central consomme une énergie par tir. Son réacteur en contient trois : ravitaillez-le pour tirer quatre fois.",
+  "lesson.energy.instruction.0": "Le laser central consomme une énergie par tir. Son réacteur en contient trois : ravitaillez-le pour tirer quatre fois. Un ravitaillement consomme une capsule et remplit le réacteur central jusqu’à sa capacité, au lieu d’ajouter une seule énergie. Il ne remplit pas les autres réacteurs ni les boucliers.",
   "lesson.energy.instruction.1": "Androïde 1 : tirer aux tours 1-4. Androïde 3 : ascenseur au tour 1, énergie au tour 2. Verrouillez ensuite la phase 1 pour préparer le tour 4.",
   "lesson.repairs.title": "Réparer une panne",
   "lesson.repairs.instruction.0": "Réparez la panne surlignée.",
-  "lesson.repairs.instruction.1": "→ au tour 1, puis énergie aux tours 2-4.",
+  "lesson.repairs.instruction.1": "Allez à droite au tour 1, puis utilisez B aux tours 2, 3 et 4. Tant que la panne est active, B la répare au lieu de recharger le bouclier ; trois actions de réparation sont nécessaires.",
   "lesson.battlebots.title": "Robots et intercepteurs",
   "lesson.battlebots.instruction.0": "Prenez les robots, puis rejoignez les intercepteurs.",
   "lesson.battlebots.instruction.1": "→ · systèmes · ← · ← · systèmes. En vol, jouez robots pour tirer ; laissez vide pour rentrer.",
@@ -177,7 +177,9 @@
   "app.damage": "Dégâts",
   "app.threat_actions": "Actions des menaces",
   "app.review_a_step": "Revoir une étape",
-  "app.back_to_live": "Revenir au direct",
+  "app.back_to_live": "Aller au dernier état",
+  "app.play_replay": "Lire la reprise",
+  "app.pause_replay": "Mettre la reprise en pause",
   "app.laser": "Laser",
   "app.pulse": "Impulsion",
   "app.shield": "Bouclier",
@@ -606,5 +608,6 @@
   "program.selected_turn": "Tour {turn}",
   "program.choose_turn": "Cliquez un tour à modifier",
   "lesson.energy.retry": "{count}/4 tirs effectués. Revenez à la préparation : quatre tirs du laser central et un ravitaillement du réacteur.",
-  "tutorial.lock_phase": "Verrouiller la phase {phase}"
+  "tutorial.lock_phase": "Verrouiller la phase {phase}",
+  "tutorial.phase_ready": "Actions requises programmées — vous pouvez verrouiller."
 }

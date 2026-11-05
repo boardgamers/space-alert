@@ -2448,10 +2448,9 @@ input:not([type="checkbox"]):not([type="range"]) {
 .native-tutorial.learning-basics #ship .station-title { visibility: hidden; }
 .native-tutorial.learning-basics[data-tutorial-stage="resolution"] #controls { display: flex !important; gap: 10px; }
 .native-tutorial.learning-basics[data-tutorial-stage="resolution"] #replay { display: block !important; }
-.native-tutorial.learning-basics[data-tutorial-stage="resolution"] #replay label,
-.native-tutorial.learning-basics[data-tutorial-stage="resolution"] #replay #live { display: none; }
+.native-tutorial.learning-basics[data-tutorial-stage="resolution"] #replay label { display: block; }
 .native-tutorial.learning-basics[data-tutorial-step="3"] #controls { display: none !important; }
-.native-tutorial.learning-basics[data-tutorial-step="3"] #replay { display: none !important; }
+.native-tutorial.learning-basics[data-tutorial-step="3"] #replay:not(:empty) { display: block !important; }
 
 .training-ship .deck-upper .station,
 .training-ship .deck-lower .station { min-height: 104px; }
@@ -2480,7 +2479,7 @@ input:not([type="checkbox"]):not([type="range"]) {
   margin: 12px 0 0;
 }
 .native-tutorial.learning-basics #program { width: fit-content; max-width: 100%; }
-.native-tutorial .practice-readiness #basics-run { margin-left: 12px; }
+.native-tutorial .practice-readiness #basics-run { margin-left: 0; }
 .native-tutorial .practice-clock { margin: 12px 0; padding: 12px; gap: 12px; }
 .native-tutorial .practice-clock strong { font-size: 1rem; }
 
@@ -2537,6 +2536,20 @@ input:not([type="checkbox"]):not([type="range"]) {
 
 .native-tutorial #lesson-guide { display: none !important; }
 .native-tutorial .lesson-focus { outline: 2px dashed #e8c984; outline-offset: 3px; }
+/* Keep the repair target readable throughout; only its small outer halo breathes.
+   Static emphasis is the default, including when reduced motion is requested. */
+.native-tutorial[data-chapter="repairs"] .lesson-focus {
+  box-shadow: 0 0 0 4px #e8c98420, 0 0 10px 2px #e8c98428;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .native-tutorial[data-chapter="repairs"] .lesson-focus {
+    animation: tutorial-repair-attention 2.8s ease-in-out infinite;
+  }
+}
+@keyframes tutorial-repair-attention {
+  0%, 100% { box-shadow: 0 0 0 4px #e8c98420, 0 0 10px 2px #e8c98428; }
+  50% { box-shadow: 0 0 0 5px #e8c98438, 0 0 16px 3px #e8c98448; }
+}
 .native-tutorial .flight-layout { grid-template-columns: minmax(0, 600px) minmax(280px, 480px); gap: 28px; justify-content: start; }
 @media (max-width: 800px) { .native-tutorial .flight-layout { grid-template-columns: 1fr; } }
 /* BGS already supplies the game name and chapter header. */
@@ -2585,11 +2598,23 @@ input:not([type="checkbox"]):not([type="range"]) {
 }
 .native-tutorial[data-chapter="first-shot"] #latest { display: none; }
 
-.lesson-program-controls { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+.lesson-program-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 12px 0; }
+.lesson-program-controls .lesson-phase-lock { min-height: 48px; font-weight: 700; }
+.lesson-program-controls .lesson-phase-lock.ready {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #15242c;
+  box-shadow: 0 0 0 2px #e8c98433;
+}
+.lesson-phase-ready { color: var(--gold); font-size: 13px; }
+.lesson-phase-lock, .lesson-run { max-width: 100%; min-width: 0; white-space: normal; }
+.lesson-phase-lock span, .lesson-run span { min-width: 0; overflow-wrap: anywhere; }
+.lesson-run kbd { flex-shrink: 0; }
+.native-tutorial .practice-readiness, .phase-lesson-controls { flex-wrap: wrap; }
 .lesson-program-controls:empty { display: none; }
 .lesson-program-controls [data-guide="run"] { display: inline-flex; align-items: center; gap: 12px; min-height: 48px; }
 .lesson-program-controls kbd { font: inherit; font-size: 12px; color: var(--muted); }
-.native-tutorial[data-chapter="first-shot"] #replay { display: none !important; }
+.native-tutorial[data-chapter="first-shot"] #replay:not(:empty) { display: block !important; }
 
 .compact-console-header { flex-wrap: wrap; }
 .compact-console-header .console-nav { margin: 0 0 0 auto; padding: 0; border: 0; flex-wrap: nowrap; }

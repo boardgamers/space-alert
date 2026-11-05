@@ -1,3 +1,4 @@
+import { createReplay } from "./replay.js";
 import { createResolutionEffects } from "./resolution-effects.js";
 import { createSoundDesign } from "./sound.js";
 import { plannedRoute } from "./program-route.js";
@@ -70,6 +71,17 @@ export function mountConsole(root, host = null) {
   root.ownerDocument.addEventListener("keydown", unlockSound, true);
   const effects = createResolutionEffects(root, cue);
   let autoResolve = false;
+  const replay = createReplay({
+    index: () => replayFrame,
+    count: () => view?.game?.resolution?.frames.length ?? 0,
+    show: (index) => { replayFrame = index; rerender(); },
+    busy: () => effects.busy() || root.ownerDocument.hidden,
+  });
+  intervals.push(setInterval(() => {
+    const wasPlaying = replay.playing;
+    replay.tick();
+    if (wasPlaying && !replay.playing) rerender();
+  }, 100));
   const t = (key, params) => translate(locale, key, params);
   const actionWords = (text) =>
     text.replace(
@@ -313,8 +325,14 @@ export function mountConsole(root, host = null) {
       showPlannedPosition(next ? Number(next.dataset.turn) : null);
     });
   function render(next, force = false) {
+    if (!next.game?.resolution || (replayFrame !== null &&
+        replayFrame >= next.game.resolution.frames.length)) {
+      replay.pause();
+      effects.reset();
+      replayFrame = null;
+    }
     view = next;
-    received = performance.now();
+    if (!force) received = performance.now();
     const newKey = `${view.revision}/${seat}/${locale}`;
     renderCareers(next);
     if (!force && key === newKey) return;
@@ -583,7 +601,7 @@ export function mountConsole(root, host = null) {
     $("#player-help").textContent = planning
       ? selected.length
         ? t("app.choose_a_turn_for_this_card")
-        : t("app.click_a_card_to_fill_the_next_turn")
+        : ""
       : view.stage === "presence"
         ? t("app.ready_lasts_two_minutes_we_wait_until_everyone")
         : view.stage === "resolution"
@@ -603,7 +621,7 @@ export function mountConsole(root, host = null) {
       : planning
         ? `${g?.solo ? "" : button("advance-phase", t("app.next_phase"), own.finishedPlanning || own.planningPhase >= view.mission.phaseEndsMs.length)}${button("finish-planning", t("app.lock_my_program"), own.finishedPlanning || view.phase < view.mission.phaseEndsMs.length)}${g.dataCredits ? button("draw", `${t("app.draw")} +${g.dataCredits}`) : ""}${g.androidDataCredits ? button("draw-android", t("app.android_card") + ` +${g.androidDataCredits}`, !g.canDrawAndroid) : ""}`
         : view.stage === "resolution"
-          ? `<button data-command="resolve" class="primary icon-button" title="${t("app.next_resolution_step")}" aria-label="${t("app.next_resolution_step")}" ${seat !== 0 || !!resolution?.outcome ? "disabled" : ""}>${pictogram("step")}</button><button data-command="resolve-all" class="quiet icon-button" title="${t(autoResolve ? "basics.pause" : "app.resolve_mission")}" aria-label="${t(autoResolve ? "basics.pause" : "app.resolve_mission")}" ${seat !== 0 || !!resolution?.outcome ? "disabled" : ""}>${pictogram(autoResolve ? "pause" : "right")}</button>`
+          ? `<button data-command="resolve" class="primary icon-button" title="${t("app.next_resolution_step")}" aria-label="${t("app.next_resolution_step")}" ${seat !== 0 || replayFrame !== null || !!resolution?.outcome ? "disabled" : ""}>${pictogram("step")}</button><button data-command="resolve-all" class="quiet icon-button" title="${t(autoResolve ? "basics.pause" : "app.resolve_mission")}" aria-label="${t(autoResolve ? "basics.pause" : "app.resolve_mission")}" ${seat !== 0 || replayFrame !== null || !!resolution?.outcome ? "disabled" : ""}>${pictogram(autoResolve ? "pause" : "right")}</button>`
           : view.stage === "cancelled"
             ? '<button id="open-setup">' + t("app.new_session") + "</button>"
             : "";
@@ -728,7 +746,7 @@ export function mountConsole(root, host = null) {
             .join("")
         : "";
     $("#replay").innerHTML = resolution
-      ? `<p>${resolution.outcome ? `${resolution.outcome.survived ? "✓" : "✕"} ${t("app.score")} : <b>${resolution.outcome.score}</b> · ${resolution.outcome.threatPoints} ${t("app.threats_87b951")} + ${resolution.outcome.visual} ${t("app.visual")} − ${resolution.outcome.penalties} ${t("app.penalties")}` : resolution.turn > resolution.lastTurn ? t("app.final_threat_movement") : `${t("app.turn")} ${resolution.turn} · ${esc({ appear: t("app.appearances"), crew: t("app.crew_actions"), damage: t("app.damage"), threats: t("app.threat_actions"), computer: t("app.computer") }[resolution.step])}`}</p><label>${t("app.review_a_step")} <input id="replay-slider" type="range" min="0" max="${resolution.frames.length - 1}" value="${replayFrame ?? resolution.frames.length - 1}"></label>${replayFrame !== null ? '<button id="live" class="quiet">' + t("app.back_to_live") + "</button>" : ""}`
+      ? `<p>${resolution.outcome ? `${resolution.outcome.survived ? "✓" : "✕"} ${t("app.score")} : <b>${resolution.outcome.score}</b> · ${resolution.outcome.threatPoints} ${t("app.threats_87b951")} + ${resolution.outcome.visual} ${t("app.visual")} − ${resolution.outcome.penalties} ${t("app.penalties")}` : resolution.turn > resolution.lastTurn ? t("app.final_threat_movement") : `${t("app.turn")} ${resolution.turn} · ${esc({ appear: t("app.appearances"), crew: t("app.crew_actions"), damage: t("app.damage"), threats: t("app.threat_actions"), computer: t("app.computer") }[resolution.step])}`}</p><label>${t("app.review_a_step")} <input id="replay-slider" type="range" min="0" max="${resolution.frames.length - 1}" value="${replayFrame ?? resolution.frames.length - 1}"></label><button id="replay-play" class="quiet" ${resolution.frames.length < 2 ? "disabled" : ""}>${t(replay.playing ? "app.pause_replay" : "app.play_replay")}</button>${replayFrame !== null ? '<button id="live" class="quiet">' + t("app.back_to_live") + "</button>" : ""}`
       : "";
     renderCampaign(g?.campaign);
     $("#announcements").innerHTML = resolution
@@ -1028,6 +1046,7 @@ export function mountConsole(root, host = null) {
     });
   });
   async function command(type, extra = {}, target = seat) {
+    if (replayFrame !== null) return; // Reviewing never sends engine commands.
     if (host) {
       if (target !== seat || seat < 0)
         throw Error("Only your own seat can send commands");
@@ -1300,6 +1319,8 @@ export function mountConsole(root, host = null) {
         seat = 0;
         crew = 0;
         selected = [];
+        replay.pause();
+        effects.reset();
         replayFrame = null;
         basicsStarted = false;
         basicsPicked = false;
@@ -1353,6 +1374,8 @@ export function mountConsole(root, host = null) {
     }
     if (el.id === "campaign-next") {
       perform(async () => {
+        replay.pause();
+        effects.reset();
         replayFrame = null;
         selected = [];
         await localPost("/api/campaign-next", {
@@ -1460,6 +1483,7 @@ export function mountConsole(root, host = null) {
       else { cue('select'); rerender(); }
       return;
     }
+    if (el.dataset.command && replayFrame !== null) return;
     if (el.dataset.command === "resolve-all") {
       autoResolve = !autoResolve;
       rerender();
@@ -1521,7 +1545,18 @@ export function mountConsole(root, host = null) {
         }).then((r) => r.json());
         render(result);
       });
+    if (el.id === "replay-play") {
+      autoResolve = false;
+      if (replay.playing) replay.pause();
+      else {
+        effects.reset(); // Establish a silent starting frame, then animate adjacent frames.
+        replay.play();
+      }
+      rerender();
+    }
     if (el.id === "live") {
+      replay.pause();
+      effects.reset();
       replayFrame = null;
       rerender();
     }
@@ -1539,8 +1574,20 @@ export function mountConsole(root, host = null) {
     selected = [];
     rerender();
   });
+  // Stop immediately while dragging; commit the selected frame on change so
+  // rendering does not replace the range input underneath the pointer.
+  listenRoot("input", (e) => {
+    if (e.target.id === "replay-slider") {
+      replay.pause();
+      autoResolve = false;
+      effects.reset();
+    }
+  });
   listenRoot("change", (e) => {
     if (e.target.id === "replay-slider") {
+      replay.pause();
+      autoResolve = false;
+      effects.reset();
       replayFrame = Number(e.target.value);
       rerender();
     }
@@ -1590,6 +1637,8 @@ export function mountConsole(root, host = null) {
       });
       const next = await res.json();
       if (!res.ok) throw Error(next.error);
+      replay.pause();
+      effects.reset();
       replayFrame = null;
       selected = [];
       crew = seat;
@@ -1665,7 +1714,7 @@ export function mountConsole(root, host = null) {
     })();
   }
   return {
-    isAnimating: () => effects.busy(),
+    isAnimating: () => effects.busy() || replayFrame !== null,
     resetTutorial() {
       previewTurn = null;
       cursor.reset();
@@ -1673,6 +1722,8 @@ export function mountConsole(root, host = null) {
       basicsPicked = false;
       basicsStarted = false;
       selected = [];
+      replay.pause();
+      effects.reset();
       replayFrame = null;
       key = "";
     },
@@ -1708,6 +1759,7 @@ export function mountConsole(root, host = null) {
       rerender();
     },
     destroy() {
+      replay.pause();
       effects.destroy();
       audio?.destroy();
       root.ownerDocument.removeEventListener("pointerdown", unlockSound, true);

@@ -142,6 +142,9 @@ export function createResolutionEffects(root, cue) {
   function delta(p, value, color, icon = "") {
     if (!p || !value) return;
     const n = node("fx-delta", p, color);
+    // Cancelling the finished animation restores the underlying style before
+    // the removal timer runs. Keep that style hidden to avoid a one-frame flash.
+    n.style.opacity = "0";
     n.textContent = `${icon}−${value}`;
     animate(n, [{ transform: "translate(-50%,-20%)", opacity: 1 },
       { transform: `translate(-50%,${reduced.matches ? "-20%" : "-140%"})`, opacity: 0 }], 750);

@@ -7,6 +7,7 @@ import { LESSONS } from "../src/tutorials.js";
 import { snapshot } from "../src/view.js";
 import { mountConsole } from "../preview/app.js";
 import { pictogram } from "../preview/icons.js";
+import { tutorialPhaseButton } from "../preview/tutorial-program.js";
 import { duration, practiceClockText } from "../preview/clock.js";
 import { createSoundDesign } from "../preview/sound.js";
 import html from "../preview/index.html";
@@ -195,6 +196,10 @@ export async function mountLesson(
       .join("")}</div>${pictogram("step")}</div></div>`;
   }
   function renderGuide(s) {
+    // Put planning decisions beside the program tools, without moving playback.
+    if (s.state.stage === 'programming')
+      target.querySelector('#selection-tools').before(programControls);
+    else target.querySelector('#hand').after(programControls);
     const planned = s.state.game.programs[0].some(
       (slot) => slot?.cards?.length,
     );
@@ -210,7 +215,7 @@ export async function mountLesson(
       s.step === 2 &&
       completedTurns(s.state) >= 3 &&
       !s.completed;
-    programControls.innerHTML = `${chapter === "basics" && s.step === 3 ? `<button data-guide="timeout" class="primary icon-label" aria-keyshortcuts="Enter" title="${t("timing.next_scenario")} · ↵" ${s.busy ? "disabled" : ""}>${pictogram("clock")}<span>${t("timing.next_scenario")}</span><kbd aria-hidden="true">↵</kbd></button>` : ""}${canPlay(s) ? transport("playback", playing ? "pause" : "right", playing ? t("basics.pause") : t("tutorial.play_program")) : ""}${!LESSONS[index].basics && chapter !== "first-shot" && s.step === 1 && s.state.phase === 1 ? transport("phase", "lock", t("tutorial.lock_phase", { phase: 1 }), s.busy) : ""}${!LESSONS[index].basics && s.step === 1 && (chapter !== "energy" || s.state.phase === 2) ? `<button data-guide="run" class="primary icon-button" aria-keyshortcuts="Enter" title="${t("basics.run_program")} · ↵" aria-label="${t("basics.run_program")}" ${(chapter === "first-shot" ? !readyToFire : !planned) || s.busy ? "disabled" : ""}>${pictogram("check")}<kbd>↵</kbd></button>` : ""}`;
+    programControls.innerHTML = `${chapter === "basics" && s.step === 3 ? `<button data-guide="timeout" class="primary icon-label" aria-keyshortcuts="Enter" title="${t("timing.next_scenario")} · ↵" ${s.busy ? "disabled" : ""}>${pictogram("clock")}<span>${t("timing.next_scenario")}</span><kbd aria-hidden="true">↵</kbd></button>` : ""}${canPlay(s) ? transport("playback", playing ? "pause" : "right", playing ? t("basics.pause") : t("tutorial.play_program")) : ""}${!LESSONS[index].basics && chapter !== "first-shot" && s.step === 1 && s.state.phase === 1 ? tutorialPhaseButton(s.state, locale, s.busy) : ""}${!LESSONS[index].basics && s.step === 1 && (chapter !== "energy" || s.state.phase === 2) ? `<button data-guide="run" class="primary icon-label lesson-run" aria-keyshortcuts="Enter" title="${t("basics.run_program")} · ↵" ${(chapter === "first-shot" ? !readyToFire : !planned) || s.busy ? "disabled" : ""}>${pictogram("check")}<span>${t("basics.run_program")}</span><kbd aria-hidden="true">↵</kbd></button>` : ""}`;
     if (phaseLesson && s.state.stage === "programming" && s.step > 0) {
       const ready =
         s.state.game.programs[0][(s.state.phase === 1 ? 1 : 4) - 1]?.cards
@@ -220,7 +225,7 @@ export async function mountLesson(
           s.state.mission.phaseEndsMs[s.state.phase - 1] -
           s.state.observedAt,
       );
-      programControls.innerHTML = `<div class="phase-lesson-controls">${s.state.phase === 1 ? transport("phase-deadline", "forward", t("phases.skip"), !ready || !s.state.game.threats.length || s.busy) : `<button data-guide="run" class="primary icon-button" aria-keyshortcuts="Enter" title="${t("phases.execute")} · ↵" aria-label="${t("phases.execute")}" ${!ready || s.busy ? "disabled" : ""}>${pictogram("check")}<kbd>↵</kbd></button>`}<div class="practice-clock"><div><strong data-practice-phase>${t("phases.deadline", { phase: s.state.phase, time: phaseTime })}</strong><small>${t("phases.total")} · <span data-practice-time>${practiceClockText(s.state, locale)}</span></small></div>${transport("phase-clock", s.state.tutorial.clockRunning ? "pause" : "clock", t(s.state.tutorial.clockRunning ? "basics.pause" : "basics.start_clock"))}</div></div>`;
+      programControls.innerHTML = `<div class="phase-lesson-controls">${s.state.phase === 1 ? transport("phase-deadline", "forward", t("phases.skip"), !ready || !s.state.game.threats.length || s.busy) : `<button data-guide="run" class="primary icon-label lesson-run" aria-keyshortcuts="Enter" title="${t("phases.execute")} · ↵" ${!ready || s.busy ? "disabled" : ""}>${pictogram("check")}<span>${t("phases.execute")}</span><kbd aria-hidden="true">↵</kbd></button>`}<div class="practice-clock"><div><strong data-practice-phase>${t("phases.deadline", { phase: s.state.phase, time: phaseTime })}</strong><small>${t("phases.total")} · <span data-practice-time>${practiceClockText(s.state, locale)}</span></small></div>${transport("phase-clock", s.state.tutorial.clockRunning ? "pause" : "clock", t(s.state.tutorial.clockRunning ? "basics.pause" : "basics.start_clock"))}</div></div>`;
     }
     guide.innerHTML = `<div class="native-guide-row"><nav class="basics-stages" aria-label="${t("tutorial.steps")}">${label.map((name, i) => `<button data-guide-step="${deadline ? i + 3 : i}" class="quiet ${stage === i ? "active" : ""}" ${i > stage || s.busy ? "disabled" : ""} ${stage === i ? 'aria-current="step"' : ""}><span class="step-number">${i + 1}</span><span>${name}</span></button>`).join("")}</nav><div class="native-guide-tools">${standalone ? `<a href="/">${t("tutorial.local_game")}</a>` : ""}${transport("sound", soundOn ? "speaker" : "muted", soundOn ? t("tutorial.mute_sounds") : t("tutorial.enable_sounds"))}</div></div>
       <h1>${escape(s.title)}</h1>${s.step === 0 && (chapter === "basics" || phaseLesson) ? missionOverview() : ""}${["basics", "first-shot", "energy"].includes(chapter) ? `<small class="lesson-scope">${t("timing.exercise", { turns: chapter === "energy" ? 4 : 3 })}${chapter === "basics" ? ` · ${deadline ? 2 : 1}/2` : ""}</small>` : ""}<p class="native-guide-text">${escape(missed ? t("tutorial.destination_missed_go_back_and_plan_another_route") : s.text)}</p>${chapter === "first-shot" && s.step < 2 ? `<p class="lesson-shield-note">${pictogram("shield")}<span>${t("lesson.first-shot.shield")}</span></p>` : ""}

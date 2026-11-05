@@ -480,6 +480,7 @@ export function createPreviewServer({ clock = Date.now, storagePath } = {}) {
         "/program-route.js": "program-route.js",
         "/program-cursor.js": "program-cursor.js",
         "/resolution-effects.js": "resolution-effects.js",
+        "/replay.js": "replay.js",
         "/sound.js": "sound.js",
         "/i18n.js": "i18n.js",
         "/locales/en.json": "locales/en.json",
