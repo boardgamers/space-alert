@@ -5,6 +5,7 @@ import { plannedRoute } from "./program-route.js";
 import { createProgramCursor } from "./program-cursor.js";
 import { translate, createLocaleSelection, lessonCopy } from "./i18n.js";
 import { basicsView } from "./basics.js";
+import { tutorialTextHtml } from "./tutorial-text.js";
 import { duration, practiceClockText } from "./clock.js";
 import { mountNavigation } from "./navigation.js";
 import {
@@ -83,16 +84,6 @@ export function mountConsole(root, host = null) {
     if (wasPlaying && !replay.playing) rerender();
   }, 100));
   const t = (key, params) => translate(locale, key, params);
-  const actionWords = (text) =>
-    text.replace(
-      /\b[ABC]\b/g,
-      (key) =>
-        ({
-          A: t("app.weapons"),
-          B: t("app.energy"),
-          C: t("app.systems"),
-        })[key],
-    );
   const navigation = mountNavigation(root, {
     locale: () => locale,
     hosted: !!host,
@@ -419,7 +410,7 @@ export function mountConsole(root, host = null) {
     $("#lesson-guide").innerHTML =
       view.tutorial && !basic
         ? `<ol>${lessonCopy(view.tutorial.id, locale)
-            .instructions.map((p) => `<li>${esc(actionWords(p))}</li>`)
+            .instructions.map((p) => `<li>${tutorialTextHtml(p, locale)}</li>`)
             .join(
               "",
             )}</ol><div class="lesson-actions">${view.stage === "programming" ? `<button id="lesson-clock" class="icon-label">${pictogram(view.tutorial.clockRunning ? "pause" : "clock")}<span>${view.tutorial.clockRunning ? t("app.pause_clock") : t("app.start_practice_clock")}</span></button><button id="lesson-next" class="icon-label">${pictogram(view.phase === 1 ? "step" : "lock")}<span>${view.phase === 1 ? t("app.phase_2") : t("app.finish_programming")}</span></button>` : ""} <button data-lesson="${view.tutorial.id}" class="quiet icon-button" title="${t("app.restart")}" aria-label="${t("app.restart")}">${pictogram("restart")}</button></div>`

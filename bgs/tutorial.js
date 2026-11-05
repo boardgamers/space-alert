@@ -7,6 +7,7 @@ import { LESSONS } from "../src/tutorials.js";
 import { snapshot } from "../src/view.js";
 import { mountConsole } from "../preview/app.js";
 import { pictogram } from "../preview/icons.js";
+import { tutorialTextHtml } from "../preview/tutorial-text.js";
 import { tutorialPhaseButton } from "../preview/tutorial-program.js";
 import { duration, practiceClockText } from "../preview/clock.js";
 import { createSoundDesign } from "../preview/sound.js";
@@ -63,6 +64,8 @@ export async function mountLesson(
     locale,
     storage,
     onProgress,
+    // Keep the closed action tokens until the native guide renders them safely.
+    formatText: (text) => text,
   });
   target.innerHTML = html
     .split("<body>")[1]
@@ -228,7 +231,7 @@ export async function mountLesson(
       programControls.innerHTML = `<div class="phase-lesson-controls">${s.state.phase === 1 ? transport("phase-deadline", "forward", t("phases.skip"), !ready || !s.state.game.threats.length || s.busy) : `<button data-guide="run" class="primary icon-label lesson-run" aria-keyshortcuts="Enter" title="${t("phases.execute")} · ↵" ${!ready || s.busy ? "disabled" : ""}>${pictogram("check")}<span>${t("phases.execute")}</span><kbd aria-hidden="true">↵</kbd></button>`}<div class="practice-clock"><div><strong data-practice-phase>${t("phases.deadline", { phase: s.state.phase, time: phaseTime })}</strong><small>${t("phases.total")} · <span data-practice-time>${practiceClockText(s.state, locale)}</span></small></div>${transport("phase-clock", s.state.tutorial.clockRunning ? "pause" : "clock", t(s.state.tutorial.clockRunning ? "basics.pause" : "basics.start_clock"))}</div></div>`;
     }
     guide.innerHTML = `<div class="native-guide-row"><nav class="basics-stages" aria-label="${t("tutorial.steps")}">${label.map((name, i) => `<button data-guide-step="${deadline ? i + 3 : i}" class="quiet ${stage === i ? "active" : ""}" ${i > stage || s.busy ? "disabled" : ""} ${stage === i ? 'aria-current="step"' : ""}><span class="step-number">${i + 1}</span><span>${name}</span></button>`).join("")}</nav><div class="native-guide-tools">${standalone ? `<a href="/">${t("tutorial.local_game")}</a>` : ""}${transport("sound", soundOn ? "speaker" : "muted", soundOn ? t("tutorial.mute_sounds") : t("tutorial.enable_sounds"))}</div></div>
-      <h1>${escape(s.title)}</h1>${s.step === 0 && (chapter === "basics" || phaseLesson) ? missionOverview() : ""}${["basics", "first-shot", "energy"].includes(chapter) ? `<small class="lesson-scope">${t("timing.exercise", { turns: chapter === "energy" ? 4 : 3 })}${chapter === "basics" ? ` · ${deadline ? 2 : 1}/2` : ""}</small>` : ""}<p class="native-guide-text">${escape(missed ? t("tutorial.destination_missed_go_back_and_plan_another_route") : s.text)}</p>${chapter === "first-shot" && s.step < 2 ? `<p class="lesson-shield-note">${pictogram("shield")}<span>${t("lesson.first-shot.shield")}</span></p>` : ""}
+      <h1>${escape(s.title)}</h1>${s.step === 0 && (chapter === "basics" || phaseLesson) ? missionOverview() : ""}${["basics", "first-shot", "energy"].includes(chapter) ? `<small class="lesson-scope">${t("timing.exercise", { turns: chapter === "energy" ? 4 : 3 })}${chapter === "basics" ? ` · ${deadline ? 2 : 1}/2` : ""}</small>` : ""}<p class="native-guide-text">${tutorialTextHtml(missed ? t("tutorial.destination_missed_go_back_and_plan_another_route") : s.text, locale)}</p>${chapter === "first-shot" && s.step < 2 ? `<p class="lesson-shield-note">${pictogram("shield")}<span>${t("lesson.first-shot.shield")}</span></p>` : ""}
       <div class="native-guide-controls">${transport("restart", "rewind", t("tutorial.restart_exercise"), s.busy)}${transport("previous", "left", t("tutorial.previous_step"), s.step === 0 || s.busy)}${transport("replay", "restart", t("tutorial.replay_step"), s.busy || s.step === 0)}${s.canContinue ? `<button data-guide="continue" class="primary icon-button" title="${t("tutorial.start")}" aria-label="${t("tutorial.start")}">${pictogram("right")}</button>` : ""}${s.completed && (nextChapter || (standalone && LESSONS[index + 1])) ? `<button data-guide="next" class="primary icon-label"><span>${t("tutorial.next_exercise")}</span>${pictogram("right")}</button>` : ""}</div>
       ${s.error ? `<p role="alert">${escape(s.error)}</p>` : ""}`;
   }

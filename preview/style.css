@@ -2391,6 +2391,8 @@ input:not([type="checkbox"]):not([type="range"]) {
 .native-guide-tools a { color: #a9d7e7; font-size: .8rem; }
 .native-guide h1 { font-size: clamp(1.4rem, 3vw, 2rem); margin: 20px 0 8px; }
 .native-guide-text { line-height: 1.6; white-space: pre-line; max-width: 65ch; }
+.tutorial-action { display: inline-block; vertical-align: -0.25em; line-height: 1; }
+.tutorial-action .pictogram { width: 1.25em; height: 1.25em; }
 .native-guide-controls { margin-top: 16px; }
 .native-guide .basics-stages { grid-template-columns: repeat(3, 1fr); margin: 16px 0; }
 .native-tutorial .basics-top,

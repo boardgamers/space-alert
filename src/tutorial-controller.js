@@ -1,3 +1,4 @@
+import { tutorialTextPlain } from "../preview/tutorial-text.js";
 import { translate, loadLocale } from "../preview/i18n.js";
 import { createTutorial } from "@boardgamers/protocol/tutorial";
 import { LESSONS, createLesson } from "./tutorials.js";
@@ -19,12 +20,12 @@ export function energyObjective(state) {
 // BGS owns checkpoints and saved action history. All moves still use our engine.
 export async function createLessonTutorial(
   id,
-  { locale = "en", storage, onProgress } = {},
+  { locale = "en", storage, onProgress, formatText = tutorialTextPlain } = {},
 ) {
   locale = await loadLocale(locale);
   const lesson = LESSONS.find((l) => l.id === id);
   if (!lesson) throw Error("Unknown lesson");
-  const t = (key, params) => translate(locale, key, params);
+  const t = (key, params) => formatText(translate(locale, key, params), locale);
   const settleClock = (state) => {
     if (lesson.basics && state.stage === "resolution") {
       state.game.resolution.lastTurn = 3;
