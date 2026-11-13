@@ -181,7 +181,7 @@ export function createResolutionEffects(root, cue) {
     const p = { x: bounds.left - base.left + bounds.width / 2,
       y: bounds.top - base.top + bounds.height / 2, width: bounds.width, height: bounds.height };
     const jumpSound = kind => sound(kind, position);
-    const duration = reduced.matches ? 900 : 2800;
+    const duration = reduced.matches ? 1500 : 2800;
     const departure = reduced.matches ? 0 : 1100;
     const arrival = reduced.matches ? 0 : 1500;
     if (!reduced.matches) {
@@ -217,14 +217,14 @@ export function createResolutionEffects(root, cue) {
           later(() => star.remove(), 560);
         }
       }, departure);
-    } else {
-      animate(vessel, [{ filter: "brightness(1.15)" }, { filter: "brightness(1)" }], 500);
     }
     later(() => {
       jumpSound("victory");
       const seal = node("fx-jump-success", p, "#76e5c6", stage);
       seal.innerHTML = pictogram("check");
-      animateTransient(seal, [
+      // Reduced motion gets a steady check, not a departing/fading ship.
+      if (reduced.matches) seal.style.transform = "translate(-50%,-50%)";
+      else animateTransient(seal, [
         { transform: `translate(-50%,-50%) scale(${reduced.matches ? 1 : .85})`, opacity: 0 },
         { transform: "translate(-50%,-50%) scale(1)", opacity: 1, offset: .2 },
         { transform: "translate(-50%,-50%) scale(1)", opacity: 1, offset: .7 },

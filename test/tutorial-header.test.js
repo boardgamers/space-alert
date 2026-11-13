@@ -95,3 +95,15 @@ test("progress updates accessible labels and clears old current/completed styles
     assert.equal(group.classList.contains("progressed"), false);
   }
 });
+
+test("final movement sentinel is never a completed action turn (7-turn lesson or 12-turn mission)", async () => {
+  const { beginResolution, resolveAll } = await import("../src/game/resolution.js");
+  for (const turns of [7, 12]) {
+    const r = resolveAll(beginResolution({ crewSize: 1, seed: "sentinel", programs: [[]], threats: [], tracks: {}, turns }));
+    assert.equal(r.frames.at(-1).turn, turns + 1);
+    assert.deepEqual(missionTurnProgress(r.frames, r.lastTurn), { completed: new Set(Array.from({ length: turns }, (_, i) => i + 1)), current: 0 });
+    assert.equal(missionTurnProgress(r.frames.slice(0, -1), r.lastTurn).current, 0);
+  }
+  await loadLocale("en");
+  assert.ok(tutorialMissionHeader("planning-phases", 3, "en").includes(translate("en", "timing.exercise", { turns: 7 })));
+});

@@ -8,8 +8,8 @@ export function tutorialMissionHeader(chapter, step, locale) {
   const overview = ["basics", "planning-phases"].includes(chapter)
     ? missionOverview(t)
     : "";
-  const scope = ["basics", "first-shot", "energy"].includes(chapter)
-    ? `<small class="lesson-scope">${t("timing.exercise", { turns: chapter === "energy" ? 4 : 3 })}</small>`
+  const scope = ["basics", "first-shot", "energy", "planning-phases"].includes(chapter)
+    ? `<small class="lesson-scope">${t("timing.exercise", { turns: chapter === "planning-phases" ? 7 : chapter === "energy" ? 4 : 3 })}</small>`
     : "";
   return overview + scope;
 }
@@ -41,14 +41,14 @@ function missionOverview(t) {
 // Frames describe the *next* resolution operation. Only a captured `appear`
 // frame closes a whole turn (crew actions alone do not finish threat movement).
 // Use the displayed prefix, never the live cursor, clock, or planned cards.
-export function missionTurnProgress(frames = []) {
-  const completed = new Set(frames.filter((frame) => frame.step === "appear" && frame.turn > 0).map((frame) => frame.turn));
+export function missionTurnProgress(frames = [], lastTurn = 12) {
+  const completed = new Set(frames.filter((frame) => frame.step === "appear" && frame.turn > 0 && frame.turn <= lastTurn).map((frame) => frame.turn));
   const displayed = frames.at(-1);
-  return { completed, current: displayed && !completed.has(displayed.turn) ? displayed.turn : 0 };
+  return { completed, current: displayed && displayed.turn <= lastTurn && !completed.has(displayed.turn) ? displayed.turn : 0 };
 }
 
-export function updateTutorialMissionProgress(root, frames, locale) {
-  const { completed, current } = missionTurnProgress(frames);
+export function updateTutorialMissionProgress(root, frames, locale, lastTurn = 12) {
+  const { completed, current } = missionTurnProgress(frames, lastTurn);
   for (const cell of root.querySelectorAll("[data-mission-turn]")) {
     const turn = Number(cell.dataset.missionTurn);
     const done = completed.has(turn);

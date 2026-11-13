@@ -23,7 +23,7 @@ function fixture({ reduced = false, animate = true } = {}) {
       classList: { add() {} }, setAttribute() {}, removeAttribute() {},
       getClientRects: () => [1],
       getBoundingClientRect() { return { left: this.x, top: 0, width: 20, height: 20 }; },
-      append(child) { child.parent = this; this.children.push(child); },
+      append(child) { child.parent = this; child.parentElement = this; this.children.push(child); },
       remove() { if (this.parent) this.parent.children = this.parent.children.filter(c => c !== this); this.removed = true; },
       replaceChildren() { for (const child of [...this.children]) child.remove(); },
       querySelector: () => null,
@@ -40,6 +40,7 @@ function fixture({ reduced = false, animate = true } = {}) {
     return el;
   }
   const layout = element(), ship = element(), pawn = element(100), room = element(200);
+  layout.append(ship);
   pawn.dataset.crew = "0";
   const doc = { defaultView: win, hidden: false, createElement: () => element(),
     addEventListener: (name, fn) => listeners.set(name, fn), removeEventListener: name => listeners.delete(name) };
@@ -53,7 +54,7 @@ function fixture({ reduced = false, animate = true } = {}) {
   effects.afterRender(resolution, 0);
   function render() { effects.beforeRender(); pawn.x = 300; effects.afterRender(resolution, 1); }
   function frame() { const callbacks = [...raf.values()]; raf.clear(); callbacks.forEach(fn => fn()); }
-  return { effects, resolution, render, frame, pawn, ship, layer: layout.children[0], animations, raf, timers, listeners, win, doc };
+  return { effects, resolution, render, frame, pawn, ship, layer: layout.children[1], animations, raf, timers, listeners, win, doc };
 }
 
 test("moving pawn is replaced before the first paint, then atomically handed off at finish", async () => {
@@ -145,3 +146,27 @@ test("shared transient bursts and damage labels are removed before animation can
   assert.notEqual(flash.removedAtCancel, true, "persistent board elements are not removed");
   f.effects.destroy();
 });
+
+
+for (const reduced of [false, true]) {
+  test(`successful final transition survives guide-only updates and plays once (reduced=${reduced})`, () => {
+    const f = fixture({ reduced });
+    f.resolution.frames[0].step = "computer";
+    f.resolution.frames[1] = { ...f.resolution.frames[0], step: "appear" };
+    f.resolution.log = [];
+    f.resolution.outcome = { survived: true };
+    f.render();
+    // A completion notification must not reset or redraw this same board.
+    f.effects.afterRender(f.resolution, 1);
+    f.frame(); f.frame();
+    assert.equal(f.ship.parentElement.children.filter(el => el.className === "ship-jump-effects").length, 1);
+    assert.equal(f.animations.filter(a => a.element === f.ship).length, reduced ? 0 : 1);
+    f.effects.afterRender(f.resolution, 1);
+    assert.equal(f.raf.size, 0, "duplicate final snapshot cannot schedule another jump");
+    f.effects.reset();
+    f.effects.afterRender(f.resolution, 1);
+    assert.equal(f.raf.size, 0, "opening the result cannot start a jump");
+    assert.equal(f.ship.parentElement.children.filter(el => el.className === "ship-jump-effects").length, 0);
+    f.effects.destroy();
+  });
+}

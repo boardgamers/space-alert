@@ -119,11 +119,12 @@ export async function mountLesson(
     )
       await play({ type: "practice-tick", ms });
   }
-  let displayedFrames = [];
+  let displayedFrames = [], displayedLastTurn = 12;
   const ui = mountConsole(target, {
     onDisplayedResolutionFrames(frames) {
+      displayedLastTurn = tutorial.snapshot.state.game.resolution?.lastTurn ?? 12;
       displayedFrames = frames;
-      updateTutorialMissionProgress(guide, frames, locale);
+      updateTutorialMissionProgress(guide, frames, locale, displayedLastTurn);
     },
     tutorial: true,
     missions: [],
@@ -217,7 +218,7 @@ export async function mountLesson(
       <h1>${escape(s.title)}</h1>${tutorialMissionHeader(chapter, s.step, locale)}<p class="native-guide-text">${tutorialTextHtml(missed ? t("tutorial.destination_missed_go_back_and_plan_another_route") : s.text, locale)}</p>${chapter === "first-shot" && s.step < 2 ? `<p class="lesson-shield-note">${pictogram("shield")}<span>${t("lesson.first-shot.shield")}</span></p>` : ""}
       <div class="native-guide-controls">${transport("restart", "rewind", t("tutorial.restart_exercise"), s.busy)}${transport("previous", "left", t("tutorial.previous_step"), s.step === 0 || s.busy)}${transport("replay", "restart", t("tutorial.replay_step"), s.busy || s.step === 0)}${s.canContinue ? `<button data-guide="continue" class="primary icon-button" title="${t("tutorial.start")}" aria-label="${t("tutorial.start")}">${pictogram("right")}</button>` : ""}${s.completed && (nextChapter || (standalone && LESSONS[index + 1])) ? `<button data-guide="next" class="primary icon-label"><span>${t("tutorial.next_exercise")}</span>${pictogram("right")}</button>` : ""}</div>
       ${s.error ? `<p role="alert">${escape(s.error)}</p>` : ""}`;
-    updateTutorialMissionProgress(guide, displayedFrames, locale);
+    updateTutorialMissionProgress(guide, displayedFrames, locale, displayedLastTurn);
   }
   const unsubscribe = tutorial.subscribe((s) => {
     if (disposed) return;
@@ -239,7 +240,11 @@ export async function mountLesson(
     previousStage = s.state.stage;
     if (!canPlay(s)) playing = false;
     if (s.step !== lastStep) {
-      ui.resetTutorial();
+      // Completing the forward run is guide-only: resetting here discards the
+      // penultimate frame (or cancels the final frame's pending jump). Rewinds,
+      // restarts and actual chapter-step changes still establish a silent board.
+      if (!(s.completed && lastStep >= 0 && s.step > lastStep))
+        ui.resetTutorial();
 
       if (s.completed && lastStep >= 0 && s.step > lastStep &&
           !s.state.game.resolution?.outcome?.survived)
