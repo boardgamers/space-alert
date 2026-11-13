@@ -73,7 +73,8 @@ export const specializationIcons = {
 };
 
 export function pictogram(name) {
-  return `<svg class="pictogram" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="${paths[{ A: "laser", B: "reactor", C: "systems", battlebots: "bots" }[name] ?? name] ?? paths.star}"/></svg>`;
+  const action = { A: "fire", B: "energy", C: "systems" }[name];
+  return `<svg class="pictogram${action ? ` action-icon action-${action}` : ""}" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="${paths[{ A: "laser", B: "reactor", C: "systems", battlebots: "bots" }[name] ?? name] ?? paths.star}"/></svg>`;
 }
 
 // A miniature of the actual six-room plan, readable without colour.

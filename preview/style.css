@@ -8,6 +8,9 @@
   --gold: #e8c984;
   --panel: #12232f;
   --cyan: #78cecf;
+  --action-fire: #ffad70;
+  --action-energy: #f4d66f;
+  --action-systems: #78d6cc;
   --red: #e2968d;
   --blue: #8ab4ec;
   --white: #d6d4b9;
@@ -557,8 +560,36 @@ h2 {
 #transfer button {
   font-size: 11px;
 }
+#replay .replay-toolbar {
+  display: grid;
+  gap: 12px;
+  padding-block: 4px 12px;
+}
+#replay .replay-review {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
 #replay input {
+  display: block;
   width: 100%;
+  min-width: 0;
+  margin: 0;
+  accent-color: var(--cyan);
+}
+#replay .replay-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 10px;
+}
+#replay .replay-actions button {
+  min-height: 44px;
+  padding: 10px 16px;
+  max-width: 100%;
+  line-height: 1.3;
 }
 #replay p {
   font-size: 12px;
@@ -1222,21 +1253,13 @@ input:not([type="checkbox"]):not([type="range"]) {
   display: flex;
   flex-direction: column;
   padding: 7px 5px 5px;
-  border: 2px solid #5b7581;
+  border: 2px solid var(--zone);
   border-top: 3px solid var(--zone);
   border-radius: 9px 9px 5px 5px;
-  background:
-    linear-gradient(
-      90deg,
-      transparent 49%,
-      #2c465240 49%,
-      #2c465240 51%,
-      transparent 51%
-    ),
-    #112330;
+  background: #101e29;
 }
 .station.selected-station {
-  background-color: #203744;
+  background-color: #172936;
 }
 .station-title {
   display: flex;
@@ -1339,16 +1362,16 @@ input:not([type="checkbox"]):not([type="range"]) {
   display: none;
 }
 .power-value {
-  color: #ffe0a3;
-  font-size: 15px;
+  color: #eaf3f7;
+  font-size: 19px;
   font-weight: 700;
 }
 .power-value .symbol-stat {
   gap: 3px;
 }
 .power-value .pictogram {
-  width: 14px;
-  height: 14px;
+  width: 18px;
+  height: 18px;
 }
 .energy-system button {
   min-height: 55px;
@@ -1356,8 +1379,8 @@ input:not([type="checkbox"]):not([type="range"]) {
   grid-template-columns: 48px minmax(0, 1fr);
   gap: 3px;
   padding: 2px 5px;
-  border-block: 1px solid #466979;
-  background: #1a3645;
+  border-block: 1px solid #344651;
+  background: #172936;
 }
 .energy-system .equipment-art {
   width: 44px;
@@ -1573,9 +1596,9 @@ input:not([type="checkbox"]):not([type="range"]) {
   height: 14px;
   transform: translateY(12px);
   transform-origin: 50% 0;
-  background: #95dfe7;
+  background: #526773;
   border-radius: 0 0 6px 6px;
-  box-shadow: 0 3px 7px #82eff04a;
+  box-shadow: none;
 }
 .ship-key {
   display: flex;
@@ -2415,7 +2438,9 @@ input:not([type="checkbox"]):not([type="range"]) {
   .native-guide .basics-stages { gap: 3px; }
   .native-guide .basics-stages button { flex-direction: column; gap: 6px; padding: 10px 4px; text-align: center; }
 }
-.native-tutorial #basics-run { width: 64px; height: 48px; }
+/* This control includes a translated label, not just an icon. */
+.native-tutorial #basics-run { width: auto; height: auto; min-height: 48px; flex: 0 1 auto; }
+.native-tutorial #basics-run span { overflow-wrap: normal; word-break: normal; }
 .practice-readiness > span { display: inline-flex; align-items: center; gap: 6px; }
 .native-tutorial.learning-basics .flight-layout { display: grid !important; margin: 0; align-items: start; }
 .native-tutorial.learning-basics #planning { min-width: 0; }
@@ -2450,7 +2475,6 @@ input:not([type="checkbox"]):not([type="range"]) {
 .native-tutorial.learning-basics #ship .station-title { visibility: hidden; }
 .native-tutorial.learning-basics[data-tutorial-stage="resolution"] #controls { display: flex !important; gap: 10px; }
 .native-tutorial.learning-basics[data-tutorial-stage="resolution"] #replay { display: block !important; }
-.native-tutorial.learning-basics[data-tutorial-stage="resolution"] #replay label { display: block; }
 .native-tutorial.learning-basics[data-tutorial-step="3"] #controls { display: none !important; }
 .native-tutorial.learning-basics[data-tutorial-step="3"] #replay:not(:empty) { display: block !important; }
 
@@ -2671,7 +2695,12 @@ input:not([type="checkbox"]):not([type="range"]) {
 .mission-timeline > svg { width: 22px; height: 22px; }
 .mission-group { display: flex; gap: 4px; padding-bottom: 5px; border-bottom: 2px solid var(--cyan); }
 .mission-group.later { opacity: .5; }
+.mission-group.later.progressed { opacity: 1; }
 .mission-group span { display: grid; place-items: center; width: 23px; height: 28px; border: 1px solid #527181; border-radius: 4px; }
+/* Static cues: fill + inset bottom rule for completed turns, double outline
+   for the displayed turn. No animation, including under reduced motion. */
+.mission-group span.completed { background: #264d55; color: #d1f6ef; border-color: #72c9bb; box-shadow: inset 0 -3px #72c9bb; }
+.mission-group span.current { outline: 3px double var(--gold); outline-offset: 1px; color: var(--gold); font-weight: 700; }
 .lesson-scope { display: block; color: var(--muted); margin: -8px 0 10px; }
 .practice-clock.stopped > svg { width: 22px; height: 22px; color: var(--cyan); }
 .phase-lesson-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
@@ -2716,3 +2745,40 @@ input:not([type="checkbox"]):not([type="range"]) {
 .ship-jump-effects > span { position: absolute; }
 .fx-jump-success { display: grid; place-items: center; width: 80px; height: 80px; border: 2px solid var(--fx-color); border-radius: 50%; background: #102b32ee; color: var(--fx-color); box-shadow: 0 0 30px #76e5c650,inset 0 0 20px #76e5c620; }
 .fx-jump-success .pictogram { width: 44px; height: 44px; }
+
+/* Action colour belongs to the shared glyph/badge, never the whole card. */
+.pictogram.action-fire { color: var(--action-fire); }
+.pictogram.action-energy { color: var(--action-energy); }
+.pictogram.action-systems { color: var(--action-systems); }
+.action-key:has(.action-fire) { --action-accent: var(--action-fire); }
+.action-key:has(.action-energy) { --action-accent: var(--action-energy); }
+.action-key:has(.action-systems) { --action-accent: var(--action-systems); }
+.action-key {
+  background: #101e29;
+  border-color: var(--action-accent, #8296a0);
+}
+/* Continuous zone rails join both decks while the rooms stay dark. */
+.ship-zones {
+  position: absolute;
+  inset: 40px 14px 12px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  pointer-events: none;
+}
+.ship-zones > span {
+  border-inline: 2px solid var(--zone);
+  border-radius: 9px 9px 5px 5px;
+  background: color-mix(in srgb, var(--zone) 12%, #172c39);
+}
+.ship-hull::before { z-index: -1; }
+.ship-hull { isolation: isolate; }
+@container (max-width: 400px) {
+  .ship-zones { gap: 10px; }
+}
+@supports not (container-type: inline-size) {
+  @media (max-width: 760px) { .ship-zones { gap: 10px; } }
+}
+@media (max-width: 760px) {
+  .ship-zones { inset: 30px 9px 12px; }
+}

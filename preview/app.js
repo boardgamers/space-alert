@@ -737,7 +737,7 @@ export function mountConsole(root, host = null) {
             .join("")
         : "";
     $("#replay").innerHTML = resolution
-      ? `<p>${resolution.outcome ? `${resolution.outcome.survived ? "✓" : "✕"} ${t("app.score")} : <b>${resolution.outcome.score}</b> · ${resolution.outcome.threatPoints} ${t("app.threats_87b951")} + ${resolution.outcome.visual} ${t("app.visual")} − ${resolution.outcome.penalties} ${t("app.penalties")}` : resolution.turn > resolution.lastTurn ? t("app.final_threat_movement") : `${t("app.turn")} ${resolution.turn} · ${esc({ appear: t("app.appearances"), crew: t("app.crew_actions"), damage: t("app.damage"), threats: t("app.threat_actions"), computer: t("app.computer") }[resolution.step])}`}</p><label>${t("app.review_a_step")} <input id="replay-slider" type="range" min="0" max="${resolution.frames.length - 1}" value="${replayFrame ?? resolution.frames.length - 1}"></label><button id="replay-play" class="quiet" ${resolution.frames.length < 2 ? "disabled" : ""}>${t(replay.playing ? "app.pause_replay" : "app.play_replay")}</button>${replayFrame !== null ? '<button id="live" class="quiet">' + t("app.back_to_live") + "</button>" : ""}`
+      ? `<p>${resolution.outcome ? `${resolution.outcome.survived ? "✓" : "✕"} ${t("app.score")} : <b>${resolution.outcome.score}</b> · ${resolution.outcome.threatPoints} ${t("app.threats_87b951")} + ${resolution.outcome.visual} ${t("app.visual")} − ${resolution.outcome.penalties} ${t("app.penalties")}` : resolution.turn > resolution.lastTurn ? t("app.final_threat_movement") : `${t("app.turn")} ${resolution.turn} · ${esc({ appear: t("app.appearances"), crew: t("app.crew_actions"), damage: t("app.damage"), threats: t("app.threat_actions"), computer: t("app.computer") }[resolution.step])}`}</p><div class="replay-toolbar"><label class="replay-review"><span>${t("app.review_a_step")}</span><input id="replay-slider" type="range" min="0" max="${resolution.frames.length - 1}" value="${replayFrame ?? resolution.frames.length - 1}"></label><div class="replay-actions"><button id="replay-play" class="primary" ${resolution.frames.length < 2 ? "disabled" : ""}>${t(replay.playing ? "app.pause_replay" : "app.play_replay")}</button>${replayFrame !== null ? '<button id="live" class="quiet">' + t("app.back_to_live") + "</button>" : ""}</div></div>`
       : "";
     renderCampaign(g?.campaign);
     $("#announcements").innerHTML = resolution
@@ -776,6 +776,8 @@ export function mountConsole(root, host = null) {
       `<p>${t("app.left_center_and_right_correspond_to_red_white")}</p>` +
       t("app.plan_choose_a_card_then_a_turn_click");
     navigation.sync();
+    // The guide follows the same frame as the ship, including scrubbing/reset.
+    host?.onDisplayedResolutionFrames?.(resolution?.frames.slice(0, (replayFrame ?? resolution.frames.length - 1) + 1) ?? []);
     effects.afterRender(resolution, replayFrame ?? (resolution?.frames.length ?? 0) - 1);
   }
   function calledHtml(data) {

@@ -69,6 +69,7 @@ export function createResolutionEffects(root, cue) {
   let previous = null, previousIndex = -1, busyUntil = 0, pendingFrame = null;
   let oldPawns = new Map();
   let oldShip = null;
+  const movingPawns = new Map();
   const animations = new Set(), timers = new Set(), restores = [];
   const q = selector => root.querySelector(selector);
   const threat = id => q(`[data-threat="${id}"] .threat-portrait`);
@@ -84,12 +85,22 @@ export function createResolutionEffects(root, cue) {
     const id = win.setTimeout(() => { timers.delete(id); callback(); }, ms);
     timers.add(id);
   }
-  function animate(element, frames, duration, delay = 0, easing = "ease-out") {
-    if (!element?.animate) return;
+  function animate(element, frames, duration, delay = 0, easing = "ease-out", finish = () => {}) {
+    if (!element?.animate) { finish(); return; }
     const animation = element.animate(frames, { duration, delay, easing, fill: "both" });
     animations.add(animation);
-    animation.finished.then(() => { animations.delete(animation); animation.cancel(); }, () => {});
+    animation.finished.then(() => {
+      // clear() may have cancelled this animation after its promise resolved.
+      if (!animations.delete(animation)) return;
+      // Remove transient art / reveal the real pawn BEFORE releasing fill. A
+      // separate removal timer can otherwise paint the underlying source pose.
+      finish();
+      animation.cancel();
+    }, () => {});
     busyUntil = Math.max(busyUntil, performance.now() + duration + delay);
+  }
+  function animateTransient(element, frames, duration) {
+    animate(element, frames, duration, 0, "ease-out", () => element.remove());
   }
   function clear() {
     if (pendingFrame !== null) win.cancelAnimationFrame(pendingFrame);
@@ -99,6 +110,7 @@ export function createResolutionEffects(root, cue) {
     for (const animation of animations) animation.cancel();
     animations.clear();
     for (const restore of restores.splice(0)) restore();
+    movingPawns.clear();
     layer.replaceChildren();
     busyUntil = 0;
   }
@@ -112,14 +124,14 @@ export function createResolutionEffects(root, cue) {
   function burst(p, color, large = false) {
     if (!p) return;
     const ring = node("fx-ring", p, color);
-    animate(ring, [{ transform: `translate(-50%,-50%) scale(${reduced.matches ? 1 : .2})`, opacity: .9 },
+    animateTransient(ring, [{ transform: `translate(-50%,-50%) scale(${reduced.matches ? 1 : .2})`, opacity: .9 },
       { transform: `translate(-50%,-50%) scale(${reduced.matches ? 1 : large ? 3 : 1.5})`, opacity: 0 }], large ? 650 : 380);
     later(() => ring.remove(), 700);
     if (reduced.matches) return;
     for (let i = 0; i < (large ? 18 : 7); i++) {
       const spark = node("fx-spark", p, color);
       const angle = i * 2.39996, distance = (large ? 65 : 26) + (i % 4) * 9;
-      animate(spark, [{ transform: "translate(-50%,-50%) scale(1)", opacity: 1 },
+      animateTransient(spark, [{ transform: "translate(-50%,-50%) scale(1)", opacity: 1 },
         { transform: `translate(${Math.cos(angle) * distance}px,${Math.sin(angle) * distance}px) scale(.1)`, opacity: 0 }], large ? 700 : 400);
       later(() => spark.remove(), 750);
     }
@@ -135,18 +147,15 @@ export function createResolutionEffects(root, cue) {
     beam.style.transform = `rotate(${Math.atan2(dy, dx)}rad)`;
     const bolt = doc.createElement("i");
     beam.append(bolt);
-    animate(bolt, [{ transform: "translateX(0)", opacity: 1 },
+    animateTransient(bolt, [{ transform: "translateX(0)", opacity: 1 },
       { transform: `translateX(${Math.hypot(dx, dy)}px)`, opacity: 1 }], 300);
     later(() => beam.remove(), 310);
   }
   function delta(p, value, color, icon = "") {
     if (!p || !value) return;
     const n = node("fx-delta", p, color);
-    // Cancelling the finished animation restores the underlying style before
-    // the removal timer runs. Keep that style hidden to avoid a one-frame flash.
-    n.style.opacity = "0";
     n.textContent = `${icon}−${value}`;
-    animate(n, [{ transform: "translate(-50%,-20%)", opacity: 1 },
+    animateTransient(n, [{ transform: "translate(-50%,-20%)", opacity: 1 },
       { transform: `translate(-50%,${reduced.matches ? "-20%" : "-140%"})`, opacity: 0 }], 750);
     later(() => n.remove(), 760);
   }
@@ -179,10 +188,10 @@ export function createResolutionEffects(root, cue) {
       jumpSound("thruster");
       for (const nozzle of vessel.querySelectorAll(".ship-stern i")) {
         animate(nozzle, [
-          { transform: "translateY(12px) scaleY(1)", filter: "brightness(1)" },
-          { transform: "translateY(12px) scaleY(2.5)", filter: "brightness(1.6)", offset: .5 },
-          { transform: "translateY(12px) scaleY(5)", filter: "brightness(2.3)", offset: .76 },
-          { transform: "translateY(12px) scaleY(5)", filter: "brightness(2.3)" },
+          { background: "#526773", boxShadow: "none", transform: "translateY(12px) scaleY(1)", filter: "brightness(1)" },
+          { background: "#95dfe7", boxShadow: "0 3px 7px #82eff04a", transform: "translateY(12px) scaleY(2.5)", filter: "brightness(1.6)", offset: .5 },
+          { background: "#95dfe7", boxShadow: "0 3px 7px #82eff04a", transform: "translateY(12px) scaleY(5)", filter: "brightness(2.3)", offset: .76 },
+          { background: "#95dfe7", boxShadow: "0 3px 7px #82eff04a", transform: "translateY(12px) scaleY(5)", filter: "brightness(2.3)" },
         ], 1450, 0, "linear");
       }
       animate(vessel, [
@@ -200,7 +209,7 @@ export function createResolutionEffects(root, cue) {
             x: p.x + ((i * .618034) % 1 - .5) * p.width,
             y: p.y + ((i * .381966) % 1 - .5) * p.height,
           }, "#a1f4ef", stage);
-          animate(star, [
+          animateTransient(star, [
             { transform: "scaleY(.2)", opacity: 0 },
             { transform: "translateY(20px) scaleY(1)", opacity: .8, offset: .3 },
             { transform: "translateY(90px) scaleY(2)", opacity: 0 },
@@ -215,7 +224,7 @@ export function createResolutionEffects(root, cue) {
       jumpSound("victory");
       const seal = node("fx-jump-success", p, "#76e5c6", stage);
       seal.innerHTML = pictogram("check");
-      animate(seal, [
+      animateTransient(seal, [
         { transform: `translate(-50%,-50%) scale(${reduced.matches ? 1 : .85})`, opacity: 0 },
         { transform: "translate(-50%,-50%) scale(1)", opacity: 1, offset: .2 },
         { transform: "translate(-50%,-50%) scale(1)", opacity: 1, offset: .7 },
@@ -240,21 +249,18 @@ export function createResolutionEffects(root, cue) {
       if (e.kind === "move" && !moved.has(e.crew)) {
         moved.add(e.crew);
         const pawn = q(`[data-crew="${e.crew}"]`), from = oldPawns.get(String(e.crew)), to = point(pawn);
-        if (!pawn || !from || !to) continue;
+        const moving = movingPawns.get(String(e.crew));
+        if (!pawn || !from || !to) { moving?.finish(); continue; }
         sound("move", to);
-        if (reduced.matches) { flash(room(e.to), "#76e5c660"); continue; }
-        const clone = pawn.cloneNode(true);
-        clone.removeAttribute("data-crew");
-        clone.classList.add("fx-pawn");
-        clone.style.cssText += `;left:${from.x}px;top:${from.y}px;width:${from.width}px;height:${from.height}px`;
-        layer.append(clone);
-        pawn.style.visibility = "hidden";
-        const restore = () => { pawn.style.visibility = ""; };
-        restores.push(restore);
+        if (reduced.matches) { moving?.finish(); flash(room(e.to), "#76e5c660"); continue; }
+        if (!moving) continue;
+        const { clone, finish } = moving;
+        // Rebase after layout/scroll anchoring has settled, not before it.
+        clone.style.left = `${from.x}px`;
+        clone.style.top = `${from.y}px`;
         const path = events.filter(x => x.kind === "move" && x.crew === e.crew);
         const points = [from, ...path.slice(0, -1).map(x => point(room(x.to))).filter(Boolean), to];
-        animate(clone, points.map(p => ({ transform: `translate(calc(-50% + ${p.x - from.x}px),calc(-50% + ${p.y - from.y}px))` })), 460);
-        later(() => { restore(); clone.remove(); }, 465);
+        animate(clone, points.map(p => ({ transform: `translate(calc(-50% + ${p.x - from.x}px),calc(-50% + ${p.y - from.y}px))` })), 460, 0, "ease-out", finish);
       }
       if (e.kind === "charge") {
         flash(weapon(e.station), "#8eeaff80");
@@ -322,11 +328,33 @@ export function createResolutionEffects(root, cue) {
       oldMeters.set(`damage-${zone}`, room(`${zone}-upper`)?.querySelector(".station-title")?.innerHTML);
     }
   }
+  function prepareMovement(events) {
+    if (reduced.matches) return;
+    for (const e of events) {
+      const id = String(e.crew);
+      if (e.kind !== "move" || movingPawns.has(id)) continue;
+      const pawn = q(`[data-crew="${e.crew}"]`), from = oldPawns.get(id);
+      if (!pawn || !from || !point(pawn)) continue;
+      const clone = pawn.cloneNode(true);
+      clone.removeAttribute("data-crew");
+      clone.classList.add("fx-pawn");
+      clone.style.cssText += `;left:${from.x}px;top:${from.y}px;width:${from.width}px;height:${from.height}px;transform:translate(-50%,-50%)`;
+      layer.append(clone);
+      const visibility = pawn.style.visibility;
+      pawn.style.visibility = "hidden";
+      const finish = () => { pawn.style.visibility = visibility; clone.remove(); };
+      restores.push(finish);
+      movingPawns.set(id, { clone, finish });
+    }
+  }
   function afterRender(resolution, index) {
     const current = resolution?.frames[index];
     if (current && previous && index === previousIndex + 1 && !doc.hidden) {
       const events = resolutionEffects(resolution, previous, current), before = previous;
       if (events.length) {
+        // afterRender runs in the render task: replace destination pawns before
+        // the first paint, while retaining the two-frame layout settling below.
+        prepareMovement(events);
         // Tutorial completion also updates the guide and removes controls. Let
         // layout and scroll anchoring settle before locating beams and targets.
         busyUntil = performance.now() + 1000;
