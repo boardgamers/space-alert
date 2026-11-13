@@ -9,6 +9,7 @@ import { mountConsole } from "../preview/app.js";
 import { pictogram } from "../preview/icons.js";
 import { tutorialTextHtml } from "../preview/tutorial-text.js";
 import { tutorialMissionHeader, updateTutorialMissionProgress } from "../preview/tutorial-header.js";
+import { energyDiscovery, ENERGY_DEMOS } from "../preview/tutorial-energy.js";
 import { tutorialPhaseButton } from "../preview/tutorial-program.js";
 import { duration } from "../preview/clock.js";
 import { createSoundDesign } from "../preview/sound.js";
@@ -35,6 +36,7 @@ export async function mountLesson(
     lastStep = -1,
     lastTurn = 0,
     lastTick = performance.now();
+  let energyDemo = 0; // Local presentation only; never a controller checkpoint.
   let playing = false,
     previousStage,
     previousPhase,
@@ -215,8 +217,8 @@ export async function mountLesson(
       programControls.innerHTML = `<div class="phase-lesson-controls">${s.state.phase === 1 ? transport("phase-deadline", "forward", t("phases.skip"), !ready || !s.state.game.threats.length || s.busy) : `<button data-guide="run" class="primary icon-label lesson-run" aria-keyshortcuts="Enter" title="${t("phases.execute")} · ↵" ${!ready || s.busy ? "disabled" : ""}>${pictogram("check")}<span>${t("phases.execute")}</span><kbd aria-hidden="true">↵</kbd></button>`}<div class="practice-clock"><div><strong data-practice-phase>${t("phases.deadline", { phase: s.state.phase, time: phaseTime })}</strong></div>${transport("phase-clock", s.state.tutorial.clockRunning ? "pause" : "clock", t(s.state.tutorial.clockRunning ? "basics.pause" : "basics.start_clock"))}</div></div>`;
     }
     guide.innerHTML = `<div class="native-guide-row"><nav class="basics-stages" aria-label="${t("tutorial.steps")}">${label.map((name, i) => `<button data-guide-step="${deadline ? i + 3 : i}" class="quiet ${stage === i ? "active" : ""}" ${i > stage || s.busy ? "disabled" : ""} ${stage === i ? 'aria-current="step"' : ""}><span class="step-number">${i + 1}</span><span>${name}</span></button>`).join("")}</nav><div class="native-guide-tools">${standalone ? `<a href="/">${t("tutorial.local_game")}</a>` : ""}${transport("sound", soundOn ? "speaker" : "muted", soundOn ? t("tutorial.mute_sounds") : t("tutorial.enable_sounds"))}</div></div>
-      <h1>${escape(s.title)}</h1>${tutorialMissionHeader(chapter, s.step, locale)}<p class="native-guide-text">${tutorialTextHtml(missed ? t("tutorial.destination_missed_go_back_and_plan_another_route") : s.text, locale)}</p>${chapter === "first-shot" && s.step < 2 ? `<p class="lesson-shield-note">${pictogram("shield")}<span>${t("lesson.first-shot.shield")}</span></p>` : ""}
-      <div class="native-guide-controls">${transport("restart", "rewind", t("tutorial.restart_exercise"), s.busy)}${transport("previous", "left", t("tutorial.previous_step"), s.step === 0 || s.busy)}${transport("replay", "restart", t("tutorial.replay_step"), s.busy || s.step === 0)}${s.canContinue ? `<button data-guide="continue" class="primary icon-button" title="${t("tutorial.start")}" aria-label="${t("tutorial.start")}">${pictogram("right")}</button>` : ""}${s.completed && (nextChapter || (standalone && LESSONS[index + 1])) ? `<button data-guide="next" class="primary icon-label"><span>${t("tutorial.next_exercise")}</span>${pictogram("right")}</button>` : ""}</div>
+      <h1>${escape(s.title)}</h1>${tutorialMissionHeader(chapter, s.step, locale)}${chapter === "energy" && s.step === 0 ? energyDiscovery(energyDemo, locale) : `<p class="native-guide-text">${tutorialTextHtml(missed ? t("tutorial.destination_missed_go_back_and_plan_another_route") : s.text, locale)}</p>`}${chapter === "first-shot" && s.step < 2 ? `<p class="lesson-shield-note">${pictogram("shield")}<span>${t("lesson.first-shot.shield")}</span></p>` : ""}
+      <div class="native-guide-controls">${transport("restart", "rewind", t("tutorial.restart_exercise"), s.busy)}${transport("previous", "left", t("tutorial.previous_step"), s.step === 0 || s.busy)}${transport("replay", "restart", t("tutorial.replay_step"), s.busy || s.step === 0)}${s.canContinue && (chapter !== "energy" || s.step !== 0 || energyDemo === ENERGY_DEMOS.length - 1) ? `<button data-guide="continue" class="primary icon-button" title="${t("tutorial.start")}" aria-label="${t("tutorial.start")}">${pictogram("right")}</button>` : ""}${s.completed && (nextChapter || (standalone && LESSONS[index + 1])) ? `<button data-guide="next" class="primary icon-label"><span>${t("tutorial.next_exercise")}</span>${pictogram("right")}</button>` : ""}</div>
       ${s.error ? `<p role="alert">${escape(s.error)}</p>` : ""}`;
     updateTutorialMissionProgress(guide, displayedFrames, locale, displayedLastTurn);
   }
@@ -278,7 +280,17 @@ export async function mountLesson(
   const onClick = async (event) => {
     const button = event.target.closest("button");
     if (!button || tutorial.snapshot.busy) return;
+    if (button.dataset.energyDemo !== undefined) {
+      if (chapter !== "energy" || tutorial.snapshot.step !== 0) return;
+      const next = Number(button.dataset.energyDemo);
+      if (!Number.isInteger(next) || next < 0 || next >= ENERGY_DEMOS.length) return;
+      energyDemo = next;
+      renderGuide(tutorial.snapshot);
+      guide.querySelector(".energy-discovery h2")?.focus();
+      return;
+    }
     const action = button.dataset.guide;
+    if (action === "restart") energyDemo = 0;
     if (action === "sound") {
       soundOn = !soundOn;
       try {

@@ -477,6 +477,7 @@ export function createPreviewServer({ clock = Date.now, storagePath } = {}) {
         "/icons.js": "icons.js",
         "/art.js": "art.js",
         "/tactical.js": "tactical.js",
+        "/resource-cells.js": "resource-cells.js",
         "/threat-track.js": "threat-track.js",
         "/program-route.js": "program-route.js",
         "/program-cursor.js": "program-cursor.js",

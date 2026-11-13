@@ -458,7 +458,7 @@ export function mountConsole(root, host = null) {
         }
       }
       $("#resources").innerHTML =
-        `${symbol("fuel", `${t("app.fuel")} : ${ship.fuel}`, `<b>${ship.fuel}</b>`)}${symbol("rocket", `${t("app.rockets")} : ${ship.rockets}`, `<b>${ship.rockets}</b>`)}${symbol("computer", t("app.computer") + " · " + ship.computer.map((x, i) => `${t("app.phase")} ${i + 1} : ${x ? t("app.maintained") : t("app.not_maintained")}`).join(" · "), ship.computer.map((x, i) => `<span class="computer-phase ${x ? "maintained" : ""}">${i + 1}</span>`).join(""))}${symbol("bots", `${t("app.battlebots_available_squads")} : ${ship.bots.filter((b) => b.owner === null && b.station && !b.disabled).length}`, `<b>${ship.bots.filter((b) => b.owner === null && b.station && !b.disabled).length}</b><small>${t("app.squads")}</small>`)}${ship.crew
+        `${symbol("rocket", `${t("app.rockets")} : ${ship.rockets}`, `<b>${ship.rockets}</b>`)}${symbol("computer", t("app.computer") + " · " + ship.computer.map((x, i) => `${t("app.phase")} ${i + 1} : ${x ? t("app.maintained") : t("app.not_maintained")}`).join(" · "), ship.computer.map((x, i) => `<span class="computer-phase ${x ? "maintained" : ""}">${i + 1}</span>`).join(""))}${symbol("bots", `${t("app.battlebots_available_squads")} : ${ship.bots.filter((b) => b.owner === null && b.station && !b.disabled).length}`, `<b>${ship.bots.filter((b) => b.owner === null && b.station && !b.disabled).length}</b><small>${t("app.squads")}</small>`)}${ship.crew
           .filter((p) => p.space)
           .map((p) =>
             symbol(

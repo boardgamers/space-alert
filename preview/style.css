@@ -1398,30 +1398,30 @@ input:not([type="checkbox"]):not([type="range"]) {
   top: 2px;
   left: 1px;
 }
-.energy-value {
-  color: #b8f6f6;
-  font-size: 18px;
-  font-weight: 750;
-  font-variant-numeric: tabular-nums;
-}
-.charge-pips {
-  display: flex;
-  width: 100%;
-  max-width: 90px;
+/* Shared by the live ship, inspection flows and Discover examples. */
+.energy-cells {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 3px;
+  max-width: 100%;
+  vertical-align: middle;
 }
-.charge-pips i {
-  height: 5px;
-  flex: 1;
-  min-width: 0;
+.energy-cell {
+  box-sizing: border-box;
+  padding: 0;
+  width: 10px;
+  height: 17px;
+  flex: 0 0 10px;
   background: #112330;
   border: 1px solid #7696a4;
   border-radius: 2px;
 }
-.charge-pips i.filled {
+.energy-cell.filled {
   background: #96ebed;
   border-color: #d6ffff;
 }
+.energy-cell.excess { border: 2px dashed #ffd48a; }
 .energy-system.depleted button {
   border-color: #c99871;
 }
@@ -1578,6 +1578,44 @@ input:not([type="checkbox"]):not([type="range"]) {
   gap: 12px;
   padding: 0 14px 18px;
 }
+.fuel-rack {
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  padding: 5px;
+  border: 2px solid #81939a;
+  border-top: 0;
+  border-radius: 0 0 9px 9px;
+  background: #142c38;
+  color: #f5d48a;
+}
+.fuel-slots {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+.fuel-slot {
+  padding: 0;
+  display: grid;
+  place-items: center;
+  width: clamp(14px, 2.5vw, 23px);
+  height: clamp(20px, 3.5vw, 30px);
+  border: 1px solid #afbdc3;
+  border-radius: 5px;
+}
+.fuel-slot.filled {
+  background: #695333;
+  border-color: #f5d48a;
+}
+.fuel-slot.empty {
+  border-style: dashed;
+  background: #0c1c25;
+}
+.fuel-slot .pictogram { width: 100%; height: 100%; }
+
 .ship-stern > span {
   display: flex;
   gap: 5px;
@@ -2781,4 +2819,32 @@ input:not([type="checkbox"]):not([type="range"]) {
 }
 @media (max-width: 760px) {
   .ship-zones { inset: 30px 9px 12px; }
+}
+
+/* Discover examples are illustrations, not live ship resources. */
+.energy-discovery { max-width: 38rem; margin-top: 1rem; }
+.energy-demo-content h2 { font-size: 1.1rem; margin: 0 0 .5rem; }
+.energy-demo-content p { line-height: 1.5; margin: .5rem 0; }
+.energy-demo-diagram { display: grid; gap: .45rem; margin: .8rem 0; }
+.energy-demo-diagram > div { display: grid; grid-template-columns: 1.5rem minmax(0, 1fr) auto; align-items: center; gap: .6rem; padding: .5rem .65rem; background: #ffffff08; border: 1px solid #ffffff20; border-radius: .4rem; }
+.energy-demo-diagram svg { width: 1.5rem; height: 1.5rem; }
+.energy-demo-diagram strong { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.energy-demo-content small { opacity: .75; }
+.energy-demo-navigation { display: flex; align-items: center; flex-wrap: wrap; gap: .65rem; margin-top: .85rem; }
+.energy-demo-navigation button { min-height: 44px; min-width: 44px; }
+.energy-demo-dots { display: flex; gap: .3rem; }
+.energy-demo-dots > span { width: .4rem; height: .4rem; border-radius: 50%; background: currentColor; opacity: .25; }
+.energy-demo-dots > .active { opacity: 1; }
+
+/* Give cells the whole button width even on narrow three-zone ships. */
+.energy-system button { grid-template-columns: minmax(0, 1fr); justify-items: center; gap: 2px; padding-bottom: 5px; }
+.energy-system .system-caption { width: 100%; min-width: 0; }
+.resource-transition { display: flex; align-items: center; justify-content: flex-end; gap: 7px; }
+.resource-transition > [role="group"] { display: flex; min-width: 0; }
+.resource-transition .fuel-rack { border-radius: 5px; border-top: 2px solid #81939a; padding: 3px; }
+.resource-transition .fuel-slot { width: 14px; height: 20px; }
+.energy-demo-diagram .fuel-slot svg { width: 100%; height: 100%; }
+@media (max-width: 480px) {
+  .energy-demo-diagram > div { grid-template-columns: 1.5rem minmax(0, 1fr); }
+  .energy-demo-diagram .resource-transition { grid-column: 2; justify-content: flex-start; }
 }
