@@ -13,7 +13,8 @@ const paths = {
   bots: "M7 9V7a5 5 0 0 1 10 0v2H7Zm2-3h6M6 10h12v8H6zM10 13h4M3 11v6m18-6v6M8 18v3H5m11-3v3h3",
   android: "M5 7h14v13H5zM12 3v4M10 3h4M8 11h1m6 0h1M8 16h8M2 10v6m20-6v6",
 
-  laser: "M3 14h8v6H3zM6 14V9h4v5M9 9l8-6M14 10l7-5M17 13l5-4",
+  // Side-view barrel, pedestal, one beam and a small muzzle flash.
+  laser: "M2 9h8v6H2zM5 15v4m-3 0h7M10 12h12M12 8l2 2m-2 6 2-2",
   pulse:
     "M9 12a3 3 0 1 0 6 0 3 3 0 1 0-6 0ZM6 6a8.5 8.5 0 0 0 0 12m12-12a8.5 8.5 0 0 1 0 12M3 3a13 13 0 0 0 0 18m18-18a13 13 0 0 1 0 18",
   shield: "m12 2 8 3v6c0 5-4 8-8 11-4-3-8-6-8-11V5l8-3Z",

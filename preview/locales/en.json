@@ -9,7 +9,7 @@
   "lesson.first-shot.shield": "The center shield absorbs hits automatically while charged.",
   "lesson.energy.title": "Energy and coordination",
   "lesson.energy.instruction.0": "The center laser needs one energy per shot. Its reactor starts with three: refill it to fire four times.\n\nIn the lower center room, [[action:energy]] consumes one fuel capsule to fill the central reactor to capacity—not just add one energy. It does not refill other reactors or shields.\n\nAt a shield, [[action:energy]] transfers energy from the same-zone reactor: enough to fill the shield, limited by the reactor’s remaining supply. At a side reactor, it transfers energy from the central reactor, up to capacity and limited by the central supply. These transfers use no fuel capsule.",
-  "lesson.energy.instruction.1": "Android 1: [[action:weapons]] on turns 1-4. Android 3: use the lift on turn 1, then [[action:energy]] in the lower center room on turn 2 to refill the reactor. Then lock phase 1 to plan turn 4.",
+  "lesson.energy.instruction.1": "[[crew:android:1]]: [[action:weapons]] on turns 1-4. [[crew:android:3]]: use the lift on turn 1, then [[action:energy]] in the lower center room on turn 2 to refill the reactor. Then lock phase 1 to plan turn 4.",
   "lesson.repairs.title": "Repairing a malfunction",
   "lesson.repairs.instruction.0": "Repair the highlighted malfunction.",
   "lesson.repairs.instruction.1": "Move right on turn 1, then use [[action:energy]] on turns 2, 3 and 4. While this shield malfunction is active, [[action:energy]] repairs it instead of recharging the shield. Three repair actions eliminate it.",

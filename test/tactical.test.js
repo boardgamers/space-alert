@@ -12,6 +12,12 @@ test("shared action glyphs have distinct accents without changing their silhouet
     assert.equal(pictogram(action).match(/<path.*$/)[0], pictogram(shape).match(/<path.*$/)[0]);
     assert.match(pictogram(action), /aria-hidden="true" focusable="false"/);
   }
+  // Keep one long horizontal beam, a side-on barrel and a small two-stroke
+  // muzzle flash rather than the former lock-like silhouette and three rays.
+  assert.match(pictogram("laser"), /M2 9h8v6H2z/);
+  assert.match(pictogram("laser"), /M10 12h12/);
+  assert.match(pictogram("laser"), /M12 8l2 2m-2 6 2-2/);
+  assert.doesNotMatch(pictogram("laser"), /M9 9l8-6/);
   assert.notEqual(pictogram("impact"), pictogram("laser"));
   assert.doesNotMatch(pictogram("impact"), /action-icon/);
 });
